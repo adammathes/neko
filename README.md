@@ -18,7 +18,7 @@ This is not very easy to use/setup/or anything. Sorry! Consider it WIP.
 
 2. Set up $GOPATH if one doesn't exist already
 
-    $ mkdir $HOME/go
+    $ mkdir $HOME/go  
     $ export GOPATH=$HOME/go
     
 3. Get neko code
@@ -27,31 +27,28 @@ This is not very easy to use/setup/or anything. Sorry! Consider it WIP.
 
 4. Get dependencies
 
-    $ cd $HOME/go/src/github.com/adammathes/neko
-    $ make deps
-    OR 
-    $ go get [each dependency]
-    
-    Great job
+    $ cd $HOME/go/src/github.com/adammathes/neko  
+    $ make deps  
+    OR  
+    $ go get [each dependency listed in the Makefile you ignored]  
 
 5. Build binaries
 
-    $ go build cmd/nekoweb
-    $ go build cmd/nekocrawl
+    $ go build cmd/nekoweb  
+    $ go build cmd/nekocrawl  
 
     This should create "nekoweb" and "nekocrawl" binaries
 
-
 6. Create MySQL table and user
 
-    $ msyqladmin -uroot -p create neko
-    $ mysql -uroot -p neko < init.sql
-    $ echo "probably a good idea to make a limited privilege user"
-    $ mysql -uroot -p neko
-    CREATE USER 'neko'@'localhost' identified by 'password' yourgreatpasswordhere;
-    GRANT ALL PRIVILEGES ON neko.* TO 'neko'@'localhost';
+    $ msyqladmin -uroot -p create neko  
+    $ mysql -uroot -p neko < init.sql  
+    $ echo "probably a good idea to make a limited privilege user"  
+    $ mysql -uroot -p neko  
+    CREATE USER 'neko'@'localhost' identified by 'password' yourgreatpasswordhere;  
+    GRANT ALL PRIVILEGES ON neko.* TO 'neko'@'localhost';  
         
-7. Configuration - copy example configuration and edit as needed
+7. Configuration - copy example configuration and edit as needed  
 
     $ cp config.example config.json
     
@@ -67,5 +64,5 @@ This is not very easy to use/setup/or anything. Sorry! Consider it WIP.
     
 10. Operationalize
 
-    [ add to cron ]
+    [ add to cron ]  
     [ add daemon for server ]
