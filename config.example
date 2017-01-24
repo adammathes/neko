@@ -1,0 +1,7 @@
+{
+	"DBServer": "root:@tcp(127.0.0.1:3306)/neko",
+    "WebServer": "127.0.0.0.1:4994",
+    "Username": "username",
+    "Realm": "example.com:443",
+    "DigestPassword": "plaintextpasswordforhttpDigestAuth"
+}

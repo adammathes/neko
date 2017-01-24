@@ -1,0 +1,2 @@
+DROP TABLE feed;
+DROP TABLE item;
