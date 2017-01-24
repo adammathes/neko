@@ -4,6 +4,8 @@ RSS Reader focused on cat ears mode
 
 *the cat ears are in your mind*
 
+Personal web based RSS reader thing
+
 ## Huh?
 
 I decided I didn't like the [old version that was python and mongo](https://github.com/adammathes/neko_v1) so rewrote it. I wanted to learn some Go. So assume the code is bad since I don't know what I'm doing even more so than normal.
@@ -11,6 +13,22 @@ I decided I didn't like the [old version that was python and mongo](https://gith
 The javascript frontend is still the same, I might rewrite that too since it's old backbone.js code.
 
 This is not very easy to use/setup/or anything. Sorry! Consider it WIP.
+
+## Features
+
+   * limited features (#1 feature)
+   * keyboard shortcuts
+      * j -- next item
+      * k -- previous item
+      * that's all you should ever need
+   * web ui
+   
+## TODO
+
+   * OPML import/export
+   * feeds.txt import/export
+   * mark all as read
+   * comments/documentation
 
 ## Installation
 
