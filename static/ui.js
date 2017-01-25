@@ -273,7 +273,7 @@ var ItemCollection = Backbone.Collection.extend({
                     App.set('selectedIndex', 0);
                 }
 	        });
-            if(data.length == 0) {
+            if(items.length == 0) {
                 App.nomore = true;
             }
             App.loading = false;           

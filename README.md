@@ -103,7 +103,7 @@ This should fetch, download, parse, and store in the database your feeds.
 
 #### Add to cron
 
-Place your binaries and config files some place reasonable and add this to your cron.
+Place your binaries and config files some place reasonable and add a cron job
 
     34 * * * * ~/bin/nekocrawl ~/neko_config.json &> /dev/null
 
