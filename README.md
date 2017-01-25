@@ -18,69 +18,104 @@ This is not very easy to use/setup/or anything. Sorry! Consider it WIP.
 
    * limited features (#1 feature)
    * keyboard shortcuts
-      * j -- next item
-      * k -- previous item
+      * **j** - next item
+      * **k** - previous item
       * that's all you should ever need
-   * web ui
+   * automatically marks items read in an infinite stream of neve-rending content (until you run out of content and it ends)
    
 ## TODO
 
    * OPML import/export
    * feeds.txt import/export
    * mark all as read
-   * comments/documentation
+   * proper code comments
 
 ## Installation
 
-1. [Install golang](https://golang.org)
+### [Install golang](https://golang.org)
 
-2. Set up $GOPATH if one doesn't exist already
+Go is great! Yay!
 
+### Set up $GOPATH if one doesn't exist already
+
+    ```
     $ mkdir $HOME/go  
     $ export GOPATH=$HOME/go
+    ```
     
-3. Get neko code
+### Get neko code
+
+    ```
+    $ go get github.com/adammathes/neko 
+    ```
+
+### Get dependencies
+
    
-   $ go get github.com/adammathes/neko 
-
-4. Get dependencies
-
+    ```
     $ cd $HOME/go/src/github.com/adammathes/neko  
     $ make deps  
     OR  
     $ go get [each dependency listed in the Makefile you ignored]  
+    ```
+    
+### Build
 
-5. Build binaries
 
+    ```
     $ go build cmd/nekoweb  
     $ go build cmd/nekocrawl  
+    ```
+    
+This should create "nekoweb" and "nekocrawl" binaries because command line flags are annoying.
 
-    This should create "nekoweb" and "nekocrawl" binaries
+### Create MySQL table and user
 
-6. Create MySQL table and user
-
+    ```
     $ msyqladmin -uroot -p create neko  
     $ mysql -uroot -p neko < init.sql  
     $ echo "probably a good idea to make a limited privilege user"  
     $ mysql -uroot -p neko  
     CREATE USER 'neko'@'localhost' identified by 'password' yourgreatpasswordhere;  
     GRANT ALL PRIVILEGES ON neko.* TO 'neko'@'localhost';  
-        
-7. Configuration - copy example configuration and edit as needed  
+    ```
+       
+### Configuration - copy example configuration and edit as needed  
 
+The configuration is JSON which was probably not a good idea. Sorry? It should be straightforward.
+
+    ```
     $ cp config.example config.json
+    ```
     
-8. Run web
+### Run web
 
+    ```
     $ ./nekoweb config.json
+    ```
     
-    Load URL/port specified in config. Add feeds
-    
-9. Run Crawler
+Load URL/port specified in config. Add some feeds! There's an import command that would make this easier but it's wonky (neko addfeed <url>)
 
+    
+### Run Crawler
+
+    ```
     $ ./nekocrawl config.json
+    ```
     
-10. Operationalize
+This should fetch, download, parse, and store in the database your feeds.
 
-    [ add to cron ]  
-    [ add daemon for server ]
+
+### Operationalize
+
+#### Add to cron
+
+Place your binaries and config files some place reasonable and add this to your cron.
+
+    ```
+    34 * * * * ~/bin/nekocrawl ~/neko_config.json &> /dev/null
+    ```
+
+#### Daemonize server
+
+Sorry it's 2017 and there are like a bajillion incompatible ways to do this on *nix-alikes and it's ridiculous so I'm probably just going to give up on Linux and use OpenBSD so just run it in tmux or something I guess? I mean, set up an init script with a minimal privileged user. Whatever. UNIX is great, have fun.
