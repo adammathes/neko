@@ -275,10 +275,13 @@ var ItemCollection = Backbone.Collection.extend({
 	        });
             console.log("items ", items)
             if(items.length == 0) {
+                console.log("no more items");
                 App.noMore = true;
+                App.loading = true;
             }
-            App.loading = false;           
-
+            else {
+                App.loading = false;           
+            }
             // we wait and add them all at once for performance on mobile
             App.itemListView.addAll(items);
 
