@@ -260,7 +260,7 @@ var ItemCollection = Backbone.Collection.extend({
 	        url = url + '&read_filter=all';
         }
 
-        console.log('fetching from ', url);
+        // console.log('fetching from ', url);
 
         var t = this;
         $.getJSON(url, function(data) {
@@ -273,6 +273,7 @@ var ItemCollection = Backbone.Collection.extend({
                     App.set('selectedIndex', 0);
                 }
 	        });
+            console.log("items ", items)
             if(items.length == 0) {
                 App.nomore = true;
             }
