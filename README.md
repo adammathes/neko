@@ -82,29 +82,22 @@ Also there's a Makefile there so a simple "make" should work. Maybe? Makefiles a
 
 Copy example configuration and edit as needed.
 
-    ```
     $ cp config.example config.json
-    ```
 
 The configuration is JSON which was probably not a good idea. Sorry? It should be straightforward.
 
 ### Run web server
 
-    ```
     $ ./nekoweb config.json
-    ```
     
 Load URL/port specified in config. Add some feeds! There's an import command that would make this easier but it's wonky (neko addfeed <url>)
 
     
 ### Run Crawler
 
-    ```
     $ ./nekocrawl config.json
-    ```
     
 This should fetch, download, parse, and store in the database your feeds.
-
 
 ### Operationalize
 
@@ -112,9 +105,7 @@ This should fetch, download, parse, and store in the database your feeds.
 
 Place your binaries and config files some place reasonable and add this to your cron.
 
-    ```
     34 * * * * ~/bin/nekocrawl ~/neko_config.json &> /dev/null
-    ```
 
 #### Daemonize server
 
