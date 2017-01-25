@@ -57,7 +57,10 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 			item.Description = i.Summary
 		}
 		item.FeedId = f.Id
-		item.Create()
+		err := item.Create()
+		if err != nil {
+			log.Println(err)
+		}
 	}
 	ch <- "successfully crawled " + f.Url
 }
