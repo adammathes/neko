@@ -32,53 +32,45 @@ This is not very easy to use/setup/or anything. Sorry! Consider it WIP.
 
 ## Installation
 
-### [Install golang](https://golang.org)
+### Prerequesites 
 
-Go is great! Yay!
+[Install Go -- https:/golang.org](https://golang.org)
+
+[Install MySQL](https://dev.mysql.com) or [MariaDB](https://mariadb.com) or some other drop-in replacement.
+
+Postgresql support is left as an exercise for the reader to implement and send a pull request for.
 
 ### Set up $GOPATH if one doesn't exist already
 
-    ```
     $ mkdir $HOME/go  
     $ export GOPATH=$HOME/go
-    ```
     
 ### Get neko code
 
-    ```
     $ go get github.com/adammathes/neko 
-    ```
 
 ### Get dependencies
 
-   
-    ```
     $ cd $HOME/go/src/github.com/adammathes/neko  
     $ make deps  
     OR  
     $ go get [each dependency listed in the Makefile you ignored]  
-    ```
     
 ### Build
 
-
-    ```
     $ go build cmd/nekoweb  
     $ go build cmd/nekocrawl  
-    ```
     
 This should create "nekoweb" and "nekocrawl" binaries because command line flags are annoying.
 
 ### Create MySQL table and user
 
-    ```
     $ msyqladmin -uroot -p create neko  
     $ mysql -uroot -p neko < init.sql  
     $ echo "probably a good idea to make a limited privilege user"  
     $ mysql -uroot -p neko  
     CREATE USER 'neko'@'localhost' identified by 'password' yourgreatpasswordhere;  
     GRANT ALL PRIVILEGES ON neko.* TO 'neko'@'localhost';  
-    ```
        
 ### Configuration - copy example configuration and edit as needed  
 
