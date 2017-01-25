@@ -51,17 +51,23 @@ Postgresql support is left as an exercise for the reader to implement and send a
 
 ### Get dependencies
 
-    $ cd $HOME/go/src/github.com/adammathes/neko  
+    $ cd $GOPATH/src/github.com/adammathes/neko  
     $ make deps  
-    OR  
-    $ go get [each dependency listed in the Makefile you ignored]  
+
+or...
+
+    $ go get [each dependency listed in the handy Makefile you just ignored]  
     
 ### Build
 
+    $ cd $GOPATH/src/github.com/adammathes/neko  
+    $ go build
     $ go build cmd/nekoweb  
     $ go build cmd/nekocrawl  
     
 This should create "nekoweb" and "nekocrawl" binaries because command line flags are annoying.
+
+Also there's a Makefile there so a simple "make" should work. Maybe? Makefiles are weird and not really go-ish and not well tested.
 
 ### Create MySQL table and user
 
@@ -72,15 +78,17 @@ This should create "nekoweb" and "nekocrawl" binaries because command line flags
     CREATE USER 'neko'@'localhost' identified by 'password' yourgreatpasswordhere;  
     GRANT ALL PRIVILEGES ON neko.* TO 'neko'@'localhost';  
        
-### Configuration - copy example configuration and edit as needed  
+### Configuration 
 
-The configuration is JSON which was probably not a good idea. Sorry? It should be straightforward.
+Copy example configuration and edit as needed.
 
     ```
     $ cp config.example config.json
     ```
-    
-### Run web
+
+The configuration is JSON which was probably not a good idea. Sorry? It should be straightforward.
+
+### Run web server
 
     ```
     $ ./nekoweb config.json
@@ -111,3 +119,5 @@ Place your binaries and config files some place reasonable and add this to your 
 #### Daemonize server
 
 Sorry it's 2017 and there are like a bajillion incompatible ways to do this on *nix-alikes and it's ridiculous so I'm probably just going to give up on Linux and use OpenBSD so just run it in tmux or something I guess? I mean, set up an init script with a minimal privileged user. Whatever. UNIX is great, have fun.
+
+Example NGINX/APACHE proxypass goes here if I ever write it.
