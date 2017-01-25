@@ -273,9 +273,9 @@ var ItemCollection = Backbone.Collection.extend({
                     App.set('selectedIndex', 0);
                 }
 	        });
-            console.log("items ", items)
+            // console.log("items ", items)
             if(items.length == 0) {
-                console.log("no more items");
+                // console.log("no more items");
                 App.noMore = true;
                 App.loading = true;
             }
@@ -440,8 +440,8 @@ var FeedCollection = Backbone.Collection.extend({
     url: '/feed/',
 
 	initialize: function() {
-	        ///    _.bindAll(this, 'boot');
-        console.log('initialized');
+	    ///    _.bindAll(this, 'boot');
+        //console.log('initialized');
     },
 });
 App.feeds = new FeedCollection();
@@ -481,16 +481,16 @@ var FeedListView = Backbone.View.extend( {
 	    App.feeds.bind('change', this.render);
 	},
 	addOne: function(feed) {
-        console.log('adding a feed...', feed);
+        // console.log('adding a feed...', feed);
 	    var view = new FeedView({'model': feed});
         this.$el.append(view.render().el);
 	},
 	addAll: function() {
-        console.log('feed add all...');
+        // console.log('feed add all...');
 	    App.feeds.each(this.addOne);
 	},
     change: function() {
-        console.log('feeds changed add all...');
+        // console.log('feeds changed add all...');
     },
     render: function() {
     },
