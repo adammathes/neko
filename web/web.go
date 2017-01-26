@@ -2,13 +2,15 @@ package web
 
 import (
 	"encoding/json"
-	"github.com/abbot/go-http-auth"
+	"fmt"
+	// "github.com/abbot/go-http-auth"
 	"log"
 	"neko/config"
 	"neko/models/feed"
 	"neko/models/item"
 	"net/http"
 	"strconv"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -94,38 +96,70 @@ func feedHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Secret(user, realm string) string {
-	if user == config.Config.Username {
-		return config.Config.DigestPassword
+var AuthCookie = "auth"
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		http.ServeFile(w, r, "static/login.html")
+	case "POST":
+		password := r.FormValue("password")	
+		if password == config.Config.DigestPassword {
+			v,_ := bcrypt.GenerateFromPassword([]byte(password), 0)
+			c := http.Cookie{ Name: AuthCookie, Value: string(v), Path: "/", MaxAge: 5000, HttpOnly:false }
+			http.SetCookie(w, &c)
+			fmt.Fprintf(w, "you are logged in")
+		} else {
+			http.Error(w, "nope", 401)
+		}		
+	default:
+		http.Error(w, "nope", 500)
 	}
-	return ""
 }
 
-func AuthWrap(a *auth.DigestAuth, wrapped http.HandlerFunc) http.HandlerFunc {
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	c := http.Cookie{ Name: AuthCookie, MaxAge: 0, Path: "/", HttpOnly:false }
+	http.SetCookie(w, &c)
+	fmt.Fprintf(w, "you are logged in")
+}
+
+func Authenticated(r *http.Request) bool {
+	pc,err := r.Cookie("auth")
+	log.Printf("%v", pc)
+	if err != nil {
+		return false
+	}
+
+	err = bcrypt.CompareHashAndPassword( []byte(pc.Value), []byte(config.Config.DigestPassword) )
+	if err == nil {
+		return true
+	}
+	return false
+}
+
+func AuthWrap(wrapped http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if username, authinfo := a.CheckAuth(r); username == "" {
-			a.RequireAuth(w, r)
-		} else {
-			_ = &auth.AuthenticatedRequest{Request: *r, Username: username}
-			if authinfo != nil {
-				w.Header().Set(a.Headers.V().AuthInfo, *authinfo)
-			}
+		if Authenticated(r) {
 			wrapped(w, r)
+		} else {
+			http.Error(w, "nope", 401)
 		}
 	}
 }
 
 func Serve() {
-	authenticator := auth.NewDigestAuthenticator(config.Config.Realm, Secret)
-	authenticator.PlainTextSecrets = true
-
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	http.HandleFunc("/stream/", AuthWrap(authenticator, streamHandler))
-	http.HandleFunc("/item/", AuthWrap(authenticator, itemHandler))
-	http.HandleFunc("/feed/", AuthWrap(authenticator, feedHandler))
-	http.HandleFunc("/", AuthWrap(authenticator, indexHandler))
+	http.HandleFunc("/stream/", AuthWrap(streamHandler))
+	http.HandleFunc("/item/", AuthWrap(itemHandler))
+	http.HandleFunc("/feed/", AuthWrap(feedHandler))
 
-	log.Fatal(http.ListenAndServe(config.Config.WebServer, nil))
+	http.HandleFunc("/login/", loginHandler)
+	http.HandleFunc("/logout/", logoutHandler)
+
+	http.HandleFunc("/", AuthWrap(indexHandler))
+
+
+	http.ListenAndServe(config.Config.WebServer, nil)
 }
