@@ -97,6 +97,7 @@ func feedHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 var AuthCookie = "auth"
+var SecondsInAYear = 60*60*24*365
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -106,11 +107,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")	
 		if password == config.Config.DigestPassword {
 			v,_ := bcrypt.GenerateFromPassword([]byte(password), 0)
-			c := http.Cookie{ Name: AuthCookie, Value: string(v), Path: "/", MaxAge: 5000, HttpOnly:false }
+			c := http.Cookie{ Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly:false }
 			http.SetCookie(w, &c)
-			fmt.Fprintf(w, "you are logged in")
+			http.Redirect(w, r, "/", 307)
 		} else {
-			http.Error(w, "nope", 401)
+			http.Error(w, "bad login", 401)
 		}		
 	default:
 		http.Error(w, "nope", 500)
@@ -120,16 +121,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	c := http.Cookie{ Name: AuthCookie, MaxAge: 0, Path: "/", HttpOnly:false }
 	http.SetCookie(w, &c)
-	fmt.Fprintf(w, "you are logged in")
+	fmt.Fprintf(w, "you are logged out")
 }
 
 func Authenticated(r *http.Request) bool {
 	pc,err := r.Cookie("auth")
-	log.Printf("%v", pc)
 	if err != nil {
 		return false
 	}
-
 	err = bcrypt.CompareHashAndPassword( []byte(pc.Value), []byte(config.Config.DigestPassword) )
 	if err == nil {
 		return true
@@ -142,7 +141,7 @@ func AuthWrap(wrapped http.HandlerFunc) http.HandlerFunc {
 		if Authenticated(r) {
 			wrapped(w, r)
 		} else {
-			http.Error(w, "nope", 401)
+			http.Redirect(w, r, "/login/", 307)
 		}
 	}
 }
