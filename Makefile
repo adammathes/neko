@@ -14,7 +14,6 @@ $(BINARIES): $(SOURCES)
 
 .PHONY: deps run
 
-
 .PHONY: run
 deps:
 	go get $(DEPS)
