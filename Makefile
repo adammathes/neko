@@ -10,6 +10,7 @@ $(BINARIES): $(SOURCES)
 	go build
 	go build cmd/nekoweb.go
 	go build cmd/nekocrawl.go
+	go build cmd/nekoimport.go
 
 
 .PHONY: deps run
