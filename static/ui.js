@@ -62,10 +62,6 @@ var AppModel =  Backbone.Model.extend({
     },
 
     update_read_status: function() {
-        if(PUBLIC_VERSION) {
-            return;
-        }
-
         var screen_top = $(window).scrollTop();
         var screen_bottom = $(window).scrollTop() +  $(window).height();
 
@@ -179,10 +175,6 @@ var Item = Backbone.Model.extend({
     },
 
     maybeSave: function() {
-        if(PUBLIC_VERSION) {
-            return;
-        }
-
         if(this.hasChanged()) {
             this.save();
         }
@@ -256,12 +248,7 @@ var ItemCollection = Backbone.Collection.extend({
 	        url = url + '&read_filter=all';
         }
 
-        if(PUBLIC_VERSION) {
-	        url = url + '&read_filter=all';
-        }
-
-        // console.log('fetching from ', url);
-
+        console.log('fetching from ', url);
         var t = this;
         $.getJSON(url, function(data) {
             var items = [];
