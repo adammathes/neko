@@ -277,7 +277,7 @@ var ItemCollection = Backbone.Collection.extend({
             if(items.length == 0) {
                 // console.log("no more items");
                 App.noMore = true;
-                App.loading = true;
+                // App.loading = true;
             }
             else {
                 App.loading = false;           
