@@ -24,7 +24,6 @@ var AppModel =  Backbone.Model.extend({
 //        this.tags.boot();
         this.feeds.fetch({set: true, remove: false})
         window.setInterval(function() { App.update_read_status() }, 5000);
-        
     },
 
     filterToFeed: function(feed) {
@@ -277,6 +276,7 @@ var ItemCollection = Backbone.Collection.extend({
 
     reboot: function() {
         App.noMore = false;
+        App.loading = false;
         this.reset();
         this.boot();
     },
