@@ -224,9 +224,6 @@ var ItemCollection = Backbone.Collection.extend({
 
         App.loading = true;
         url = '/stream/';
-        if(App.get('starredFilter')) {
-            url = url + 'starred/';
-        }
         if(App.tag != undefined) {
 	         url = url + 'tag/' + App.tag + '/';
         }
@@ -234,11 +231,12 @@ var ItemCollection = Backbone.Collection.extend({
         if(App.get('searchFilter')) {
             url = url + '&q=' + App.get('searchFilter');
         }
-
         if(App.get('feedFilter')) {
             url = url + '&feed_url=' + App.get('feedFilter').get('url');
         }
-
+        if(App.get('starredFilter')) {
+            url = url + '&starred=1';
+        }       
         if(App.items.last()) {
              url = url + '&max_id=' + App.items.last().get('_id');
         }

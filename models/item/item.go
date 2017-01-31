@@ -14,6 +14,7 @@ type Item struct {
 	Url         string `json:"url"`
 	Description string `json:"description"`
 	ReadState   bool   `json:"read"`
+	Starred     bool   `json:"starred"`
 	FeedId      int64
 	PublishDate string `json:"publish_date"`
 	FeedTitle   string `json:"feed_title"`
@@ -42,8 +43,8 @@ func (i *Item) Create() error {
 
 func (i *Item) Save() {
 	_, err := models.DB.Exec(`UPDATE item
-                              SET read_state=? 
-                              WHERE id=?`, i.ReadState, i.Id)
+                              SET read_state=?, starred=?
+                              WHERE id=?`, i.ReadState, i.Starred, i.Id)
 	if err != nil {
 		log.Println(err)
 	}
@@ -58,12 +59,12 @@ func (i *Item) FullSave() {
 	}
 }
 
-func Filter(max_id int64, feed_id int64, unread_only bool) ([]*Item, error) {
+func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([]*Item, error) {
 
 	var args []interface{}
 
 	query := `SELECT item.id, item.title, item.url, item.description, 
-                     item.read_state, item.publish_date,
+                     item.read_state, item.starred, item.publish_date,
                      feed.url, feed.title
               FROM item,feed 
               WHERE item.feed_id=feed.id  `
@@ -82,6 +83,11 @@ func Filter(max_id int64, feed_id int64, unread_only bool) ([]*Item, error) {
 		query = query + " AND item.read_state=0 "
 	}
 
+	if starred_only {
+		query = query + " AND item.starred=1 "
+	}
+
+	
 	query = query + "ORDER BY item.id DESC LIMIT 15"
 	// log.Println(query)
 	// log.Println(args...)
@@ -102,7 +108,7 @@ func Filter(max_id int64, feed_id int64, unread_only bool) ([]*Item, error) {
 	items := make([]*Item, 0)
 	for rows.Next() {
 		i := new(Item)
-		err := rows.Scan(&i.Id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.PublishDate, &i.FeedUrl, &i.FeedTitle)
+		err := rows.Scan(&i.Id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FeedUrl, &i.FeedTitle)
 		if err != nil {
 			log.Println(err)
 			return nil, err

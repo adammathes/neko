@@ -37,8 +37,13 @@ func streamHandler(w http.ResponseWriter, r *http.Request) {
 		unread_only = false
 	}
 
+	starred_only := false
+	if r.FormValue("starred") != "" {
+		starred_only = true
+	}
+	
 	var items []*item.Item
-	items, err := item.Filter(int64(max_id), feed_id, unread_only)
+	items, err := item.Filter(int64(max_id), feed_id, unread_only, starred_only)
 	if err != nil {
 		log.Println(err)
 	}
