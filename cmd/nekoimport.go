@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "neko/util"
-	"neko/models/feed"
+	"github.com/adammathes/neko/models/feed"
 	"fmt"
 	"io/ioutil"
 	"log"

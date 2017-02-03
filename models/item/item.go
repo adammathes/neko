@@ -3,8 +3,7 @@ package item
 import (
 	"fmt"
 	"log"
-	"neko/models"
-	//	"database/sql"
+	"github.com/adammathes/neko/models"
 	"github.com/microcosm-cc/bluemonday"
 )
 

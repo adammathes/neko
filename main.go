@@ -1,25 +1,21 @@
 package main
 
 import (
-	"os"
-	"neko/config"
-	"neko/models"
-	"neko/models/feed"
-	"neko/crawler"
-	"neko/importer"
 	"fmt"
-	// "io/ioutil"
+	"github.com/adammathes/neko/config"
+	"github.com/adammathes/neko/crawler"
+	"github.com/adammathes/neko/importer"
+	"github.com/adammathes/neko/models"
+	"github.com/adammathes/neko/models/feed"
+	"github.com/adammathes/neko/web"
 	"log"
-	// "neko/models/item"
-	// "neko/util"
-	"neko/web"
+	"os"
 )
 
 func main() {
-
-	// FIX
+	// TODO: change this
 	config.Read("./config.json")
-	
+
 	models.InitDB(config.Config.DBServer)
 	if len(os.Args) < 2 {
 		fmt.Printf("usage: neko [web|addfeed|crawl]\n")
@@ -42,7 +38,6 @@ func main() {
 	}
 }
 
-
 func addFeed() {
 	if len(os.Args) < 2 {
 		log.Fatal("need a valid url")
@@ -56,7 +51,6 @@ func importLegacy() {
 	log.Printf("importing json file from: %s", json_file)
 	importer.ImportJSON(json_file)
 }
-
 
 func crawl() {
 	crawler.Crawl()

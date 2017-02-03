@@ -2,7 +2,7 @@ package crawler
 
 import (
 	"log"
-	"neko/models/feed"
+	"github.com/adammathes/neko/models/feed"
 	"neko/models/item"
 	"net/http"
 	"time"

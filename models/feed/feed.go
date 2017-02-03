@@ -2,7 +2,7 @@ package feed
 
 import (
 	"log"
-	"neko/models"
+	"github.com/adammathes/neko/models"
 )
 
 type Feed struct {
