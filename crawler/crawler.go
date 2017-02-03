@@ -3,7 +3,7 @@ package crawler
 import (
 	"log"
 	"github.com/adammathes/neko/models/feed"
-	"neko/models/item"
+	"github.com/adammathes/neko/models/item"
 	"net/http"
 	"time"
     "github.com/mmcdole/gofeed"
