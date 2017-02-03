@@ -1,8 +1,8 @@
 package main
 
 import (
-	"neko/web"
-	_ "neko/util"
+	"github.com/adammathes/neko/web"
+	_ "github.com/adammathes/neko/util"
 )
 
 func main() {	
