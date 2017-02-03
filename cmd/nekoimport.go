@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "neko/util"
+	_ "github.com/adammathes/neko/models/neko/util"
 	"github.com/adammathes/neko/models/feed"
 	"fmt"
 	"io/ioutil"
