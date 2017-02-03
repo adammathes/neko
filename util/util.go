@@ -1,8 +1,8 @@
 package util
 
 import (
-	"neko/config"
-	"neko/models"
+	"github.com/adammathes/neko/config"
+	"github.com/adammathes/neko/models"
 	"os"
 )
 
