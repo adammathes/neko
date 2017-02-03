@@ -72,8 +72,9 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 			item.Description = encoded
 		}
 
-		item.PublishDate = i.PublishedParsed.Format(time.RFC3339)
-		
+		if(i.PublishedParse != nil) {
+			item.PublishDate = i.PublishedParsed.Format(time.RFC3339)
+		}
 		item.FeedId = f.Id
 		err := item.Create()
 		if err != nil {
