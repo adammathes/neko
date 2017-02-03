@@ -10,15 +10,18 @@ import (
 
 type Item struct {
 	Id          int64  `json:"_id,string,omitempty"`
+
 	Title       string `json:"title"`
 	Url         string `json:"url"`
 	Description string `json:"description"`
-	ReadState   bool   `json:"read"`
-	Starred     bool   `json:"starred"`
-	FeedId      int64
 	PublishDate string `json:"publish_date"`
+
+	FeedId      int64
 	FeedTitle   string `json:"feed_title"`
 	FeedUrl     string `json:"feed_url"`
+
+	ReadState   bool   `json:"read"`
+	Starred     bool   `json:"starred"`
 }
 
 func (i *Item) Print() {
@@ -29,8 +32,8 @@ func (i *Item) Print() {
 
 func (i *Item) Create() error {
 	res, err := models.DB.Exec(`INSERT INTO 
-                                item(title, url, description, feed_id)
-                                VALUES(?, ?, ?, ?)`, i.Title, i.Url, i.Description, i.FeedId)
+                                item(title, url, description, publish_date, feed_id)
+                                VALUES(?, ?, ?, ?, ?)`, i.Title, i.Url, i.Description, i.PublishDate, i.FeedId)
 	if err != nil {
 		return err
 	}

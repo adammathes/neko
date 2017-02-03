@@ -36,7 +36,7 @@
       <h2><a target="_blank" class="i" id="i_${item_id}" href="${item.url}">${item.title }</a> 
         <span class={{if item.starred}}"unstar"{{else}}"star"{{/if}}>★</span></h2>
       <p class="dateline" style="clear: both;">
-        ${ item.date } from <a href="${item.feed_url}">${item.feed_title}</a>
+        ${ item.publish_date } from <a href="${item.feed_url}">${item.feed_title}</a>
       </p>
       <div class="description">{{html item.description}}</div>      
     </script>
