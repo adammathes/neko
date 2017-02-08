@@ -6,8 +6,8 @@ import (
 	//"fmt"
 	"io"
 	"log"
-	"github.com/adammathes/neko/models/feed"
-	"github.com/adammathes/neko/models/item"
+	"adammathes.com/neko/models/feed"
+	"adammathes.com/neko/models/item"
 	"os"
 )
 

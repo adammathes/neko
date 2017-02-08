@@ -3,7 +3,7 @@ package item
 import (
 	"fmt"
 	"log"
-	"github.com/adammathes/neko/models"
+	"adammathes.com/neko/models"
 	"github.com/microcosm-cc/bluemonday"
 )
 

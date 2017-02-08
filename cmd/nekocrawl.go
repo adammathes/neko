@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/adammathes/neko/crawler"
-	_ "github.com/adammathes/neko/util"
+	"adammathes.com/neko/crawler"
+	_ "adammathes.com/neko/util"
 )
 
 func main() {

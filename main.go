@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/adammathes/neko/config"
-	"github.com/adammathes/neko/crawler"
-	"github.com/adammathes/neko/importer"
-	"github.com/adammathes/neko/models"
-	"github.com/adammathes/neko/models/feed"
-	"github.com/adammathes/neko/web"
+	"adammathes.com/neko/config"
+	"adammathes.com/neko/crawler"
+	"adammathes.com/neko/importer"
+	"adammathes.com/neko/models"
+	"adammathes.com/neko/models/feed"
+	"adammathes.com/neko/web"
 	"log"
 	"os"
 )

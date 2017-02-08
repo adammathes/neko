@@ -1,8 +1,8 @@
 package main
 
 import (
-	_ "github.com/adammathes/neko/util"
-	"github.com/adammathes/neko/models/feed"
+	_ "adammathes.com/neko/util"
+	"adammathes.com/neko/models/feed"
 	"fmt"
 	"io/ioutil"
 	"log"
