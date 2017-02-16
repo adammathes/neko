@@ -47,11 +47,11 @@ Postgresql support is left as an exercise for the reader to implement and send a
     
 ### Get neko code
 
-    $ go get github.com/adammathes/neko 
+    $ go get adammathes.com/neko 
 
 ### Get dependencies
 
-    $ cd $GOPATH/src/github.com/adammathes/neko  
+    $ cd $GOPATH/src/adammathes.com/neko  
     $ make deps  
 
 or...
@@ -71,11 +71,11 @@ Also there's a Makefile there so a simple "make" should work. Maybe? Makefiles a
 
 ### Create MySQL table and user
 
-    $ msyqladmin -uroot -p create neko  
+    $ mysqladmin -uroot -p create neko  
     $ mysql -uroot -p neko < init.sql  
     $ echo "probably a good idea to make a limited privilege user"  
     $ mysql -uroot -p neko  
-    CREATE USER 'neko'@'localhost' identified by 'password' yourgreatpasswordhere;  
+    CREATE USER 'neko'@'localhost' identified by 'yourawesomepasswordgoeshere';  
     GRANT ALL PRIVILEGES ON neko.* TO 'neko'@'localhost';  
        
 ### Configuration 
