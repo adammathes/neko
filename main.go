@@ -21,7 +21,7 @@ func main() {
 	flag.StringVar(&newFeed, "add", "", "add feed `http://example.com/rss.xml`")
 	flag.Parse()
 
-	if !update && !serve {
+	if !update && !serve && newFeed == ""{
 		flag.Usage()
 		return 
 	}

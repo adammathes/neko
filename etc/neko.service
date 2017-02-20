@@ -1,0 +1,12 @@
+# neko rss reader
+
+[Unit]
+Description=neko
+After=mysql.service
+
+[Service]
+User=nobody
+ExecStart=neko -serve -c /etc/neko.config
+
+[Install]
+WantedBy=multi-user.target
