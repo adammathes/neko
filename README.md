@@ -19,7 +19,7 @@ This is not very easy to use/setup/ yet. Sorry! Consider it WIP, pull requests f
       * **j** - next item
       * **k** - previous item
       * that's all you should ever need
-   * automatically marks items read in an infinite stream of neve-rending content (until you run out of content and it ends)
+   * automatically marks items read in an infinite stream of never-ending content (until you run out of content and it ends)
    
 ## Installation
 
