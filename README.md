@@ -66,7 +66,7 @@ The configuration is JSON which was probably not a good idea.
 | name         | value                                            | example        |
 |--------------|--------------------------------------------------|----------------|
 | `db`         | mysql database connection string                 | root:@tcp(127.0.0.1:3306)/neko |
-| `web`        | web address/port to bind to |                    | 127.0.0.0.1:4994 |
+| `web`        | web address/port to bind to                      | 127.0.0.0.1:4994 |
 | `username`   | username for single user auth                    | user
 | `password`   | plaintext -- will be encrypted in client cookie  | notagoodpassword    |
 | `static_dir` | absolute path of the static files                |/home/user/go/src/adammathes.com/neko/static/|
@@ -91,8 +91,10 @@ This should fetch, download, parse, and store in the database your feeds.
 ### Run web server
 
     $ neko -serve
+    
+UI should now be available at the address in your `web` configuration setting.
  
-## Running Continuously
+## Operationalize
 
 ### Crawl Regularly Via Cron
 
@@ -102,11 +104,9 @@ Depending on your binaries/configs something like --
 
 -- should crawl regularly on the hour in cron.
 
-### Server
+### Server as Daemon
 
-Sorry it's 2017 and there are like a bajillion incompatible ways to do this on *nix-alikes and it's ridiculous so I'm probably just going to give up on Linux and use OpenBSD so just run it in tmux or something I guess? I mean, set up an init script with a minimal privileged user. Whatever. UNIX is great, have fun.
-
-There's an example configuration for systemd + nginx in etc in this repo.
+There's an example configuration for systemd in etc in this repo that should work for modern Linux systems on systemd.
 
 ## TODO
 
