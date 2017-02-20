@@ -1,57 +1,42 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"adammathes.com/neko/config"
-	"adammathes.com/neko/crawler"
-	"adammathes.com/neko/importer"
+	"adammathes.com/neko/crawler"	
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/web"
 	"log"
-	"os"
 )
 
 func main() {
-	// TODO: change this
-	config.Read("./config.json")
+	var serve, update bool
+	var configFile, newFeed string
+	
+	flag.StringVar(&configFile, "c", "config.json", "`configuration` file")
+	flag.BoolVar(&update, "update", false, "update items by fetching feeds")
+	flag.BoolVar(&serve, "serve", false, "run http server")
 
-	models.InitDB(config.Config.DBServer)
-	if len(os.Args) < 2 {
-		fmt.Printf("usage: neko [web|addfeed|crawl]\n")
-		fmt.Printf("addfeed <url> -- add a new feed from <url>\n")
-		return
+	flag.StringVar(&newFeed, "add", "", "add feed `http://example.com/rss.xml`")
+	flag.Parse()
+
+	if !update && !serve {
+		flag.Usage()
+		return 
 	}
-	cmd := os.Args[1]
-	switch cmd {
-	case "web":
+
+	config.Read(configFile)
+	models.InitDB(config.Config.DBServer)
+
+	if newFeed != "" {
+		feed.NewFeed(newFeed)
+	}
+	if serve {
 		log.Printf("starting web server at %s", config.Config.WebServer)
 		web.Serve()
-	case "addfeed":
-		addFeed()
-	case "crawl":
-		crawl()
-	case "import":
-		importLegacy()
-	default:
-		panic("not a valid command")
 	}
-}
-
-func addFeed() {
-	if len(os.Args) < 2 {
-		log.Fatal("need a valid url")
-	}
-	url := os.Args[2]
-	feed.NewFeed(url)
-}
-
-func importLegacy() {
-	json_file := os.Args[2]
-	log.Printf("importing json file from: %s", json_file)
-	importer.ImportJSON(json_file)
-}
-
-func crawl() {
-	crawler.Crawl()
+	if update {
+		crawler.Crawl()
+	}	
 }

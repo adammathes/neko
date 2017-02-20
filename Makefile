@@ -8,10 +8,6 @@ default: $(BINARIES)
 
 $(BINARIES): $(SOURCES)
 	go build
-	go build cmd/nekoweb.go
-	go build cmd/nekocrawl.go
-	go build cmd/nekoimport.go
-
 
 .PHONY: deps run
 
@@ -19,4 +15,4 @@ $(BINARIES): $(SOURCES)
 deps:
 	go get $(DEPS)
 run:
-	./nekoweb config.json
+	./neko -update -serve

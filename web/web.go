@@ -1,19 +1,20 @@
 package web
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
-	"net/http"
-	"strconv"
+	"encoding/json"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"log"
+	"net/http"
+	"path"
+	"strconv"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "static/ui.html")
+	http.ServeFile(w, r, staticFilePath("ui.html"))
 }
 
 func streamHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +41,7 @@ func streamHandler(w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("starred") != "" {
 		starred_only = true
 	}
-	
+
 	var items []*item.Item
 	items, err := item.Filter(int64(max_id), feed_id, unread_only, starred_only)
 	if err != nil {
@@ -101,39 +102,39 @@ func feedHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 var AuthCookie = "auth"
-var SecondsInAYear = 60*60*24*365
+var SecondsInAYear = 60 * 60 * 24 * 365
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		http.ServeFile(w, r, "static/login.html")
+		http.ServeFile(w, r, staticFilePath("login.html"))
 	case "POST":
-		password := r.FormValue("password")	
+		password := r.FormValue("password")
 		if password == config.Config.DigestPassword {
-			v,_ := bcrypt.GenerateFromPassword([]byte(password), 0)
-			c := http.Cookie{ Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly:false }
+			v, _ := bcrypt.GenerateFromPassword([]byte(password), 0)
+			c := http.Cookie{Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly: false}
 			http.SetCookie(w, &c)
 			http.Redirect(w, r, "/", 307)
 		} else {
 			http.Error(w, "bad login", 401)
-		}		
+		}
 	default:
 		http.Error(w, "nope", 500)
 	}
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
-	c := http.Cookie{ Name: AuthCookie, MaxAge: 0, Path: "/", HttpOnly:false }
+	c := http.Cookie{Name: AuthCookie, MaxAge: 0, Path: "/", HttpOnly: false}
 	http.SetCookie(w, &c)
 	fmt.Fprintf(w, "you are logged out")
 }
 
 func Authenticated(r *http.Request) bool {
-	pc,err := r.Cookie("auth")
+	pc, err := r.Cookie("auth")
 	if err != nil {
 		return false
 	}
-	err = bcrypt.CompareHashAndPassword( []byte(pc.Value), []byte(config.Config.DigestPassword) )
+	err = bcrypt.CompareHashAndPassword([]byte(pc.Value), []byte(config.Config.DigestPassword))
 	if err == nil {
 		return true
 	}
@@ -151,7 +152,7 @@ func AuthWrap(wrapped http.HandlerFunc) http.HandlerFunc {
 }
 
 func Serve() {
-	fs := http.FileServer(http.Dir("static"))
+	fs := http.FileServer(http.Dir(config.Config.StaticDir))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	http.HandleFunc("/stream/", AuthWrap(streamHandler))
@@ -163,6 +164,11 @@ func Serve() {
 
 	http.HandleFunc("/", AuthWrap(indexHandler))
 
-
 	http.ListenAndServe(config.Config.WebServer, nil)
+}
+
+// given a path, prepend config.Config.StaticDir
+// TODO: compile these into the binary to remove dependency on the files
+func staticFilePath(p string) string {
+	return path.Join(config.Config.StaticDir, p)
 }

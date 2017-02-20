@@ -7,11 +7,11 @@ import (
 )
 
 type Settings struct {
-	DBServer       string
-	WebServer      string
-	Username       string
-	Realm          string
-	DigestPassword string
+	DBServer       string `json:"db"`
+	WebServer      string `json:"web"`
+	Username       string `json:"username"`
+	DigestPassword string `json:"password"`
+	StaticDir      string `json:"static_dir"`
 }
 
 var Config Settings
@@ -19,11 +19,10 @@ var Config Settings
 func Read(filename string) {
 	file, e := ioutil.ReadFile(filename)
 	if e != nil {
-		log.Fatal("Can not read config file", e)
+		log.Fatal("Can not read config file\n", e)
 	}
-	
 	e = json.Unmarshal(file, &Config)
 	if e != nil {
-		log.Fatal("Config read error", e)
+		log.Fatal("Config read error\n", e)
 	}
 }
