@@ -1,6 +1,9 @@
 # Neko
 
-Simple self-hosted, single user RSS reader focused on efficiency and simplicity. Written in Go with a simple javascript ui frontend.
+
+`neko` is a self-hosted, rss news reader focused on simplicity and efficiency.
+
+Backend is written in `Go` and there is a simple javascript frontend and cat ears.
 
 *the cat ears are in your mind*
 
@@ -25,9 +28,8 @@ This is not very easy to use/setup/ yet. Sorry! Consider it WIP, pull requests f
 
 ### Prerequesites 
 
-[Go](https://golang.org)
-
-[MySQL](https://dev.mysql.com) or a drop-in replacement like [MariaDB](https://mariadb.com)
+   * [Go](https://golang.org)
+   * [MySQL](https://dev.mysql.com) or a drop-in replacement like [MariaDB](https://mariadb.com)
 
 PostgreSQL support is left as an exercise for the reader to implement and send a pull request for.
 
