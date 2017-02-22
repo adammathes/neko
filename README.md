@@ -1,7 +1,7 @@
 # Neko
 
 
-`neko` is a self-hosted, rss news reader focused on simplicity and efficiency.
+`neko` is a self-hosted, rss reader focused on simplicity and efficiency.
 
 Backend is written in `Go` and there is a simple javascript frontend and cat ears.
 
