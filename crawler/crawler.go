@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
     "github.com/mmcdole/gofeed"
+	"adammathes.com/neko/vlog"
 )
 
 
@@ -19,12 +20,12 @@ func Crawl() {
 		log.Fatal(err)
 	}
 	for _, f := range feeds {
-		log.Printf("crawling %s", f.Url)
+		vlog.Printf("crawling %s\n", f.Url)
 		go CrawlFeed(f, ch)
 	}
 
 	for i := 0; i < len(feeds); i++ {
-		log.Println(<-ch)
+		vlog.Println(<-ch)
 	}
 }
 
@@ -42,8 +43,8 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 
 	feed, err := fp.ParseURL(f.Url)
 	if err != nil {
-		log.Print(err)
-		ch <- "failed to fetch and parse for " + f.Url
+		vlog.Println(err)
+		ch <- "failed to fetch and parse for " + f.Url + "\n"
 		return
 	}
 
@@ -51,7 +52,7 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 	f.Update()
 
 	for _, i := range feed.Items {
-		log.Printf("storing item: %s", i.Title)
+		vlog.Printf("storing item: %s", i.Link)
 		var item item.Item
 		item.Title = i.Title
 		item.Url = i.Link
@@ -81,8 +82,8 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 		item.FeedId = f.Id
 		err := item.Create()
 		if err != nil {
-			log.Println(err)
+			vlog.Println(err)
 		}
 	}
-	ch <- "successfully crawled " + f.Url
+	ch <- "successfully crawled " + f.Url + "\n"
 }

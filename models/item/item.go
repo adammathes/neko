@@ -115,8 +115,15 @@ func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([
 			log.Println(err)
 			return nil, err
 		}
+		
+		// sanitize all fields from external input
+		// should do this at ingest time, probably, for efficiency
+		// but still may need to adjust rules
+		i.Title = p.Sanitize(i.Title)
 		i.Description = p.Sanitize(i.Description)
-		// TODO: sanitize other fields
+		i.Url = p.Sanitize(i.Url)
+		i.FeedTitle = p.Sanitize(i.FeedTitle)
+		i.FeedUrl = p.Sanitize(i.FeedUrl)
 		items = append(items, i)
 	}
 	if err = rows.Err(); err != nil {
