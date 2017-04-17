@@ -4,6 +4,7 @@ import (
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
+	"adammathes.com/neko/crawler"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
@@ -88,6 +89,11 @@ func feedHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
 		feed.NewFeed(f.Url)
+		f.ByUrl(f.Url)
+		ch := make(chan string)
+		// log.Println("crawling")
+		crawler.CrawlFeed(&f, ch)
+		log.Println(<-ch)
 	case "PUT":
 		f.Update()
 	case "DELETE":
