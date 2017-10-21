@@ -1,8 +1,8 @@
 package feed
 
 import (
-	"log"
 	"adammathes.com/neko/models"
+	"log"
 )
 
 type Feed struct {
