@@ -158,6 +158,10 @@ pre {
     color: black;
 }
 
+.full {
+    cursor: pointer;
+}
+
 .star {
     color: black;
     cursor: pointer;

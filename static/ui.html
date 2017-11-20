@@ -37,14 +37,18 @@
         <span class={{if item.starred}}"unstar"{{else}}"star"{{/if}}>★</span></h2>
       <p class="dateline" style="clear: both;">
         ${ item.publish_date } from <a href="${item.feed_url}">${item.feed_title}</a>
-      </p>
-      <div class="description">{{html item.description}}</div>      
+    </p>
 
-      <h3>full content</h3>
+      {{if item.header_image}}
       <div class="img"><img src="${item.header_image}" /></div>
+      {{/if}}
+      <div class="description">{{html item.description}}
+      <p class="full">⫸</p>
+      </div>
+      {{if item.full}}
       <div class="description">{{html item.full_content}}</div>      
-
-      </script>
+      {{/if}}      
+    </script>
 
     <script id="tag_template" type="text/jqtmp">
       ${tag.name} ${tag.unread}

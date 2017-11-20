@@ -203,6 +203,10 @@ var Item = Backbone.Model.extend({
 
     unstar: function() {
         this.set({'starred': false});
+    },
+    
+    full: function() {
+        this.set({'full': true});
     }
 
 });
@@ -291,6 +295,7 @@ var ItemView = Backbone.View.extend({
 	events: {
         "click .star": "star",
         "click .unstar": "unstar",
+        "click .full": "full",
     },
 	
 	initialize: function() {
@@ -305,6 +310,11 @@ var ItemView = Backbone.View.extend({
 
     unstar: function() {
         this.model.unstar();
+        this.render();
+    },
+
+    full: function() {
+        this.model.full();
         this.render();
     },
 
