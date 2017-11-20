@@ -39,7 +39,12 @@
         ${ item.publish_date } from <a href="${item.feed_url}">${item.feed_title}</a>
       </p>
       <div class="description">{{html item.description}}</div>      
-    </script>
+
+      <h3>full content</h3>
+      <div class="img"><img src="${item.header_image}" /></div>
+      <div class="description">{{html item.full_content}}</div>      
+
+      </script>
 
     <script id="tag_template" type="text/jqtmp">
       ${tag.name} ${tag.unread}

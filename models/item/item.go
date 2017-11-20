@@ -1,26 +1,32 @@
 package item
 
 import (
-	"fmt"
-	"log"
 	"adammathes.com/neko/models"
+	"fmt"
+	"github.com/advancedlogic/GoOse"
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/russross/blackfriday"
+	"log"
 )
 
 type Item struct {
-	Id          int64  `json:"_id,string,omitempty"`
+	Id int64 `json:"_id,string,omitempty"`
 
-	Title       string `json:"title"`
-	Url         string `json:"url"`
+	Title string `json:"title"`
+	Url   string `json:"url"`
+
 	Description string `json:"description"`
 	PublishDate string `json:"publish_date"`
 
-	FeedId      int64
-	FeedTitle   string `json:"feed_title"`
-	FeedUrl     string `json:"feed_url"`
+	FeedId    int64
+	FeedTitle string `json:"feed_title"`
+	FeedUrl   string `json:"feed_url"`
 
-	ReadState   bool   `json:"read"`
-	Starred     bool   `json:"starred"`
+	ReadState bool `json:"read"`
+	Starred   bool `json:"starred"`
+
+	FullContent string `json:"full_content"`
+	HeaderImage string `json:"header_image"`
 }
 
 func (i *Item) Print() {
@@ -61,12 +67,34 @@ func (i *Item) FullSave() {
 	}
 }
 
+func (i *Item) GetFullContent() {
+	g := goose.New()
+	article, err := g.ExtractFromURL(i.Url)
+	var md, img string
+	md = ""
+	img = ""
+	if err != nil {
+		log.Println(err)
+	} else {
+		md = string(blackfriday.MarkdownCommon([]byte(article.CleanedText)))
+		img = article.TopImage
+	}
+
+	_, err = models.DB.Exec(`UPDATE item
+                              SET full_content=?, header_image=?
+                              WHERE id=?`, md, img, i.Id)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([]*Item, error) {
 
 	var args []interface{}
 
 	query := `SELECT item.id, item.title, item.url, item.description, 
                      item.read_state, item.starred, item.publish_date,
+                     item.full_content, item.header_image,
                      feed.url, feed.title
               FROM item,feed 
               WHERE item.feed_id=feed.id  `
@@ -89,7 +117,6 @@ func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([
 		query = query + " AND item.starred=1 "
 	}
 
-	
 	query = query + "ORDER BY item.id DESC LIMIT 15"
 	// log.Println(query)
 	// log.Println(args...)
@@ -106,16 +133,15 @@ func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([
 	p.AllowAttrs("href").OnElements("a")
 	p.AllowAttrs("src", "alt").OnElements("img")
 
-	
 	items := make([]*Item, 0)
 	for rows.Next() {
 		i := new(Item)
-		err := rows.Scan(&i.Id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FeedUrl, &i.FeedTitle)
+		err := rows.Scan(&i.Id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FullContent, &i.HeaderImage, &i.FeedUrl, &i.FeedTitle)
 		if err != nil {
 			log.Println(err)
 			return nil, err
 		}
-		
+
 		// sanitize all fields from external input
 		// should do this at ingest time, probably, for efficiency
 		// but still may need to adjust rules
@@ -124,6 +150,7 @@ func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([
 		i.Url = p.Sanitize(i.Url)
 		i.FeedTitle = p.Sanitize(i.FeedTitle)
 		i.FeedUrl = p.Sanitize(i.FeedUrl)
+		i.FullContent = p.Sanitize(i.FullContent)
 		items = append(items, i)
 	}
 	if err = rows.Err(); err != nil {

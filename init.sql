@@ -17,6 +17,7 @@ CREATE TABLE item (
   title TEXT,
   url VARCHAR(255) NOT NULL,
   description TEXT,
+  full_content TEXT,
   publish_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   read_state BOOLEAN DEFAULT FALSE NOT NULL,
   starred BOOLEAN DEFAULT FALSE NOT NULL,
