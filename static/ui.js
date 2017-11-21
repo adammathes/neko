@@ -109,10 +109,17 @@ var AppModel =  Backbone.Model.extend({
     },
 
     star: function() {
-	    if(this.get('selectedIndex') > 0) {
+	    if(this.get('selectedIndex') >= 0) {
             App.items.at(this.get('selectedIndex')).toggleStar();
         }
+    },
+
+    full: function() {
+	    if(this.get('selectedIndex') >= 0) {
+            App.items.at(this.get('selectedIndex')).full();
+        }
     }
+
 });
 var App = new AppModel();
 
@@ -206,7 +213,7 @@ var Item = Backbone.Model.extend({
     },
     
     full: function() {
-        this.set({'full': true});
+        this.set({'full': !(this.get('full'))} );
     }
 
 });
@@ -544,7 +551,10 @@ function boot() {
 	        event.preventDefault();
             App.star();            
         }
-        
+        if (event.which == 70) {
+	        event.preventDefault();
+            App.full();            
+        }
     });
 
     App.boot();

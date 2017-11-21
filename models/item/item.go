@@ -70,15 +70,32 @@ func (i *Item) FullSave() {
 func (i *Item) GetFullContent() {
 	g := goose.New()
 	article, err := g.ExtractFromURL(i.Url)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	if article.TopNode == nil {
+		return
+	}
+
 	var md, img string
 	md = ""
 	img = ""
+	md = string(blackfriday.MarkdownCommon([]byte(article.CleanedText)))
+
+	ht, err := article.TopNode.Html()
 	if err != nil {
-		log.Println(err)
-	} else {
-		md = string(blackfriday.MarkdownCommon([]byte(article.CleanedText)))
-		img = article.TopImage
+		return
 	}
+
+	p := bluemonday.NewPolicy()
+	p.AllowElements("blockquote", "a", "img", "p", "h1", "h2", "h3", "h4", "b", "i", "em", "strong")
+	p.AllowAttrs("href").OnElements("a")
+	p.AllowAttrs("src", "alt").OnElements("img")
+	md = p.Sanitize(ht)
+
+	img = article.TopImage
 
 	_, err = models.DB.Exec(`UPDATE item
                               SET full_content=?, header_image=?
