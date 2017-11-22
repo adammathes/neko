@@ -35,9 +35,7 @@
     <script id="item_template" type="text/jqtmp">
       <h2><a target="_blank" class="i" id="i_${item_id}" href="${item.url}">${item.title }</a> 
     <span class={{if item.starred}}"unstar"{{else}}"star"{{/if}}>★</span>
-    <span class="full">
-    {{if item.full}}▼{{else}}►{{/if}}
-    </span>
+    <span class="full">{{if item.full}}▼{{else}}►{{/if}}</span>
     </h2>
       <p class="dateline" style="clear: both;">
         ${ item.publish_date } from <a href="${item.feed_url}">${item.feed_title}</a>
