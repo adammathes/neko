@@ -25,7 +25,7 @@ func NewFeed(url string) error {
 }
 
 func All() ([]*Feed, error) {
-	return filter(" ORDER BY URL desc")
+	return filter(" ORDER BY lower(TITLE) asc")
 }
 
 func filter(where string) ([]*Feed, error) {
