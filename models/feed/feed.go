@@ -2,7 +2,9 @@ package feed
 
 import (
 	"adammathes.com/neko/models"
+	"github.com/PuerkitoBio/goquery"
 	"log"
+	"net/http"
 )
 
 type Feed struct {
@@ -13,6 +15,7 @@ type Feed struct {
 }
 
 func NewFeed(url string) error {
+	url = ResolveFeedURL(url)
 	stmt, err := models.DB.Prepare("INSERT INTO feed(url) VALUES(?)")
 	if err != nil {
 		return err
@@ -100,4 +103,57 @@ func (f *Feed) Create() error {
 	f.Id = id
 
 	return nil
+}
+
+// Given a string `url`, return to the best guess of the feed
+func ResolveFeedURL(url string) string {
+	resp, err := http.Get(url)
+	if err != nil {
+		// handle errors better
+		return url
+	}
+
+	// Check content-type header first
+	// if it's feed-ish, just use it
+	contentType := resp.Header["Content-Type"][0]
+	switch contentType {
+
+	case "text/xml":
+		return url
+	case "text/rss+xml":
+		return url
+	case "application/rss+xml":
+		return url
+	case "application/atom+xml":
+		return url
+	}
+
+	// goquery is probably overkill here
+	doc, err := goquery.NewDocument(url)
+	var f string
+
+	// loop over each link element, return first one that is of type rss or atom
+	f = ""
+	doc.Find("link").Each(func(i int, s *goquery.Selection) {
+
+		if f != "" {
+			// we're done
+			return
+		}
+
+		t := s.AttrOr("type", "")
+		h := s.AttrOr("href", "")
+		if t == "application/atom+xml" {
+			f = h
+		}
+		if t == "application/rss+xml" {
+			f = h
+		}
+	})
+
+	// if we have nothing, just return the original url
+	if f == "" {
+		f = url
+	}
+	return f
 }
