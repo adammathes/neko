@@ -2,6 +2,7 @@ package item
 
 import (
 	"adammathes.com/neko/models"
+	"adammathes.com/neko/vlog"
 	"fmt"
 	"github.com/advancedlogic/GoOse"
 	"github.com/microcosm-cc/bluemonday"
@@ -71,7 +72,7 @@ func (i *Item) GetFullContent() {
 	g := goose.New()
 	article, err := g.ExtractFromURL(i.Url)
 	if err != nil {
-		log.Println(err)
+		vlog.Println(err)
 		return
 	}
 
@@ -86,6 +87,7 @@ func (i *Item) GetFullContent() {
 
 	ht, err := article.TopNode.Html()
 	if err != nil {
+		vlog.Println(err)
 		return
 	}
 
@@ -101,7 +103,7 @@ func (i *Item) GetFullContent() {
                               SET full_content=?, header_image=?
                               WHERE id=?`, md, img, i.Id)
 	if err != nil {
-		log.Println(err)
+		vlog.Println(err)
 	}
 }
 
@@ -168,6 +170,7 @@ func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([
 		i.FeedTitle = p.Sanitize(i.FeedTitle)
 		i.FeedUrl = p.Sanitize(i.FeedUrl)
 		i.FullContent = p.Sanitize(i.FullContent)
+		i.HeaderImage = p.Sanitize(i.HeaderImage)
 		items = append(items, i)
 	}
 	if err = rows.Err(); err != nil {
