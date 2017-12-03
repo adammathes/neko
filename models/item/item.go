@@ -171,10 +171,17 @@ func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([
 		i.FeedUrl = p.Sanitize(i.FeedUrl)
 		i.FullContent = p.Sanitize(i.FullContent)
 		i.HeaderImage = p.Sanitize(i.HeaderImage)
+		i.CleanHeaderImage()
 		items = append(items, i)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 	return items, nil
+}
+
+func (i *Item) CleanHeaderImage() {
+	if i.HeaderImage == "https://s0.wp.com/i/blank.jpg" {
+		i.HeaderImage = ""
+	}
 }
