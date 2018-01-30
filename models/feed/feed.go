@@ -155,5 +155,10 @@ func ResolveFeedURL(url string) string {
 	if f == "" {
 		f = url
 	}
+
+	// if we don't start with http[s] its probably relative
+	if f[0] != 'h' {
+		f = url + f
+	}
 	return f
 }
