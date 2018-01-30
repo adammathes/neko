@@ -68,6 +68,14 @@ func (i *Item) FullSave() {
 	}
 }
 
+func filterPolicy() *bluemonday.Policy {
+	p := bluemonday.NewPolicy()
+	p.AllowElements("ul", "ol", "li", "blockquote", "a", "img", "p", "h1", "h2", "h3", "h4", "b", "i", "em", "strong")
+	p.AllowAttrs("href").OnElements("a")
+	p.AllowAttrs("src", "alt").OnElements("img")
+	return p
+}
+
 func (i *Item) GetFullContent() {
 	g := goose.New()
 	article, err := g.ExtractFromURL(i.Url)
@@ -91,10 +99,7 @@ func (i *Item) GetFullContent() {
 		return
 	}
 
-	p := bluemonday.NewPolicy()
-	p.AllowElements("blockquote", "a", "img", "p", "h1", "h2", "h3", "h4", "b", "i", "em", "strong")
-	p.AllowAttrs("href").OnElements("a")
-	p.AllowAttrs("src", "alt").OnElements("img")
+	p := filterPolicy()
 	md = p.Sanitize(ht)
 
 	img = article.TopImage
@@ -147,10 +152,7 @@ func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([
 	}
 	defer rows.Close()
 
-	p := bluemonday.NewPolicy()
-	p.AllowElements("blockquote", "a", "img", "p", "h1", "h2", "h3", "h4", "b", "i", "em", "strong")
-	p.AllowAttrs("href").OnElements("a")
-	p.AllowAttrs("src", "alt").OnElements("img")
+	p := filterPolicy()
 
 	items := make([]*Item, 0)
 	for rows.Next() {
@@ -181,6 +183,7 @@ func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([
 }
 
 func (i *Item) CleanHeaderImage() {
+	// TODO: blacklist of bad imgs
 	if i.HeaderImage == "https://s0.wp.com/i/blank.jpg" {
 		i.HeaderImage = ""
 	}
