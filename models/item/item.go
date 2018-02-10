@@ -70,7 +70,7 @@ func (i *Item) FullSave() {
 
 func filterPolicy() *bluemonday.Policy {
 	p := bluemonday.NewPolicy()
-	p.AllowElements("ul", "ol", "li", "blockquote", "a", "img", "p", "h1", "h2", "h3", "h4", "b", "i", "em", "strong")
+	p.AllowElements("ul", "ol", "li", "blockquote", "a", "img", "p", "h1", "h2", "h3", "h4", "b", "i", "em", "strong", "pre", "code")
 	p.AllowAttrs("href").OnElements("a")
 	p.AllowAttrs("src", "alt").OnElements("img")
 	return p
