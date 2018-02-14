@@ -38,7 +38,7 @@
     <span class="full">{{if item.full}}▼{{else}}►{{/if}}</span>
     </h2>
       <p class="dateline" style="clear: both;">
-        ${ item.publish_date } from <a href="${item.feed_url}">${item.feed_title}</a>
+        <a href="${item.feed_url}">${item.feed_title}</a> | <a href="${item.url}">${item.p_url}</a>
     </p>
       {{if item.header_image}}
       <div class="img"><img src="${item.header_image}" /></div>

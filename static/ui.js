@@ -177,6 +177,10 @@ var Item = Backbone.Model.extend({
     url: '/item/',
 
     initialize: function() {
+        var p_url = this.get('url');
+        p_url = p_url.replace('https://', '');
+        p_url = p_url.replace('http://', '');
+        this.set('p_url', p_url);
         this.bind('change', this.maybeSave);
     },
 

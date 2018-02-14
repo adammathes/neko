@@ -84,6 +84,10 @@ p.dateline {
     color: #ccc;
 }
 
+p.dateline a {
+    color: #ccc;
+}
+
 .item {
     padding: 1rem;
     margin-top: 5rem;
