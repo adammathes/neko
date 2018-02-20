@@ -82,9 +82,10 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 		err := item.Create()
 		if err != nil {
 			vlog.Println(err)
-		} else {
-			item.GetFullContent()
 		}
+		// else {
+		//	item.GetFullContent()
+		//}
 	}
 	ch <- "successfully crawled " + f.Url + "\n"
 }
