@@ -4,7 +4,9 @@ import (
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
 	"adammathes.com/neko/vlog"
+	"fmt"
 	"github.com/mmcdole/gofeed"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -29,6 +31,49 @@ func Crawl() {
 }
 
 /*
+Simple HTTP Get fnx with custom user agent header
+*/
+func GetFeedContent(feedURL string) string {
+
+	c := &http.Client{
+		// give up after 5 seconds
+		Timeout: 5 * time.Second,
+	}
+
+	request, err := http.NewRequest("GET", feedURL, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	userAgent := "neko RSS Crawler +https://github.com/adammathes/neko"
+	request.Header.Set("User-Agent", userAgent)
+	resp, err := c.Do(request)
+
+	if err != nil {
+		return ""
+	}
+
+	if resp != nil {
+		defer func() {
+			ce := resp.Body.Close()
+			if ce != nil {
+				err = ce
+			}
+		}()
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return ""
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return ""
+	}
+	return string(bodyBytes)
+}
+
+/*
  TODO: sanitize input on crawl
 */
 func CrawlFeed(f *feed.Feed, ch chan<- string) {
@@ -40,7 +85,9 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 	fp := gofeed.NewParser()
 	fp.Client = c
 
-	feed, err := fp.ParseURL(f.Url)
+	content := GetFeedContent(f.Url)
+	fmt.Printf("%v", content)
+	feed, err := fp.ParseString(content)
 	if err != nil {
 		vlog.Println(err)
 		ch <- "failed to fetch and parse for " + f.Url + "\n"
