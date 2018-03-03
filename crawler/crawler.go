@@ -4,7 +4,6 @@ import (
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
 	"adammathes.com/neko/vlog"
-	"fmt"
 	"github.com/mmcdole/gofeed"
 	"io/ioutil"
 	"log"
@@ -86,7 +85,6 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 	fp.Client = c
 
 	content := GetFeedContent(f.Url)
-	fmt.Printf("%v", content)
 	feed, err := fp.ParseString(content)
 	if err != nil {
 		vlog.Println(err)
