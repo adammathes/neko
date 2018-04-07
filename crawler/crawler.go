@@ -93,6 +93,7 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 	}
 
 	f.Title = feed.Title
+	f.WebUrl = feed.Link
 	f.Update()
 
 	for _, i := range feed.Items {

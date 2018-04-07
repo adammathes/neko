@@ -8,10 +8,14 @@ import (
 )
 
 type Feed struct {
-	Id    int64  `json:"_id"`
-	Url   string `json:"url"`
-	Title string `json:"title"`
-	// TODO: last_updated scan
+	Id     int64  `json:"_id" xml:"-"`
+	Url    string `json:"url" xml:"xmlUrl,attr"`
+	WebUrl string `json:"web_url" xml:"htmlUrl,attr"`
+	Title  string `json:"title" xml:"text,attr"`
+
+	// for OPML output purposes
+	XMLName string `json:"-" xml:"outline"`
+	Type    string `json:"-" xml:"type,attr"`
 }
 
 func NewFeed(url string) error {
@@ -33,7 +37,7 @@ func All() ([]*Feed, error) {
 
 func filter(where string) ([]*Feed, error) {
 	// todo: add back in title
-	rows, err := models.DB.Query(`SELECT id, url, title
+	rows, err := models.DB.Query(`SELECT id, url, web_url, title
                                   FROM feed ` + where)
 	if err != nil {
 		return nil, err
@@ -43,7 +47,8 @@ func filter(where string) ([]*Feed, error) {
 	feeds := make([]*Feed, 0)
 	for rows.Next() {
 		f := new(Feed)
-		err := rows.Scan(&f.Id, &f.Url, &f.Title)
+		err := rows.Scan(&f.Id, &f.Url, &f.WebUrl, &f.Title)
+		f.Type = "rss"
 		if err != nil {
 			return nil, err
 		}
@@ -69,8 +74,8 @@ func (f *Feed) Update() {
 	}
 
 	models.DB.Query(`UPDATE feed 
-                     SET title=?, url=?
-                     WHERE id=?`, f.Title, f.Url, f.Id)
+                     SET title=?, url=?, web_url=?
+                     WHERE id=?`, f.Title, f.Url, f.WebUrl, f.Id)
 }
 
 func (f *Feed) Delete() {
