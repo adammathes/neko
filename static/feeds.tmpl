@@ -1,0 +1,13 @@
+<html>
+<head>
+<title>neko exported feeds</title>
+</head>
+<body>
+<h1>neko exported feeds</h1>
+<ul>
+{{ range . }}
+<li><a href="{{.WebUrl}}">{{.Title}}</a> | <a href="{{.Url}}">xml</a></li>
+{{ end }}
+</ul>
+</body>
+</html>
