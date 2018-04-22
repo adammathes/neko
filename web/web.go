@@ -2,9 +2,9 @@ package web
 
 import (
 	"adammathes.com/neko/config"
+	"adammathes.com/neko/crawler"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
-	"adammathes.com/neko/crawler"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
@@ -33,6 +33,11 @@ func streamHandler(w http.ResponseWriter, r *http.Request) {
 		feed_id = f.Id
 	}
 
+	category := ""
+	if r.FormValue("tag") != "" {
+		category = r.FormValue("tag")
+	}
+
 	unread_only := true
 	if r.FormValue("read_filter") != "" {
 		unread_only = false
@@ -44,7 +49,7 @@ func streamHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var items []*item.Item
-	items, err := item.Filter(int64(max_id), feed_id, unread_only, starred_only)
+	items, err := item.Filter(int64(max_id), feed_id, category, unread_only, starred_only)
 	if err != nil {
 		log.Println(err)
 	}
@@ -107,6 +112,22 @@ func feedHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func categoryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		categories, err := feed.Categories()
+		if err != nil {
+			log.Println(err)
+		}
+
+		js, err := json.Marshal(categories)
+		if err != nil {
+			log.Println(err)
+		}
+		w.Write(js)
+		return
+	}
+}
+
 var AuthCookie = "auth"
 var SecondsInAYear = 60 * 60 * 24 * 365
 
@@ -164,6 +185,7 @@ func Serve() {
 	http.HandleFunc("/stream/", AuthWrap(streamHandler))
 	http.HandleFunc("/item/", AuthWrap(itemHandler))
 	http.HandleFunc("/feed/", AuthWrap(feedHandler))
+	http.HandleFunc("/tag/", AuthWrap(categoryHandler))
 
 	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/logout/", logoutHandler)

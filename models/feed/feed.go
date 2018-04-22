@@ -8,14 +8,19 @@ import (
 )
 
 type Feed struct {
-	Id     int64  `json:"_id" xml:"-"`
-	Url    string `json:"url" xml:"xmlUrl,attr"`
-	WebUrl string `json:"web_url" xml:"htmlUrl,attr"`
-	Title  string `json:"title" xml:"text,attr"`
+	Id       int64  `json:"_id" xml:"-"`
+	Url      string `json:"url" xml:"xmlUrl,attr"`
+	WebUrl   string `json:"web_url" xml:"htmlUrl,attr"`
+	Title    string `json:"title" xml:"text,attr"`
+	Category string `json:"category"`
 
 	// for OPML output purposes
 	XMLName string `json:"-" xml:"outline"`
 	Type    string `json:"-" xml:"type,attr"`
+}
+
+type Category struct {
+	Title string `json:"title"`
 }
 
 func NewFeed(url string) error {
@@ -37,7 +42,8 @@ func All() ([]*Feed, error) {
 
 func filter(where string) ([]*Feed, error) {
 	// todo: add back in title
-	rows, err := models.DB.Query(`SELECT id, url, web_url, title
+	rows, err := models.DB.Query(`SELECT
+                                  id, url, web_url, title, category
                                   FROM feed ` + where)
 	if err != nil {
 		return nil, err
@@ -47,7 +53,7 @@ func filter(where string) ([]*Feed, error) {
 	feeds := make([]*Feed, 0)
 	for rows.Next() {
 		f := new(Feed)
-		err := rows.Scan(&f.Id, &f.Url, &f.WebUrl, &f.Title)
+		err := rows.Scan(&f.Id, &f.Url, &f.WebUrl, &f.Title, &f.Category)
 		f.Type = "rss"
 		if err != nil {
 			return nil, err
@@ -74,23 +80,23 @@ func (f *Feed) Update() {
 	}
 
 	models.DB.Query(`UPDATE feed 
-                     SET title=?, url=?, web_url=?
-                     WHERE id=?`, f.Title, f.Url, f.WebUrl, f.Id)
+                     SET title=?, url=?, web_url=?, category=?
+                     WHERE id=?`, f.Title, f.Url, f.WebUrl, f.Category, f.Id)
 }
 
 func (f *Feed) Delete() {
 	log.Println("lets delete some shiteeee")
 	_, err := models.DB.Exec(`DELETE FROM feed 
-                                  WHERE id=?`, f.Id)
+                              WHERE id=?`, f.Id)
 	if err != nil {
 		log.Println(err)
 	}
 }
 
 func (f *Feed) ByUrl(url string) error {
-	err := models.DB.QueryRow(`SELECT id, url, title 
+	err := models.DB.QueryRow(`SELECT id, url, title, category
                                FROM feed
-                               WHERE url = ?`, url).Scan(&f.Id, &f.Url, &f.Title)
+                               WHERE url = ?`, url).Scan(&f.Id, &f.Url, &f.Title, &f.Category)
 	if err != nil {
 		return err
 	}
@@ -166,4 +172,30 @@ func ResolveFeedURL(url string) string {
 		f = url + f
 	}
 	return f
+}
+
+func Categories() ([]*Category, error) {
+	rows, err := models.DB.Query(`SELECT
+                                  DISTINCT category
+                                  FROM feed 
+                                  WHERE category!=""
+                                  ORDER BY lower(category) ASC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	categories := make([]*Category, 0)
+	for rows.Next() {
+		c := new(Category)
+		err := rows.Scan(&c.Title)
+		if err != nil {
+			return nil, err
+		}
+		categories = append(categories, c)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return categories, nil
 }

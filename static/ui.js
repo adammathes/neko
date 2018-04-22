@@ -21,7 +21,7 @@ var AppModel =  Backbone.Model.extend({
 
     boot: function() {
         this.items.boot();
-//        this.tags.boot();
+        this.tags.boot();
         this.feeds.fetch({set: true, remove: false})
         window.setInterval(function() { App.update_read_status() }, 5000);
     },
@@ -239,9 +239,6 @@ var ItemCollection = Backbone.Collection.extend({
 
         App.loading = true;
         url = '/stream/';
-        if(App.tag != undefined) {
-	         url = url + 'tag/' + App.tag + '/';
-        }
         url=url+'?foo=bar'
         if(App.get('searchFilter')) {
             url = url + '&q=' + App.get('searchFilter');
@@ -251,7 +248,10 @@ var ItemCollection = Backbone.Collection.extend({
         }
         if(App.get('starredFilter')) {
             url = url + '&starred=1';
-        }       
+        }
+        if(App.tag != undefined) {
+            url = url + '&tag=' + App.tag;
+        }
         if(App.items.last()) {
              url = url + '&max_id=' + App.items.last().get('_id');
         }
@@ -375,7 +375,7 @@ var TagCollection = Backbone.Collection.extend({
 
     boot: function() {
         var t = this;
-        $.getJSON('/tags/', function(data) {
+        $.getJSON('/tag/', function(data) {
 	        $.each(data, function(i,v) {
                 var tag = new Tag(v);
                 t.add(tag);
@@ -399,13 +399,20 @@ var TagView = Backbone.View.extend({
 	render: function() {
         var h = $.tmpl(templates.tag_template, { 'tag': this.model.toJSON() });
 	    $(this.el).html(h);
-        if(this.model.get('unread')) {
-            $(this.el).addClass('hasunread');
-        }
 	    return this;
 	},
     filterTo: function() {
-        App.tag = this.model.get('name');
+        App.tag = null;
+        if (this.model.get('selected')) {
+            this.model.set('selected', false);
+        }
+        else {
+            App.tags.models.forEach ( function (tag) {
+                tag.set('selected', false);            
+            });
+            this.model.set('selected', true);
+            App.tag = this.model.get('title');
+        }
         App.items.reboot();
     }
 });

@@ -19,9 +19,10 @@ type Item struct {
 	Description string `json:"description"`
 	PublishDate string `json:"publish_date"`
 
-	FeedId    int64
-	FeedTitle string `json:"feed_title"`
-	FeedUrl   string `json:"feed_url"`
+	FeedId       int64
+	FeedTitle    string `json:"feed_title"`
+	FeedUrl      string `json:"feed_url"`
+	FeedCategory string `json:"feed_category"`
 
 	ReadState bool `json:"read"`
 	Starred   bool `json:"starred"`
@@ -112,16 +113,16 @@ func (i *Item) GetFullContent() {
 	}
 }
 
-func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([]*Item, error) {
+func Filter(max_id int64, feed_id int64, category string, unread_only bool, starred_only bool) ([]*Item, error) {
 
 	var args []interface{}
 
 	query := `SELECT item.id, item.title, item.url, item.description, 
                      item.read_state, item.starred, item.publish_date,
                      item.full_content, item.header_image,
-                     feed.url, feed.title
-              FROM item,feed 
-              WHERE item.feed_id=feed.id  `
+                     feed.url, feed.title, feed.category
+              FROM item,feed
+              WHERE item.feed_id=feed.id `
 
 	if max_id != 0 {
 		query = query + "AND item.id < ? "
@@ -131,6 +132,11 @@ func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([
 	if feed_id != 0 {
 		query = query + " AND feed.id=? "
 		args = append(args, feed_id)
+	}
+
+	if category != "" {
+		query = query + " AND feed.category=? "
+		args = append(args, category)
 	}
 
 	if unread_only {
@@ -157,7 +163,7 @@ func Filter(max_id int64, feed_id int64, unread_only bool, starred_only bool) ([
 	items := make([]*Item, 0)
 	for rows.Next() {
 		i := new(Item)
-		err := rows.Scan(&i.Id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FullContent, &i.HeaderImage, &i.FeedUrl, &i.FeedTitle)
+		err := rows.Scan(&i.Id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FullContent, &i.HeaderImage, &i.FeedUrl, &i.FeedTitle, &i.FeedCategory)
 		if err != nil {
 			log.Println(err)
 			return nil, err

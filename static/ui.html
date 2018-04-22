@@ -20,6 +20,10 @@
 
         <div id="controls"></div>
 
+        <h4 onclick="$('#tags').toggle();">Tags</h4>        
+        <ul id="tags" style="display: none;">
+        </ul>
+        
         <h4 onclick="$('#feeds').toggle();">Feeds</h4>        
         <ul id="feeds" style="display: none;">
           <li><a href="/import/">import</a></li>
@@ -39,6 +43,7 @@
     </h2>
       <p class="dateline" style="clear: both;">
         <a href="${item.feed_url}">${item.feed_title}</a> | <a href="${item.url}">${item.p_url}</a>
+        | ${item.feed_category}
     </p>
       {{if item.header_image}}
       <div class="img"><img src="${item.header_image}" /></div>
@@ -53,7 +58,9 @@
     </script>
 
     <script id="tag_template" type="text/jqtmp">
-      ${tag.name} ${tag.unread}
+      {{if tag.selected}}[{{/if}}
+      ${tag.title}
+      {{if tag.selected}}]{{/if}}
     </script>
 
     <script id="feed_template" type="text/jqtmp">
@@ -69,8 +76,6 @@
     </script>
 
     <script id="controls_template" type="text/jqtmp">
-
-      
       <ul>
         <li>
           <a {{if app.unreadFilter}}style="font-weight: bold;"{{/if}} 

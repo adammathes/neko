@@ -1,2 +1,2 @@
-DROP TABLE feed;
 DROP TABLE item;
+DROP TABLE feed;
