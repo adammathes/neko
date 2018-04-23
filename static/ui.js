@@ -488,8 +488,10 @@ var FeedView = Backbone.View.extend({
     },
     edit: function() {
         var cat = window.prompt("Category for this feed?", this.model.get("category"));
-        this.model.set("category", cat);
-        this.model.save();
+        if (cat != null) {
+            this.model.set("category", cat);
+            this.model.save();
+        }
     },
 });
 
