@@ -27,17 +27,42 @@ var AppModel =  Backbone.Model.extend({
     },
 
     filterToFeed: function(feed) {
-        this.set('feedFilter', feed);
         if (feed.get('selected')) {
             feed.set('selected', false);
+            this.set('feedFilter', undefined);
         }
         else {
+            App.tags.models.forEach ( function (t) {
+                t.set('selected', false);            
+            });
+            App.tag = null;
             App.feeds.models.forEach ( function (f) {
                 f.set('selected', false);            
             });
+
+            this.set('feedFilter', feed);
             feed.set('selected', true);
         }
         this.items.reboot();
+    },
+
+    filterToTag: function(tag) {
+        App.tag = null;
+        if (tag.get('selected')) {
+            tag.set('selected', false);
+        }
+        else {
+            App.tags.models.forEach ( function (t) {
+                t.set('selected', false); 
+            });
+            App.feeds.models.forEach ( function (f) {
+                f.set('selected', false);         
+            });
+            this.set('feedFilter', undefined);
+            tag.set('selected', true);
+            App.tag = tag.get('title');
+        }
+        App.items.reboot();
     },
 
     filterToStarred: function() {
@@ -411,18 +436,7 @@ var TagView = Backbone.View.extend({
 	    return this;
 	},
     filterTo: function() {
-        App.tag = null;
-        if (this.model.get('selected')) {
-            this.model.set('selected', false);
-        }
-        else {
-            App.tags.models.forEach ( function (tag) {
-                tag.set('selected', false);            
-            });
-            this.model.set('selected', true);
-            App.tag = this.model.get('title');
-        }
-        App.items.reboot();
+        App.filterToTag(this.model);
     }
 });
 
