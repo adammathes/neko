@@ -117,11 +117,21 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 
 	var args []interface{}
 
-	query := `SELECT item.id, item.feed_id, item.title, item.url, item.description, 
+	// INNER JOIN MACHINE GOOO
+
+	// select STRAIGHT_JOIN item.*, feed.*
+	// FROM item
+	// INNER JOIN feed ON feed.id=item.feed_id
+	// WHERE item.read_state=false and feed.category='news'
+	// ORDER BY item.id desc
+	// 	LIMIT 15;
+
+	query := `SELECT STRAIGHT_JOIN item.id, item.feed_id, item.title, item.url, item.description, 
                      item.read_state, item.starred, item.publish_date,
                      item.full_content, item.header_image,
                      feed.url, feed.title, feed.category
-              FROM item,feed
+              FROM item
+              INNER JOIN feed ON feed.id=item.feed_id
               WHERE item.feed_id=feed.id `
 
 	if max_id != 0 {
