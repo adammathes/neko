@@ -26,13 +26,12 @@
         
         <h4 onclick="$('#feeds').toggle();">Feeds</h4>        
         <ul id="feeds" style="display: none;">
-          <li><a href="/import/">import</a></li>
         </ul>
 
     </div>
 
    <div id="c">
-      <div id="items">      
+      <div id="items">
       </div>      
     </div>
     
@@ -70,9 +69,14 @@
       {{else}}
       ${feed.url}
       {{/if}}
-      </span>
 
-      <span class="delete" style="color: red;">[X]</span>
+      </span>
+      {{if feed.category}}
+      <i>${feed.category}</i>
+      {{/if}}      
+      <span class="edit">[edit]</span>
+
+      <span class="delete">[x]</span>
     </script>
 
     <script id="controls_template" type="text/jqtmp">

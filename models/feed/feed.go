@@ -85,7 +85,6 @@ func (f *Feed) Update() {
 }
 
 func (f *Feed) Delete() {
-	log.Println("lets delete some shiteeee")
 	_, err := models.DB.Exec(`DELETE FROM feed 
                               WHERE id=?`, f.Id)
 	if err != nil {

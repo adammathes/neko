@@ -465,6 +465,7 @@ var FeedView = Backbone.View.extend({
 	events: {
         "click .txt": "filterTo",
         "click .delete": "del",
+        "click .edit": "edit",
     },
 	initialize: function() {
 	    _.bindAll(this, 'render', 'filterTo', "del");
@@ -480,8 +481,15 @@ var FeedView = Backbone.View.extend({
         App.filterToFeed(this.model);
     },
     del: function() {
-        this.model.destroy();
-        this.$el.remove();
+        if( window.confirm("Unsubscribe from " + this.model.get("url") + "?" ) ) {
+            this.model.destroy();
+            this.$el.remove();
+        }
+    },
+    edit: function() {
+        var cat = window.prompt("Category for this feed?", this.model.get("category"));
+        this.model.set("category", cat);
+        this.model.save();
     },
 });
 
