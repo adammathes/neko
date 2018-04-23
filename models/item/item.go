@@ -117,7 +117,7 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 
 	var args []interface{}
 
-	query := `SELECT item.id, item.title, item.url, item.description, 
+	query := `SELECT item.id, item.feed_id, item.title, item.url, item.description, 
                      item.read_state, item.starred, item.publish_date,
                      item.full_content, item.header_image,
                      feed.url, feed.title, feed.category
@@ -163,7 +163,8 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 	items := make([]*Item, 0)
 	for rows.Next() {
 		i := new(Item)
-		err := rows.Scan(&i.Id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FullContent, &i.HeaderImage, &i.FeedUrl, &i.FeedTitle, &i.FeedCategory)
+		var feed_id int64
+		err := rows.Scan(&i.Id, &feed_id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FullContent, &i.HeaderImage, &i.FeedUrl, &i.FeedTitle, &i.FeedCategory)
 		if err != nil {
 			log.Println(err)
 			return nil, err
