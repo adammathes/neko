@@ -57,12 +57,13 @@
     </script>
 
     <script id="tag_template" type="text/jqtmp">
-      {{if tag.selected}}[{{/if}}
+      {{if tag.selected}}<b>{{/if}}
       ${tag.title}
-      {{if tag.selected}}]{{/if}}
+      {{if tag.selected}}</b>{{/if}}
     </script>
 
     <script id="feed_template" type="text/jqtmp">
+      {{if feed.selected}}<b>{{/if}}
       <span class="txt">
       {{if feed.title}}
       ${feed.title}
@@ -75,8 +76,8 @@
       <i>${feed.category}</i>
       {{/if}}      
       <span class="edit">[edit]</span>
-
       <span class="delete">[x]</span>
+      {{if feed.selected}}</b>{{/if}}
     </script>
 
     <script id="controls_template" type="text/jqtmp">

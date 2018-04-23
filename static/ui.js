@@ -28,6 +28,15 @@ var AppModel =  Backbone.Model.extend({
 
     filterToFeed: function(feed) {
         this.set('feedFilter', feed);
+        if (feed.get('selected')) {
+            feed.set('selected', false);
+        }
+        else {
+            App.feeds.models.forEach ( function (f) {
+                f.set('selected', false);            
+            });
+            feed.set('selected', true);
+        }
         this.items.reboot();
     },
 
