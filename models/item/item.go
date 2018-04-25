@@ -3,11 +3,14 @@ package item
 import (
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/vlog"
+	"encoding/base64"
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/advancedlogic/GoOse"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"log"
+	"strings"
 )
 
 type Item struct {
@@ -176,6 +179,7 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 		// but still may need to adjust rules
 		i.Title = p.Sanitize(i.Title)
 		i.Description = p.Sanitize(i.Description)
+		i.Description = rewriteImages(i.Description)
 		i.Url = p.Sanitize(i.Url)
 		i.FeedTitle = p.Sanitize(i.FeedTitle)
 		i.FeedUrl = p.Sanitize(i.FeedUrl)
@@ -195,4 +199,24 @@ func (i *Item) CleanHeaderImage() {
 	if i.HeaderImage == "https://s0.wp.com/i/blank.jpg" {
 		i.HeaderImage = ""
 	}
+}
+
+func rewriteImages(s string) string {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(s))
+	if err != nil {
+		panic("can not parse doc to rewrite")
+	}
+
+	doc.Find("img").Each(func(i int, img *goquery.Selection) {
+		if src, ok := img.Attr("src"); ok {
+			img.SetAttr("src", proxyURL(src))
+		}
+	})
+
+	output, _ := doc.Html()
+	return output
+}
+
+func proxyURL(url string) string {
+	return "/image/" + base64.URLEncoding.EncodeToString([]byte(url))
 }

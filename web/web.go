@@ -5,9 +5,11 @@ import (
 	"adammathes.com/neko/crawler"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
@@ -128,6 +130,29 @@ func categoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
+	// caching...???
+
+	imgURL := r.URL.String()
+	fmt.Printf("proxying: %s\n", imgURL)
+	decodedURL, err := base64.URLEncoding.DecodeString(imgURL)
+	fmt.Printf("decoded: %s\n", decodedURL)
+
+	resp, err := http.Get(string(decodedURL))
+	if err != nil {
+		http.Error(w, "sorry", 404)
+		return
+	}
+
+	bts, _ := ioutil.ReadAll(resp.Body)
+
+	etag := crypto.HashFromBytes(body)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(bts)
+	return
+}
+
 var AuthCookie = "auth"
 var SecondsInAYear = 60 * 60 * 24 * 365
 
@@ -186,6 +211,7 @@ func Serve() {
 	http.HandleFunc("/item/", AuthWrap(itemHandler))
 	http.HandleFunc("/feed/", AuthWrap(feedHandler))
 	http.HandleFunc("/tag/", AuthWrap(categoryHandler))
+	http.Handle("/image/", http.StripPrefix("/image/", AuthWrap(imageProxyHandler)))
 
 	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/logout/", logoutHandler)
