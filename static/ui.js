@@ -576,10 +576,11 @@ function boot() {
         App.items.reboot();
     });
 
-    $('.logo').on('click', function() {
-        App.set('feedFilter', undefined);
-        App.items.reboot();
-    });
+//    $('.logo').on('click', function() {
+        //        App.set('feedFilter', undefined);
+        //        App.items.reboot();
+        
+//    });
 
     // keyboard shortcuts
     $('body').keydown(function(event) {

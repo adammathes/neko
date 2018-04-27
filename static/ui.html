@@ -11,15 +11,14 @@
       PUBLIC_VERSION = false;
     </script>
     <script src="/static/ui.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width,height=device-height, initial-scale=1, maximum-scale=1" />
   </head>
   <body>
+      <h1 class="logo" onclick="$('#filters').toggle();">neko</h1> 
 
       <div id="filters">
-        <h1 class="logo">neko</h1> 
 
         <div id="controls"></div>
-
         <h4 onclick="$('#tags').toggle();">Tags</h4>        
         <ul id="tags" style="display: none;">
         </ul>
@@ -27,6 +26,7 @@
         <h4 onclick="$('#feeds').toggle();">Feeds</h4>        
         <ul id="feeds" style="display: none;">
         </ul>
+        </div>
 
     </div>
 
