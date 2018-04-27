@@ -81,7 +81,13 @@ func filterPolicy() *bluemonday.Policy {
 	return p
 }
 
+func ItemById(id int64) *Item {
+	items, _ := Filter(0, 0, "", false, false, id)
+	return items[0]
+}
+
 func (i *Item) GetFullContent() {
+	fmt.Printf("fetching from %s\n", i.Url)
 	g := goose.New()
 	article, err := g.ExtractFromURL(i.Url)
 	if err != nil {
@@ -105,9 +111,8 @@ func (i *Item) GetFullContent() {
 	}
 
 	p := filterPolicy()
-	md = p.Sanitize(ht)
-
-	img = article.TopImage
+	i.FullContent = p.Sanitize(ht)
+	i.HeaderImage = article.TopImage
 
 	_, err = models.DB.Exec(`UPDATE item
                               SET full_content=?, header_image=?
@@ -117,7 +122,7 @@ func (i *Item) GetFullContent() {
 	}
 }
 
-func Filter(max_id int64, feed_id int64, category string, unread_only bool, starred_only bool) ([]*Item, error) {
+func Filter(max_id int64, feed_id int64, category string, unread_only bool, starred_only bool, item_id int64) ([]*Item, error) {
 
 	var args []interface{}
 
@@ -148,13 +153,20 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 		query = query + " AND item.read_state=0 "
 	}
 
+	if item_id != 0 {
+		query = query + " AND item.id=? "
+		args = append(args, item_id)
+	}
+
+	// this is kind of dumb, but to keep the logic the same
+	// we kludge it this way for a "by id" select
 	if starred_only {
 		query = query + " AND item.starred=1 "
 	}
 
 	query = query + "ORDER BY item.id DESC LIMIT 15"
-	// log.Println(query)
-	// log.Println(args...)
+	//	log.Println(query)
+	//	log.Println(args...)
 
 	rows, err := models.DB.Query(query, args...)
 	if err != nil {

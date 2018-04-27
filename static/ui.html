@@ -38,11 +38,12 @@
     <script id="item_template" type="text/jqtmp">
       <h2><a target="_blank" class="i" id="i_${item_id}" href="${item.url}">${item.title }</a> 
     <span class={{if item.starred}}"unstar"{{else}}"star"{{/if}}>★</span>
-    <span class="full">{{if item.full}}▼{{else}}►{{/if}}</span>
     </h2>
       <p class="dateline" style="clear: both;">
         <a href="${item.feed_url}">${item.feed_title}</a> | <a href="${item.url}">${item.p_url}</a>
-        | ${item.feed_category}
+    | ${item.feed_category} |
+    <span class="full">{{if item.full}}hide{{else}}scrape{{/if}} full text</span>
+    
     </p>
       {{if item.header_image}}
       <div class="img"><img src="${item.header_image}" /></div>

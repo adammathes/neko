@@ -208,7 +208,7 @@ var ControlsView = Backbone.View.extend({
 
 var Item = Backbone.Model.extend({
     idAttribute: "_id",
-    url: '/item/',
+    url: '/item',
 
     initialize: function() {
         var p_url = this.get('url');
@@ -252,6 +252,16 @@ var Item = Backbone.Model.extend({
     
     full: function() {
         this.set({'full': !(this.get('full'))} );
+        // this should just use this.fetch() but
+        // it kept GETing from /item instead of /item/id
+        // so just hacking this in for now
+
+        if(this.get('full_content') == "") {        
+            $.getJSON('/item/' + this.get('_id'), function(data) {
+                var i = App.items.get(data['_id'])
+                i.set('full_content', data['full_content']);
+            });
+        }
     }
 
 });
@@ -259,6 +269,8 @@ var Item = Backbone.Model.extend({
 
 var ItemCollection = Backbone.Collection.extend({
     model: Item,
+    url: '/item',
+
 	initialize: function() {
 	    _.bindAll(this, 'boot', 'reboot');
     },

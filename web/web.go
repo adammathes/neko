@@ -52,7 +52,7 @@ func streamHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var items []*item.Item
-	items, err := item.Filter(int64(max_id), feed_id, category, unread_only, starred_only)
+	items, err := item.Filter(int64(max_id), feed_id, category, unread_only, starred_only, 0)
 	if err != nil {
 		log.Println(err)
 	}
@@ -63,12 +63,17 @@ func streamHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func itemHandler(w http.ResponseWriter, r *http.Request) {
-	var i item.Item
-	err := json.NewDecoder(r.Body).Decode(&i)
-	if err != nil {
-		log.Println(err)
-	} else {
-		i.Save()
+	switch r.Method {
+	case "PUT":
+		var i item.Item
+		err := json.NewDecoder(r.Body).Decode(&i)
+		if err != nil {
+			log.Println(err)
+		} else {
+			i.Save()
+		}
+	case "GET":
+		fullTextHandler(w, r)
 	}
 	defer r.Body.Close()
 }
@@ -181,6 +186,31 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func fullTextHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("request: %v\n\n", r)
+
+	fmt.Printf("url string: %s\n\n", r.URL.String())
+
+	itemID, _ := strconv.Atoi(r.URL.String())
+	//	fmt.Printf("item id: %v\n\n", itemID)
+
+	if itemID == 0 {
+		fmt.Printf("wah wah wah\n")
+		return
+	}
+
+	i := item.ItemById(int64(itemID))
+	// fmt.Println("item fetched: %v\n\n", i)
+
+	if i.FullContent == "" {
+		i.GetFullContent()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	js, _ := json.Marshal(i)
+	w.Write(js)
+}
+
 var AuthCookie = "auth"
 var SecondsInAYear = 60 * 60 * 24 * 365
 
@@ -236,7 +266,10 @@ func Serve() {
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	http.HandleFunc("/stream/", AuthWrap(streamHandler))
-	http.HandleFunc("/item/", AuthWrap(itemHandler))
+
+	//	http.HandleFunc("/item/", AuthWrap(itemHandler))
+	http.Handle("/item/", http.StripPrefix("/item/", AuthWrap(itemHandler)))
+
 	http.HandleFunc("/feed/", AuthWrap(feedHandler))
 	http.HandleFunc("/tag/", AuthWrap(categoryHandler))
 	http.Handle("/image/", http.StripPrefix("/image/", AuthWrap(imageProxyHandler)))
