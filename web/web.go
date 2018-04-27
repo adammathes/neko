@@ -147,12 +147,22 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// set headers
-	w.Header().Set("ETag", string(decodedURL))
-	w.Header().Set("Cache-Control", "public")
-	w.Header().Set("Expires", time.Now().Add(48*time.Hour).Format(time.RFC1123))
 
 	// grab the img
-	resp, err := http.Get(string(decodedURL))
+	c := &http.Client{
+		// give up after 5 seconds
+		Timeout: 5 * time.Second,
+	}
+
+	request, err := http.NewRequest("GET", string(decodedURL), nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	userAgent := "neko RSS Reader Image Proxy +https://github.com/adammathes/neko"
+	request.Header.Set("User-Agent", userAgent)
+	resp, err := c.Do(request)
+
 	if err != nil {
 		http.Error(w, "filed to proxy image", 404)
 		return
@@ -164,6 +174,9 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("ETag", string(decodedURL))
+	w.Header().Set("Cache-Control", "public")
+	w.Header().Set("Expires", time.Now().Add(48*time.Hour).Format(time.RFC1123))
 	w.Write(bts)
 	return
 }
