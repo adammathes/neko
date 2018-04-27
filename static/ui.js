@@ -208,7 +208,7 @@ var ControlsView = Backbone.View.extend({
 
 var Item = Backbone.Model.extend({
     idAttribute: "_id",
-    url: '/item',
+    url: '/item/',
 
     initialize: function() {
         var p_url = this.get('url');
@@ -269,7 +269,6 @@ var Item = Backbone.Model.extend({
 
 var ItemCollection = Backbone.Collection.extend({
     model: Item,
-    url: '/item',
 
 	initialize: function() {
 	    _.bindAll(this, 'boot', 'reboot');
