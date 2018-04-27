@@ -219,6 +219,10 @@ button {
         /* overflow: hidden; */
     }
 
+    #filters {
+        display: none;
+    }
+
 
    /* #filters h4, #filters h1 { */
    /*      display: none; */
