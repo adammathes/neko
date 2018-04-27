@@ -3,5 +3,6 @@
     "web": "127.0.0.0.1:4994",
     "username": "username",
     "password": "plaintextexamplepasswordpleasereplacethis",
-    "static_dir": "absolute/directory/to/neko/static"
+    "static_dir": "absolute/directory/to/neko/static",
+    "proxy_images": false
 }

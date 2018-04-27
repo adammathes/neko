@@ -12,6 +12,7 @@ type Settings struct {
 	Username       string `json:"username"`
 	DigestPassword string `json:"password"`
 	StaticDir      string `json:"static_dir"`
+	ProxyImages    bool   `json:"proxy_images"`
 }
 
 var Config Settings

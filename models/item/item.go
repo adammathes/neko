@@ -1,6 +1,7 @@
 package item
 
 import (
+	"adammathes.com/neko/config"
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/vlog"
 	"encoding/base64"
@@ -179,7 +180,9 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 		// but still may need to adjust rules
 		i.Title = p.Sanitize(i.Title)
 		i.Description = p.Sanitize(i.Description)
-		i.Description = rewriteImages(i.Description)
+		if config.Config.ProxyImages {
+			i.Description = rewriteImages(i.Description)
+		}
 		i.Url = p.Sanitize(i.Url)
 		i.FeedTitle = p.Sanitize(i.FeedTitle)
 		i.FeedUrl = p.Sanitize(i.FeedUrl)
@@ -201,6 +204,7 @@ func (i *Item) CleanHeaderImage() {
 	}
 }
 
+// rewrite images to use local proxy
 func rewriteImages(s string) string {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(s))
 	if err != nil {
