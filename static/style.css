@@ -153,16 +153,18 @@ pre {
 }
 
 .logo {
+    margin: 0;
+    padding: 1rem;
     position: fixed;
     top: 0;
     left: 0;
-    font-size: 36px; 
-    text-align: center;
+    font-size: 18px; 
     color: black;
     line-height: 1em;
     z-index: 1;
     cursor: pointer;
-    width: 10rem;
+    width: 100%;
+    background-color: #ccc;
 }
 
 .hasunread {
@@ -204,62 +206,62 @@ button {
 }
 
 
-/* @media only screen and (max-device-width: 768px) { */
-/*     html { */
-/*         width: 100%; */
-/*         font-size: 22px; */
-/*     } */
+@media only screen and (max-device-width: 768px) {
+    html {
+        width: 100%;
+        font-size: 22px;
+    }
 
-/*     body { */
-/*         min-width: 0; */
-/*         width: 100%; */
-/*         max-width: 100%; */
-/*         overflow: hidden; */
-/*     } */
-
-
-/*    #filters h4, #filters h1 { */
-/*         display: none; */
-/*     }  */
-
-/*     #controls { */
-/*         width: 100%; */
-/*         font-size: 1.5rem; */
-/*     } */
-
-/*     #controls ul { */
-/*         padding: 0; */
-/*         margin: 0; */
-/*         text-align: center; */
-/*     } */
-
-/*     #controls li { */
-/*         display: inline; */
-/*     } */
-
-/*     #filters { */
-/*         width: 100%; */
-/*         height: 50px; */
-/*         position: fixed; */
-/*         top: 0; */
-/*         left: 0; */
-/*         background: #ccc; */
-/*     } */
+    body {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+        /* overflow: hidden; */
+    }
 
 
-/*     #items { */
-/*         margin: 0 auto; */
-/*         max-width: 100%; */
-/*     } */
-/* } */
+   /* #filters h4, #filters h1 { */
+   /*      display: none; */
+   /*  } */
 
-/* @media only screen and (max-device-width: 400px) { */
-/*     html { */
-/*         font-size: 16px; */
-/*     } */
+    /* #controls { */
+    /*     width: 100%; */
+    /*     font-size: 1.5rem; */
+    /* } */
 
-/*     body { */
-/*         min-width: 0; */
-/*         width: 100%; */
-/*     } */
-/* } */
+    /* #controls ul { */
+    /*     padding: 0; */
+    /*     margin: 0; */
+    /*     text-align: center; */
+    /* } */
+
+    /* #controls li { */
+    /*     display: inline; */
+    /* } */
+
+    /* #filters { */
+    /*     width: 100%; */
+    /*     height: 50px; */
+    /*     position: fixed; */
+    /*     top: 0; */
+    /*     left: 0; */
+    /*     background: #ccc; */
+    /* } */
+
+
+     #items { */
+        margin: 0 auto;
+        max-width: 100%;
+    }
+}
+
+@media only screen and (max-device-width: 400px) {
+    html {
+        font-size: 16px;
+    }
+
+    body {
+        min-width: 0;
+        width: 100%;
+    }
+}
