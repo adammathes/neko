@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"time"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -131,24 +132,38 @@ func categoryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
-	// caching...???
-
 	imgURL := r.URL.String()
-	fmt.Printf("proxying: %s\n", imgURL)
 	decodedURL, err := base64.URLEncoding.DecodeString(imgURL)
-	fmt.Printf("decoded: %s\n", decodedURL)
 
-	resp, err := http.Get(string(decodedURL))
-	if err != nil {
-		http.Error(w, "sorry", 404)
+	// pseudo-caching
+	if r.Header.Get("If-None-Match") == string(decodedURL) {
+		w.WriteHeader(http.StatusNotModified)
 		return
 	}
 
-	bts, _ := ioutil.ReadAll(resp.Body)
+	if r.Header.Get("Etag") == string(decodedURL) {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
 
-	etag := crypto.HashFromBytes(body)
+	// set headers
+	w.Header().Set("ETag", string(decodedURL))
+	w.Header().Set("Cache-Control", "public")
+	w.Header().Set("Expires", time.Now().Add(48*time.Hour).Format(time.RFC1123))
 
-	w.Header().Set("Content-Type", "application/json")
+	// grab the img
+	resp, err := http.Get(string(decodedURL))
+	if err != nil {
+		http.Error(w, "filed to proxy image", 404)
+		return
+	}
+
+	bts, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(w, "failed to read proxy image", 404)
+		return
+	}
+
 	w.Write(bts)
 	return
 }
