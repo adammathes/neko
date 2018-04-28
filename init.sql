@@ -15,9 +15,9 @@ CREATE TABLE feed (
 CREATE TABLE item (
   id INT NOT NULL AUTO_INCREMENT,
   feed_id INT NOT NULL,
-  title TEXT,
+  title TEXT NOT NULL DEFAULT "",
   url VARCHAR(255) NOT NULL,
-  description TEXT,
+  description TEXT NOT NULL DEFAULT "",
   full_content TEXT NOT NULL DEFAULT "",
   header_image TEXT NOT NULL DEFAULT "",
   publish_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
