@@ -131,7 +131,7 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
                      item.read_state, item.starred, item.publish_date,
                      item.full_content, item.header_image,
                      feed.url, feed.title, feed.category
-              FROM item,feed
+              FROM feed,item
               WHERE item.feed_id=feed.id AND item.id!=0 `
 
 	if max_id != 0 {
