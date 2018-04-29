@@ -126,12 +126,12 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 
 	var args []interface{}
 
-	query := `SELECT STRAIGHT_JOIN item.id, item.feed_id, item.title, item.url, item.description, 
+	query := `SELECT item.id, item.feed_id, item.title, 
+                     item.url, item.description, 
                      item.read_state, item.starred, item.publish_date,
                      item.full_content, item.header_image,
                      feed.url, feed.title, feed.category
-              FROM item
-              INNER JOIN feed ON feed.id=item.feed_id
+              FROM item,feed
               WHERE item.feed_id=feed.id `
 
 	if max_id != 0 {
