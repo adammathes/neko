@@ -137,6 +137,7 @@ h3 {
 
 #tags li, #feeds li {
     font-size: .75em;
+    padding-bottom: .25em;
 }
 
 pre {
@@ -164,13 +165,13 @@ pre {
     position: fixed;
     top: 0;
     left: 0;
-    font-size: 18px; 
     color: black;
     line-height: 1em;
     z-index: 1;
     cursor: pointer;
-    width: 1.5rem;
-    font-size: 3rem;
+    width: 100%;
+    font-size: 2rem;
+    background: black;
 }
 
 .hasunread {
@@ -228,11 +229,10 @@ button {
     .logo {
         width: 100%;
     }
-        
-    #filters {
-        display: none;
-    }
 
+    #filters li, #filters h4 {
+        font-size: 1.5rem;
+    }
 
    /* #filters h4, #filters h1 { */
    /*      display: none; */
