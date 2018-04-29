@@ -120,6 +120,12 @@ h3 {
     height: 100%;
     overflow-y: auto;
     background-color: #ccc;
+    transition-property: left;
+    transition-duration: .4s;
+}
+
+#filters.hidden {
+    left: -13rem;
 }
 
 #tags, #feeds {
@@ -163,8 +169,8 @@ pre {
     line-height: 1em;
     z-index: 1;
     cursor: pointer;
-    width: 5rem;
-    background-color: #ccc;
+    width: 1.5rem;
+    font-size: 3rem;
 }
 
 .hasunread {
