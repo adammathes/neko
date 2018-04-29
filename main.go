@@ -34,16 +34,20 @@ func main() {
 	vlog.VERBOSE = verbose
 
 	if update {
+		vlog.Printf("starting crawl\n")
 		crawler.Crawl()
 	}
 	if serve {
-		vlog.Printf("starting web server at %s", config.Config.WebServer)
+		vlog.Printf("starting web server at %s\n",
+			config.Config.WebServer)
 		web.Serve()
 	}
 	if newFeed != "" {
+		vlog.Printf("creating new feed\n")
 		feed.NewFeed(newFeed)
 	}
 	if export != "" {
+		vlog.Printf("feed export\n")
 		exporter.ExportFeeds(export)
 	}
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/advancedlogic/GoOse"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
-	"log"
 	"strings"
 )
 
@@ -46,6 +45,7 @@ func (i *Item) Create() error {
                                 item(title, url, description, publish_date, feed_id)
                                 VALUES(?, ?, ?, ?, ?)`, i.Title, i.Url, i.Description, i.PublishDate, i.FeedId)
 	if err != nil {
+		vlog.Printf("Error on item.Create\n%v\n%v\n", i, err)
 		return err
 	}
 
@@ -60,7 +60,7 @@ func (i *Item) Save() {
                               SET read_state=?, starred=?
                               WHERE id=?`, i.ReadState, i.Starred, i.Id)
 	if err != nil {
-		log.Println(err)
+		vlog.Printf("Error on item.Save\n%v\n%v\n", i, err)
 	}
 }
 
@@ -69,7 +69,7 @@ func (i *Item) FullSave() {
                               SET title=?, url=?, description=?, feed_id=? 
                               WHERE id=?`, i.Title, i.Url, i.Description, i.FeedId, i.Id)
 	if err != nil {
-		log.Println(err)
+		vlog.Printf("Error on item.fullSave\n%v\n%v\n", i, err)
 	}
 }
 
@@ -165,12 +165,12 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 	}
 
 	query = query + "ORDER BY item.id DESC LIMIT 15"
-	//	log.Println(query)
-	//	log.Println(args...)
+	// vlog.Println(query)
+	// vlog.Println(args...)
 
 	rows, err := models.DB.Query(query, args...)
 	if err != nil {
-		log.Println(err)
+		vlog.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -183,7 +183,7 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 		var feed_id int64
 		err := rows.Scan(&i.Id, &feed_id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FullContent, &i.HeaderImage, &i.FeedUrl, &i.FeedTitle, &i.FeedCategory)
 		if err != nil {
-			log.Println(err)
+			vlog.Println(err)
 			return nil, err
 		}
 
@@ -220,7 +220,8 @@ func (i *Item) CleanHeaderImage() {
 func rewriteImages(s string) string {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(s))
 	if err != nil {
-		panic("can not parse doc to rewrite")
+		vlog.Println(err)
+		return s
 	}
 
 	doc.Find("img").Each(func(i int, img *goquery.Selection) {

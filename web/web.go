@@ -161,7 +161,8 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 
 	request, err := http.NewRequest("GET", string(decodedURL), nil)
 	if err != nil {
-		log.Fatalln(err)
+		http.Error(w, "failed to proxy image", 404)
+		return
 	}
 
 	userAgent := "neko RSS Reader Image Proxy +https://github.com/adammathes/neko"
@@ -169,7 +170,7 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	resp, err := c.Do(request)
 
 	if err != nil {
-		http.Error(w, "filed to proxy image", 404)
+		http.Error(w, "failed to proxy image", 404)
 		return
 	}
 
