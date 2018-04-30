@@ -45,7 +45,7 @@ func (i *Item) Create() error {
                                 item(title, url, description, publish_date, feed_id)
                                 VALUES(?, ?, ?, ?, ?)`, i.Title, i.Url, i.Description, i.PublishDate, i.FeedId)
 	if err != nil {
-		vlog.Printf("Error on item.Create\n%v\n%v\n", i, err)
+		vlog.Printf("Error on item.Create\n%v\n%v\n", i.Url, err)
 		return err
 	}
 

@@ -11,21 +11,39 @@ import (
 	"time"
 )
 
-func Crawl() {
+const MAX_CRAWLERS = 5
 
-	ch := make(chan string)
+func Crawl() {
+	crawlJobs := make(chan *feed.Feed, 100)
+	results := make(chan string, 100)
 
 	feeds, err := feed.All()
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, f := range feeds {
-		vlog.Printf("crawling %s\n", f.Url)
-		go CrawlFeed(f, ch)
+
+	for i := 0; i < MAX_CRAWLERS; i++ {
+		vlog.Printf("spawning crawl worker %d\n", i)
+		go CrawlWorker(crawlJobs, results)
 	}
 
+	for _, f := range feeds {
+		vlog.Printf("sending crawl job %s\n", f.Url)
+		crawlJobs <- f
+	}
+	close(crawlJobs)
+
 	for i := 0; i < len(feeds); i++ {
-		vlog.Println(<-ch)
+		vlog.Println(<-results)
+	}
+}
+
+func CrawlWorker(feeds <-chan *feed.Feed, results chan<- string) {
+
+	for f := range feeds {
+		vlog.Printf("crawl job recieved %s\n", f.Url)
+		CrawlFeed(f, results)
+		vlog.Printf("crawl job finished %s\n", f.Url)
 	}
 }
 
@@ -33,6 +51,10 @@ func Crawl() {
 Simple HTTP Get fnx with custom user agent header
 */
 func GetFeedContent(feedURL string) string {
+
+	// introduce delays for testing
+	//	n := time.Duration(rand.Int63n(3))
+	//	time.Sleep(n * time.Second)
 
 	c := &http.Client{
 		// give up after 5 seconds
@@ -88,7 +110,7 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 	feed, err := fp.ParseString(content)
 	if err != nil {
 		vlog.Println(err)
-		ch <- "failed to fetch and parse for " + f.Url + "\n"
+		ch <- "failed parse for " + f.Url + "\n"
 		return
 	}
 
