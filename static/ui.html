@@ -12,6 +12,7 @@
     </script>
     <script src="/static/ui.js"></script>
     <meta name="viewport" content="width=device-width,height=device-height, initial-scale=1, maximum-scale=1" />
+    <base target="_blank">
   </head>
   <body>
       <h1 class="logo" onclick="$('#filters').toggleClass('hidden');">🐱</h1>
@@ -36,7 +37,7 @@
     </div>
     
     <script id="item_template" type="text/jqtmp">
-      <h2><a target="_blank" class="i" id="i_${item_id}" href="${item.url}">${item.title }</a> 
+      <h2><a class="i" id="i_${item_id}" href="${item.url}">${item.title }</a> 
     <span class={{if item.starred}}"unstar"{{else}}"star"{{/if}}>★</span>
     </h2>
       <p class="dateline" style="clear: both;">
