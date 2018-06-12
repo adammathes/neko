@@ -8,17 +8,17 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/GeertJohan/go.rice"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"path"
 	"strconv"
 	"time"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, staticFilePath("ui.html"))
+	serveBoxedFile(w, r, "ui.html")
 }
 
 func streamHandler(w http.ResponseWriter, r *http.Request) {
@@ -218,7 +218,7 @@ var SecondsInAYear = 60 * 60 * 24 * 365
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		http.ServeFile(w, r, staticFilePath("login.html"))
+		serveBoxedFile(w, r, "login.html")
 	case "POST":
 		password := r.FormValue("password")
 		if password == config.Config.DigestPassword {
@@ -262,15 +262,24 @@ func AuthWrap(wrapped http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func serveBoxedFile(w http.ResponseWriter, r *http.Request, filename string) {
+	box := rice.MustFindBox("../static")
+	ui, err := box.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	fi, _ := ui.Stat()
+	http.ServeContent(w, r, filename, fi.ModTime(), ui)
+}
+
 func Serve() {
-	fs := http.FileServer(http.Dir(config.Config.StaticDir))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	box := rice.MustFindBox("../static")
+	staticFileServer := http.StripPrefix("/static/", http.FileServer(box.HTTPBox()))
+	http.Handle("/static/", staticFileServer)
 
 	http.HandleFunc("/stream/", AuthWrap(streamHandler))
-
-	//	http.HandleFunc("/item/", AuthWrap(itemHandler))
 	http.Handle("/item/", http.StripPrefix("/item/", AuthWrap(itemHandler)))
-
 	http.HandleFunc("/feed/", AuthWrap(feedHandler))
 	http.HandleFunc("/tag/", AuthWrap(categoryHandler))
 	http.Handle("/image/", http.StripPrefix("/image/", AuthWrap(imageProxyHandler)))
@@ -281,10 +290,4 @@ func Serve() {
 	http.HandleFunc("/", AuthWrap(indexHandler))
 
 	http.ListenAndServe(config.Config.WebServer, nil)
-}
-
-// given a path, prepend config.Config.StaticDir
-// TODO: compile these into the binary to remove dependency on the files
-func staticFilePath(p string) string {
-	return path.Join(config.Config.StaticDir, p)
 }

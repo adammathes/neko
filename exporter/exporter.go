@@ -1,14 +1,12 @@
 package exporter
 
 import (
-	"adammathes.com/neko/config"
 	"adammathes.com/neko/models/feed"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"html/template"
 	"os"
-	"path"
 )
 
 func ExportFeeds(format string) {
@@ -37,9 +35,21 @@ func ExportFeeds(format string) {
 		fmt.Printf("%s\n", js)
 
 	case "html":
-		tmplFile := path.Join(config.Config.StaticDir, "feeds.tmpl")
-		feedsTmpl := template.Must(template.ParseFiles(tmplFile))
-		err := feedsTmpl.Execute(os.Stdout, feeds)
+		htmlTemplateString := `<html>
+<head>
+<title>neko exported feeds</title>
+</head>
+<body>
+<h1>neko exported feeds</h1>
+<ul>
+{{ range . }}
+<li><a href="{{.WebUrl}}">{{.Title}}</a> | <a href="{{.Url}}">xml</a></li>
+{{ end }}
+</ul>
+</body>
+</html>`
+		htmlTemplate, err := template.New("feeds").Parse(htmlTemplateString)
+		err = htmlTemplate.Execute(os.Stdout, feeds)
 		if err != nil {
 			panic(err)
 		}
