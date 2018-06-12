@@ -53,7 +53,9 @@ A `neko` binary should now be in $HOME/go/bin/
 
 #### SQLite
 
-Just choose 
+Initialize a new SQLite database file with `sqlite.init.sql`
+
+    $ cat sqlite.init.sql | sqlite3 neko.db
 
 #### Create MySQL table and user
 
@@ -65,7 +67,11 @@ If you are using MySQL or equivalent --
     $ mysql -uroot -p neko  
     CREATE USER 'neko'@'localhost' identified by 'yourawesomepasswordgoeshere';  
     GRANT ALL PRIVILEGES ON neko.* TO 'neko'@'localhost';  
-       
+    
+Initialize the tables with --
+
+    $ cat init.mysql.sql | mysql neko
+
 ## Configuration 
 
 Copy example configuration and edit as needed.
@@ -133,7 +139,9 @@ Change `opml` to `text` for a simple list of feed URLs, or `json` for JSON forma
 
 ## TODO
 
-   * feed / item import 
-   * mark all as read
+   * automate database initializtion
+   * embed templates / static files into binary
+   * feed / item import
+   * mark all as read command
    * rewrite frontend in a modern js framework
    * less ugly frontend
