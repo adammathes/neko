@@ -1,6 +1,5 @@
 # Neko
 
-
 `neko` is a self-hosted, rss reader focused on simplicity and efficiency.
 
 Backend is written in `Go` and there is a simple javascript frontend and cat ears.
@@ -121,10 +120,20 @@ Depending on your binaries/configs something like --
 
 There's an example configuration for systemd in etc in this repo that should work for modern Linux systems on systemd.
 
+## Import/Export
+
+Import is a TODO
+
+Export de facto RSS feed standard OPML from the command line with --
+
+    $ neko --export opml
+
+Change `opml` to `text` for a simple list of feed URLs, or `json` for JSON formatted output.
+
+
 ## TODO
 
-   * OPML import/export
-   * feeds.txt import/export
-   * mark all as read cmd
-   * comments/docs
+   * feed / item import 
+   * mark all as read
    * rewrite frontend in a modern js framework
+   * less ugly frontend
