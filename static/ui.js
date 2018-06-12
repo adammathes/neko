@@ -1,6 +1,9 @@
 var templates = {};
 
 $(document).ready(function() {
+    if ( $(window).width() < 1024 ) {
+        $('#filters').addClass('hidden');
+    }
     boot();
 });
 
