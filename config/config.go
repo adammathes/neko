@@ -7,6 +7,7 @@ import (
 )
 
 type Settings struct {
+	DBDriver       string `json:"db_driver"`
 	DBServer       string `json:"db"`
 	WebServer      string `json:"web"`
 	Username       string `json:"username"`

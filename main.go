@@ -30,7 +30,7 @@ func main() {
 	}
 
 	config.Read(configFile)
-	models.InitDB(config.Config.DBServer)
+	models.InitDB()
 	vlog.VERBOSE = verbose
 
 	if update {

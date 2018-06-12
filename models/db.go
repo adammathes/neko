@@ -4,21 +4,24 @@ Package neko/models implements behavior for the entities necessary for the subsc
 package models
 
 import (
-    "database/sql"
+	"adammathes.com/neko/config"
+	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-    "log"
+	_ "github.com/mattn/go-sqlite3"
+	"log"
 )
 
 var DB *sql.DB
 
-func InitDB(dataSourceName string) {
-    var err error
-    DB, err = sql.Open("mysql", dataSourceName)
-    if err != nil {
-        log.Panic(err)
-    }
+func InitDB() {
+	var err error
+	//    DB, err = sql.Open("mysql", dataSourceName)
+	DB, err = sql.Open(config.Config.DBDriver, config.Config.DBServer)
+	if err != nil {
+		log.Panic(err)
+	}
 
-    if err = DB.Ping(); err != nil {
-        log.Panic(err)
-    }
+	if err = DB.Ping(); err != nil {
+		log.Panic(err)
+	}
 }

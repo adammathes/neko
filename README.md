@@ -29,7 +29,9 @@ This is not very easy to use/setup/ yet. Sorry! Consider it WIP, pull requests f
 ### Prerequesites 
 
    * [Go](https://golang.org)
-   * [MySQL](https://dev.mysql.com) or a drop-in replacement like [MariaDB](https://mariadb.com)
+   * Persistence layer via one of either
+     * [SQLite](https://sqlite.org/) (newly supported and easiest to setup)
+     * [MySQL](https://dev.mysql.com) or a drop-in replacement like [MariaDB](https://mariadb.com)
 
 PostgreSQL support is left as an exercise for the reader to implement and send a pull request for.
 
@@ -47,8 +49,16 @@ See also: [The GOPATH environment variable](https://golang.org/doc/code.html#GOP
 This will download neko code, dependencies, and build them all in $HOME/go/src/
 
 A `neko` binary should now be in $HOME/go/bin/
-   
-### Create MySQL table and user
+
+### Database Setup
+
+#### SQLite
+
+Just choose 
+
+#### Create MySQL table and user
+
+If you are using MySQL or equivalent --
 
     $ mysqladmin -uroot -p create neko  
     $ mysql -uroot -p neko < init.sql  
@@ -67,7 +77,8 @@ The configuration is JSON which was probably not a good idea.
 
 | name         | value                                            | example        |
 |--------------|--------------------------------------------------|----------------|
-| `db`         | mysql database connection string                 | root:@tcp(127.0.0.1:3306)/neko |
+| `db_driver`  | database driver - sqlite3 or mysql               | sqlite3 |
+| `db`         | mysql connection string OR sqlite file           | root:@tcp(127.0.0.1:3306)/neko |
 | `web`        | web address/port to bind to                      | 127.0.0.0.1:4994 |
 | `username`   | username for single user auth                    | user
 | `password`   | plaintext -- will be encrypted in client cookie  | notagoodpassword    |
@@ -76,23 +87,23 @@ The configuration is JSON which was probably not a good idea.
 
 ### Add Feeds
 
-    $ neko -add http://trenchant.org/rss.xml
+    $ neko --add http://trenchant.org/rss.xml
 
 Add as many feeds as you'd like to start. You can add more in the web ui later.
 
 Neko will look for a `config.json` in the local directory -- otherwise specify the location with the `-c` flag.
 
-    $ neko -add <url> -c /path/to/config.json
+    $ neko --add <url> -c /path/to/config.json
 
 ### Crawl Feeds
 
-    $ neko -update
+    $ neko --update
 
 This should fetch, download, parse, and store in the database your feeds.
 
 ### Run web server
 
-    $ neko -serve
+    $ neko --serve
     
 UI should now be available at the address in your `web` configuration setting.
  
@@ -102,7 +113,7 @@ UI should now be available at the address in your `web` configuration setting.
 
 Depending on your binaries/configs something like --
 
-    34 * * * * neko -c /etc/neko.config
+    34 * * * * neko -c /etc/neko.config -u
 
 -- should crawl regularly on the hour in cron.
 
