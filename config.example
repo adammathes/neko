@@ -1,8 +1,8 @@
 {
-	"db": "root:@tcp(127.0.0.1:3306)/neko",
+    "db_driver": "sqlite3",
+    "db": "neko.db",    
     "web": "127.0.0.0.1:4994",
     "username": "username",
     "password": "plaintextexamplepasswordpleasereplacethis",
-    "static_dir": "absolute/directory/to/neko/static",
     "proxy_images": false
 }
