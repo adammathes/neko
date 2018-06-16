@@ -36,11 +36,11 @@ var AppModel =  Backbone.Model.extend({
         }
         else {
             App.tags.models.forEach ( function (t) {
-                t.set('selected', false);            
+                t.set('selected', false);
             });
             App.tag = null;
             App.feeds.models.forEach ( function (f) {
-                f.set('selected', false);            
+                f.set('selected', false);
             });
 
             this.set('feedFilter', feed);
@@ -56,10 +56,10 @@ var AppModel =  Backbone.Model.extend({
         }
         else {
             App.tags.models.forEach ( function (t) {
-                t.set('selected', false); 
+                t.set('selected', false);
             });
             App.feeds.models.forEach ( function (f) {
-                f.set('selected', false);         
+                f.set('selected', false);
             });
             this.set('feedFilter', undefined);
             tag.set('selected', true);
@@ -91,9 +91,9 @@ var AppModel =  Backbone.Model.extend({
 
     filterToSearch: function() {
         this.set('searchFilter', $('#search').val());
-        // this.set('starredFilter', false);
-        // this.set('allFilter', true);
-        // this.set('unreadFilter', false);
+        this.set('starredFilter', false);
+        this.set('allFilter', true);
+        this.set('unreadFilter', false);
         this.items.reboot();
     },
 
@@ -103,24 +103,24 @@ var AppModel =  Backbone.Model.extend({
 
         // // mark all visible items as read
         $.each($('.item'), function(i,v) {
-	        var item_top = $(v).offset().top;
+            var item_top = $(v).offset().top;
             // console.log("i ", i, "item_top ", item_top, "screen_top ", screen_top, "screen_bottom ", screen_bottom);
 
             if( (item_top < screen_top)) {
                 App.items.at(i).markRead();
             //    console.log('marking as read: ', i);
-	        }
+            }
         });
 //        window.setTimeout(App.update_read_status, 5000);
     },
 
     scroll_to_selected: function() {
-	    var item = $('.item').eq(this.get('selectedIndex'));
+        var item = $('.item').eq(this.get('selectedIndex'));
         if(item.offset()) {
-	        var item_top = item.offset().top;
-	        $('.item').removeClass('selected');
-	        item.addClass('selected');
-	        $(window).scrollTop(item_top);
+            var item_top = item.offset().top;
+            $('.item').removeClass('selected');
+            item.addClass('selected');
+            $(window).scrollTop(item_top);
         }
         App.items.at(this.get('selectedIndex')).markRead();
         if(App.items.models.length>1) {
@@ -129,30 +129,30 @@ var AppModel =  Backbone.Model.extend({
             }
         }
     },
-    
+
     next: function() {
-	    if(this.get('selectedIndex') < this.items.models.length-1) {
-	        this.set('selectedIndex', this.get('selectedIndex')+1);
-	    }
+        if(this.get('selectedIndex') < this.items.models.length-1) {
+            this.set('selectedIndex', this.get('selectedIndex')+1);
+        }
         if(this.get('selectedIndex') == this.items.models.length-1) {
             App.items.boot();
         }
     },
 
     previous: function() {
-	    if(this.get('selectedIndex') > 0) {
-	        this.set('selectedIndex', this.get('selectedIndex')-1);
-	    }
+        if(this.get('selectedIndex') > 0) {
+            this.set('selectedIndex', this.get('selectedIndex')-1);
+        }
     },
 
     star: function() {
-	    if(this.get('selectedIndex') >= 0) {
+        if(this.get('selectedIndex') >= 0) {
             App.items.at(this.get('selectedIndex')).toggleStar();
         }
     },
 
     full: function() {
-	    if(this.get('selectedIndex') >= 0) {
+        if(this.get('selectedIndex') >= 0) {
             App.items.at(this.get('selectedIndex')).full();
         }
     }
@@ -172,8 +172,8 @@ var ControlsView = Backbone.View.extend({
     },
 
     initialize: function() {
-	    _.bindAll(this, 'render');
-	    this.model.bind('change', this.render);
+        _.bindAll(this, 'render');
+        this.model.bind('change', this.render);
     },
 
     filterToStarred: function() {
@@ -191,7 +191,7 @@ var ControlsView = Backbone.View.extend({
     filterToSearch: function() {
         App.filterToSearch();
     },
-   
+
     newFeed: function() {
         var feed_url = prompt('New url to subscribe to');
         var feed = new Feed({'url': feed_url});
@@ -199,11 +199,11 @@ var ControlsView = Backbone.View.extend({
         feed.save();
     },
 
-	render: function() {
+    render: function() {
         var h = $.tmpl(templates.controls_template, { 'app': this.model.toJSON() });
-	    $(this.el).html(h);
-	    return this;
-	},
+        $(this.el).html(h);
+        return this;
+    },
 
 });
 
@@ -230,7 +230,7 @@ var Item = Backbone.Model.extend({
     markRead: function() {
         // recover if not tag
         if(this.get('read')) {
-	        return;
+            return;
         }
 
         // var t = this.get('feed').tag;
@@ -252,14 +252,14 @@ var Item = Backbone.Model.extend({
     unstar: function() {
         this.set({'starred': false});
     },
-    
+
     full: function() {
         this.set({'full': !(this.get('full'))} );
         // this should just use this.fetch() but
         // it kept GETing from /item instead of /item/id
         // so just hacking this in for now
 
-        if(this.get('full_content') == "") {        
+        if(this.get('full_content') == "") {
             $.getJSON('/item/' + this.get('_id'), function(data) {
                 var i = App.items.get(data['_id'])
                 i.set('full_content', data['full_content']);
@@ -273,8 +273,8 @@ var Item = Backbone.Model.extend({
 var ItemCollection = Backbone.Collection.extend({
     model: Item,
 
-	initialize: function() {
-	    _.bindAll(this, 'boot', 'reboot');
+    initialize: function() {
+        _.bindAll(this, 'boot', 'reboot');
     },
 
     boot: function() {
@@ -303,23 +303,23 @@ var ItemCollection = Backbone.Collection.extend({
         if(App.items.last()) {
              url = url + '&max_id=' + App.items.last().get('_id');
         }
-        
+
         if(App.get('allFilter') || App.get('starredFilter')) {
-	        url = url + '&read_filter=all';
+            url = url + '&read_filter=all';
         }
 
         console.log('fetching from ', url);
         var t = this;
         $.getJSON(url, function(data) {
             var items = [];
-	        $.each(data, function(i,v) {
+            $.each(data, function(i,v) {
                 var item = new Item(v);
                 t.add(item);
                 items.push(item);
                 if(t.models.length==1){
                     App.set('selectedIndex', 0);
                 }
-	        });
+            });
             // console.log("items ", items)
             if(items.length == 0) {
                 // console.log("no more items");
@@ -327,12 +327,12 @@ var ItemCollection = Backbone.Collection.extend({
                 // App.loading = true;
             }
             else {
-                App.loading = false;           
+                App.loading = false;
             }
             // we wait and add them all at once for performance on mobile
             App.itemListView.addAll(items);
 
-        });        
+        });
     },
 
     reboot: function() {
@@ -348,19 +348,19 @@ App.items = new ItemCollection();
 
 
 var ItemView = Backbone.View.extend({
-	tagName: "div",	
-	className: "item",
-	template: templates.item_template,
-	events: {
+    tagName: "div",
+    className: "item",
+    template: templates.item_template,
+    events: {
         "click .star": "star",
         "click .unstar": "unstar",
         "click .full": "full",
     },
-	
-	initialize: function() {
-	    _.bindAll(this, 'render', 'star');
-	    this.model.bind('change', this.render);
-	},
+
+    initialize: function() {
+        _.bindAll(this, 'render', 'star');
+        this.model.bind('change', this.render);
+    },
 
     star: function() {
         this.model.star();
@@ -377,31 +377,31 @@ var ItemView = Backbone.View.extend({
         this.render();
     },
 
-	render: function() {
+    render: function() {
         var h = $.tmpl(templates.item_template, { 'item': this.model.toJSON() });
-	    $(this.el).html(h);
-	    return this;
-	},
+        $(this.el).html(h);
+        return this;
+    },
 });
 
 var ItemListView = Backbone.View.extend( {
-	initialize: function() {
-	    _.bindAll(this, 'addOne', 'addAll', 'change', 'render', 'reset');
-	    // App.items.bind('add', this.addOne);	    
-	    App.items.bind('reset', this.reset);
-	},
-	addOne: function(item) {
-	    var view = new ItemView({'model': item});
+    initialize: function() {
+        _.bindAll(this, 'addOne', 'addAll', 'change', 'render', 'reset');
+        // App.items.bind('add', this.addOne);
+        App.items.bind('reset', this.reset);
+    },
+    addOne: function(item) {
+        var view = new ItemView({'model': item});
         this.$el.append(view.render().el);
-	},
-	addAll: function(items) {
-	    // Posts.each(this.addOne);
+    },
+    addAll: function(items) {
+        // Posts.each(this.addOne);
         for(i in items) {
             item = items[i];
             var view = new ItemView({'model': item});
             this.$el.append(view.render().el);
         };
-	},
+    },
     change: function() {
     },
     render: function() {
@@ -410,24 +410,23 @@ var ItemListView = Backbone.View.extend( {
         this.$el.children().remove();
     }
 });
-                                       
 
 var Tag = Backbone.Model.extend({
 });
 
 var TagCollection = Backbone.Collection.extend({
     model: Tag,
-	initialize: function() {
-	    _.bindAll(this, 'boot');
+    initialize: function() {
+        _.bindAll(this, 'boot');
     },
 
     boot: function() {
         var t = this;
         $.getJSON('/tag/', function(data) {
-	        $.each(data, function(i,v) {
+            $.each(data, function(i,v) {
                 var tag = new Tag(v);
                 t.add(tag);
-	        });
+            });
         });
     }
 });
@@ -435,20 +434,20 @@ App.tags = new TagCollection();
 
 
 var TagView = Backbone.View.extend({
-	tagName: "li",	
-	className: "tag",
-	events: {
+    tagName: "li",	
+    className: "tag",
+    events: {
         "click": "filterTo",
     },
-	initialize: function() {
-	    _.bindAll(this, 'render', 'filterTo');
-	    this.model.bind('change', this.render);
-	},
-	render: function() {
+    initialize: function() {
+        _.bindAll(this, 'render', 'filterTo');
+        this.model.bind('change', this.render);
+    },
+    render: function() {
         var h = $.tmpl(templates.tag_template, { 'tag': this.model.toJSON() });
-	    $(this.el).html(h);
-	    return this;
-	},
+        $(this.el).html(h);
+        return this;
+    },
     filterTo: function() {
         App.filterToTag(this.model);
     }
@@ -457,19 +456,19 @@ var TagView = Backbone.View.extend({
 
 var TagListView = Backbone.View.extend( {
 
-	initialize: function() {
-	    _.bindAll(this, 'addOne', 'addAll', 'change', 'render');
-	    App.tags.bind('add', this.addOne);
-	    App.tags.bind('refresh', this.addAll);
-	    App.tags.bind('change', this.render);
-	},
-	addOne: function(tag) {
-	    var view = new TagView({'model': tag});
+    initialize: function() {
+        _.bindAll(this, 'addOne', 'addAll', 'change', 'render');
+        App.tags.bind('add', this.addOne);
+        App.tags.bind('refresh', this.addAll);
+        App.tags.bind('change', this.render);
+    },
+    addOne: function(tag) {
+        var view = new TagView({'model': tag});
         this.$el.append(view.render().el);
-	},
-	addAll: function() {
-	    App.tags.each(this.addOne);
-	},
+    },
+    addAll: function() {
+        App.tags.each(this.addOne);
+    },
     change: function() {
     },
     render: function() {
@@ -489,30 +488,30 @@ var FeedCollection = Backbone.Collection.extend({
     model: Feed,
     url: '/feed/',
 
-	initialize: function() {
-	    ///    _.bindAll(this, 'boot');
+    initialize: function() {
+        ///    _.bindAll(this, 'boot');
         //console.log('initialized');
     },
 });
 App.feeds = new FeedCollection();
 
 var FeedView = Backbone.View.extend({
-	tagName: "li",	
-	className: "feed",
-	events: {
+    tagName: "li",
+    className: "feed",
+    events: {
         "click .txt": "filterTo",
         "click .delete": "del",
         "click .edit": "edit",
     },
-	initialize: function() {
-	    _.bindAll(this, 'render', 'filterTo', "del");
-	    this.model.bind('change', this.render);
-	},
-	render: function() {
+    initialize: function() {
+        _.bindAll(this, 'render', 'filterTo', "del");
+        this.model.bind('change', this.render);
+    },
+    render: function() {
         var h = $.tmpl(templates.feed_template, { 'feed': this.model.toJSON() });
-	    $(this.el).html(h);
-	    return this;
-	},
+        $(this.el).html(h);
+        return this;
+    },
     filterTo: function() {
         //        console.log('filtering to feed ', this.model);
         App.filterToFeed(this.model);
@@ -534,21 +533,21 @@ var FeedView = Backbone.View.extend({
 
 
 var FeedListView = Backbone.View.extend( {
-	initialize: function() {
-	    _.bindAll(this, 'addOne', 'addAll', 'change', 'render');
-	    App.feeds.bind('add', this.addOne);
-	    App.feeds.bind('refresh', this.addAll);
-	    App.feeds.bind('change', this.render);
-	},
-	addOne: function(feed) {
+    initialize: function() {
+        _.bindAll(this, 'addOne', 'addAll', 'change', 'render');
+        App.feeds.bind('add', this.addOne);
+        App.feeds.bind('refresh', this.addAll);
+        App.feeds.bind('change', this.render);
+    },
+    addOne: function(feed) {
         // console.log('adding a feed...', feed);
-	    var view = new FeedView({'model': feed});
+        var view = new FeedView({'model': feed});
         this.$el.append(view.render().el);
-	},
-	addAll: function() {
+    },
+    addAll: function() {
         // console.log('feed add all...');
-	    App.feeds.each(this.addOne);
-	},
+        App.feeds.each(this.addOne);
+    },
     change: function() {
         // console.log('feeds changed add all...');
     },
@@ -593,26 +592,29 @@ function boot() {
 //    $('.logo').on('click', function() {
         //        App.set('feedFilter', undefined);
         //        App.items.reboot();
-        
+
 //    });
 
     // keyboard shortcuts
     $('body').keydown(function(event) {
-	    if (event.which == 74) {
-	        event.preventDefault();
+        if(document.activeElement.id == "search") {
+            return;
+        }
+        if (event.which == 74) {
+            event.preventDefault();
             App.next();
-	    }
-	    if (event.which == 75) {
-	        event.preventDefault();
+        }
+        if (event.which == 75) {
+            event.preventDefault();
             App.previous();
-	    }
+        }
         if (event.which == 83) {
-	        event.preventDefault();
-            App.star();            
+            event.preventDefault();
+            App.star();
         }
         if (event.which == 70) {
-	        event.preventDefault();
-            App.full();            
+            event.preventDefault();
+            App.full();
         }
     });
 
@@ -623,7 +625,7 @@ function boot() {
 // // this is legacy code
 
 function infini_scroll() {
-    if(App.loading) {    
+    if(App.loading) {
     }
     else {
         var dh = $('#items').height() - $(window).height();
@@ -636,6 +638,6 @@ function infini_scroll() {
 }
 
 
-var ItemSelector =  { 
+var ItemSelector =  {
     selected_index: 0,
 }
