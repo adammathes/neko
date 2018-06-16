@@ -82,7 +82,7 @@ func filterPolicy() *bluemonday.Policy {
 }
 
 func ItemById(id int64) *Item {
-	items, _ := Filter(0, 0, "", false, false, id)
+	items, _ := Filter(0, 0, "", false, false, id, "")
 	return items[0]
 }
 
@@ -122,17 +122,21 @@ func (i *Item) GetFullContent() {
 	}
 }
 
-func Filter(max_id int64, feed_id int64, category string, unread_only bool, starred_only bool, item_id int64) ([]*Item, error) {
+func Filter(max_id int64, feed_id int64, category string, unread_only bool, starred_only bool, item_id int64, search_query string) ([]*Item, error) {
 
 	var args []interface{}
+	tables := " feed,item"
+	if search_query != "" {
+		tables = tables + ",fts_item"
+	}
 
 	query := `SELECT item.id, item.feed_id, item.title, 
                      item.url, item.description, 
                      item.read_state, item.starred, item.publish_date,
                      item.full_content, item.header_image,
                      feed.url, feed.title, feed.category
-              FROM feed,item
-              WHERE item.feed_id=feed.id AND item.id!=0 `
+              FROM `
+	query = query + tables + ` WHERE item.feed_id=feed.id AND item.id!=0 `
 
 	if max_id != 0 {
 		query = query + "AND item.id < ? "
@@ -156,6 +160,11 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 	if item_id != 0 {
 		query = query + " AND item.id=? "
 		args = append(args, item_id)
+	}
+
+	if search_query != "" {
+		query = query + " AND fts_item match ? AND fts_item.rowid=item.id "
+		args = append(args, search_query)
 	}
 
 	// this is kind of dumb, but to keep the logic the same

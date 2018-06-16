@@ -51,8 +51,14 @@ func streamHandler(w http.ResponseWriter, r *http.Request) {
 		starred_only = true
 	}
 
+	search_query := ""
+	if r.FormValue("q") != "" {
+		search_query = r.FormValue("q")
+		unread_only = false
+	}
+
 	var items []*item.Item
-	items, err := item.Filter(int64(max_id), feed_id, category, unread_only, starred_only, 0)
+	items, err := item.Filter(int64(max_id), feed_id, category, unread_only, starred_only, 0, search_query)
 	if err != nil {
 		log.Println(err)
 	}
