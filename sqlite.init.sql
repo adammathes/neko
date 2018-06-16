@@ -35,13 +35,12 @@ INSERT INTO fts_item(fts_item) VALUES('rebuild');
 CREATE TRIGGER item_bu BEFORE UPDATE ON item BEGIN
   DELETE FROM fts_item WHERE docid=old.rowid;
 END;
-CREATE TRIGGER t2_bd BEFORE DELETE ON t2 BEGIN
-  DELETE FROM t3 WHERE docid=old.rowid;
+CREATE TRIGGER item_bd BEFORE DELETE ON item BEGIN
+  DELETE FROM fts_item WHERE docid=old.rowid;
 END;
-
-CREATE TRIGGER t2_au AFTER UPDATE ON t2 BEGIN
-  INSERT INTO t3(docid, b, c) VALUES(new.rowid, new.b, new.c);
+CREATE TRIGGER item_au AFTER UPDATE ON item BEGIN
+  INSERT INTO fts_item(docid, title, url, description) VALUES(new.rowid, new.title, new.url, new.description);
 END;
-CREATE TRIGGER t2_ai AFTER INSERT ON t2 BEGIN
-  INSERT INTO t3(docid, b, c) VALUES(new.rowid, new.b, new.c);
+CREATE TRIGGER item_ai AFTER INSERT ON item BEGIN
+  INSERT INTO fts_item(docid, title, url, description) VALUES(new.rowid, new.title, new.url, new.description);
 END;
