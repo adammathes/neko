@@ -58,8 +58,12 @@ h1, h2, h3, h4, h5, #controls {
 }
 
 #controls li {
+    width: 100%;
     list-style: none;
     margin-left: 0;
+    text-align: center;
+    margin-top: 10px;
+    background-color: whitesmoke;
 }
 
 h2 {
@@ -205,10 +209,11 @@ button {
     font-family: 'Helvetica Neue';
     font-size: 16px;
     padding: 3px 10px;
-    background: white;
+    background: whitesmoke;
     color: blue;
     font-weight: bold;
-    border: solid 1px #ccc;
+    border: none;
+    width: 100%;
 }
 
 

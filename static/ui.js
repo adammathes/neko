@@ -76,6 +76,7 @@ var AppModel =  Backbone.Model.extend({
     },
 
     filterToAll: function() {
+        this.set('searchFilter', undefined);
         this.set('starredFilter', false);
         this.set('allFilter', true);
         this.set('unreadFilter', false);
