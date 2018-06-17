@@ -8,9 +8,9 @@ Backend is written in `Go` and there is a simple javascript frontend and cat ear
 
 ## Huh?
 
-I decided I didn't like the [old version that was python and mongo](https://github.com/adammathes/neko_v1) so rewrote it. I wanted to learn some Go. So assume the code is bad since I don't know what I'm doing even more so than normal.
+I decided I didn't like the [old version that was python and mongo](https://github.com/adammathes/neko_v1) so rewrote it. I wanted to learn some Go. So assume the code is not great since I don't know what I'm doing even more so than normal.
 
-The javascript frontend is still the same, I might rewrite that too since it's old backbone.js code and in the intervening years it looks like nobody uses that anymore.
+The Javascript frontend is still the same, I might rewrite that too since it's old backbone.js code and in the intervening years it looks like nobody uses that anymore.
 
 This is not very easy to use/setup/ yet. Sorry! Consider it WIP, pull requests for containers/snaps/etc welcome.
 
@@ -22,7 +22,13 @@ This is not very easy to use/setup/ yet. Sorry! Consider it WIP, pull requests f
       * **k** - previous item
       * that's all you should ever need
    * automatically marks items read in an infinite stream of never-ending content (until you run out of content and it ends)
-   
+
+## Screenshots
+
+![Alt text](/screenshot/neko.jpg?raw=true "Screenshot 1")
+
+![Alt text](/screenshot/neko2.jpg?raw=true "Screenshot 2")
+
 ## Installation
 
 ### Prerequesites 
@@ -31,8 +37,6 @@ This is not very easy to use/setup/ yet. Sorry! Consider it WIP, pull requests f
    * Persistence layer via one of either
      * [SQLite](https://sqlite.org/) (newly supported and easiest to setup)
      * [MySQL](https://dev.mysql.com) or a drop-in replacement like [MariaDB](https://mariadb.com)
-
-PostgreSQL support is left as an exercise for the reader to implement and send a pull request for.
 
 ### Set up $GOPATH if one doesn't exist already
 
@@ -58,6 +62,8 @@ Initialize a new SQLite database file with `sqlite.init.sql`
     $ cat sqlite.init.sql | sqlite3 neko.db
 
 #### Create MySQL table and user
+
+This is harder. Use SQLite! MySQL support may be deprecated soonish.
 
 If you are using MySQL or equivalent --
 
