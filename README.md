@@ -4,15 +4,7 @@
 
 Backend is written in `Go` and there is a simple javascript frontend and cat ears.
 
-*the cat ears are in your mind*
-
-## Huh?
-
-I decided I didn't like the [old version that was python and mongo](https://github.com/adammathes/neko_v1) so rewrote it. I wanted to learn some Go. So assume the code is not great since I don't know what I'm doing even more so than normal.
-
-The Javascript frontend is still the same, I might rewrite that too since it's old backbone.js code and in the intervening years it looks like nobody uses that anymore.
-
-This is not very easy to use/setup/ yet. Sorry! Consider it WIP, pull requests for containers/snaps/etc welcome.
+*note: the cat ears are in your mind*
 
 ## Features
 
@@ -31,123 +23,95 @@ This is not very easy to use/setup/ yet. Sorry! Consider it WIP, pull requests f
 
 ## Installation
 
-### Prerequesites 
+### Requirements
 
    * [Go](https://golang.org)
-   * Persistence layer via one of either
-     * [SQLite](https://sqlite.org/) (newly supported and easiest to setup)
-     * [MySQL](https://dev.mysql.com) or a drop-in replacement like [MariaDB](https://mariadb.com)
-
-### Set up $GOPATH if one doesn't exist already
-
-    $ mkdir $HOME/go  
-    $ export GOPATH=$HOME/go
-    
-See also: [The GOPATH environment variable](https://golang.org/doc/code.html#GOPATH)
-
-### Get and build neko
+   * [SQLite](https://sqlite.org/)
+   
+### Building
 
     $ go get adammathes.com/neko
    
-This will download neko code, dependencies, and build them all in $HOME/go/src/
+This will download `neko`, dependencies, and build them all in `$GOPATH/src/`. By default this should be something like `$HOME/go/src/`.
 
-A `neko` binary should now be in $HOME/go/bin/
+A `neko` binary should now be in `$GOPATH/bin/`. By default this is usually `$HOME/go/bin/`
 
-### Database Setup
+## Configuration
 
-#### SQLite
+There's no configuration file -- everything is handled with a few command line flags. You shouldn't need to change the defaults most of the time.
 
-Initialize a new SQLite database file with `sqlite.init.sql`
+### Storage
 
-    $ cat sqlite.init.sql | sqlite3 neko.db
+By default `neko` will create the file `neko.db` in the current directory for storage.
 
-#### Create MySQL table and user
+You can override the location of this database file with the `--database` command line option.
 
-This is harder. Use SQLite! MySQL support may be deprecated soonish.
+    $ neko --database=/var/db/neko.db --add=http://trenchant.org/rss.xml
 
-If you are using MySQL or equivalent --
+For expert users -- this is a [SQLite](https://sqlite.org/) database and can be manipulated with standard sqlite commands.
 
-    $ mysqladmin -uroot -p create neko  
-    $ mysql -uroot -p neko < init.sql  
-    $ echo "probably a good idea to make a limited privilege user"  
-    $ mysql -uroot -p neko  
-    CREATE USER 'neko'@'localhost' identified by 'yourawesomepasswordgoeshere';  
-    GRANT ALL PRIVILEGES ON neko.* TO 'neko'@'localhost';  
+## Usage
+
+### Run Web Interface
+
+You can do most of what you need to do with `neko` from the web interface, which is what `neko` does by default.
+
+    $ neko
     
-Initialize the tables with --
+`neko` web interface should now be available at `127.0.0.1:4994` -- opening a browser up to that should show you the interface.
 
-    $ cat init.mysql.sql | mysql neko
+You can specify a different port using the `--http` option.
 
-## Configuration 
+    $ neko --http=9001
 
-Copy example configuration and edit as needed.
+If you are hosting on a publicly available server instead of a personal computer, you can protect the interface with a password flag --
 
-    $ cp $HOME/go/src/adammathes.com/neko/config.example config.json
-
-The configuration is JSON which was probably not a good idea.
-
-| name         | value                                            | example        |
-|--------------|--------------------------------------------------|----------------|
-| `db_driver`  | database driver - sqlite3 or mysql               | sqlite3 |
-| `db`         | mysql connection string OR sqlite file           | root:@tcp(127.0.0.1:3306)/neko |
-| `web`        | web address/port to bind to                      | 127.0.0.0.1:4994 |
-| `username`   | username for single user auth                    | user
-| `password`   | plaintext -- will be encrypted in client cookie  | notagoodpassword    |
-| `static_dir` | absolute path of the static files                |/home/user/go/src/adammathes.com/neko/static/|
-
+    $ neko --password=rssisveryimportant
 
 ### Add Feeds
 
-    $ neko --add http://trenchant.org/rss.xml
+You can add feeds directly from the command line for convenience --
 
-Add as many feeds as you'd like to start. You can add more in the web ui later.
-
-Neko will look for a `config.json` in the local directory -- otherwise specify the location with the `-c` flag.
-
-    $ neko --add <url> -c /path/to/config.json
+    $ neko --add=http://trenchant.org/rss.xml
 
 ### Crawl Feeds
 
     $ neko --update
 
-This should fetch, download, parse, and store in the database your feeds.
+This will fetch, download, parse, and store in the database your feeds.
 
-### Run web server
+### Export
 
-    $ neko --serve
-    
-UI should now be available at the address in your `web` configuration setting.
- 
+Export de facto RSS feed standard OPML from the command line with --
+
+    $ neko --export=opml
+
+Change `opml` to `text` for a simple list of feed URLs, or `json` for JSON formatted output.
+
+Export is also available in the web interface.
+
+Import of OPML and other things is a TODO item.
+
 ## Operationalize
 
 ### Crawl Regularly Via Cron
 
-Depending on your binaries/configs something like --
+Depending on your database file and other bits --
 
-    34 * * * * neko -c /etc/neko.config -u
+    34 * * * * neko -d /home/neko/neko.db -u
 
 -- should crawl regularly on the hour in cron.
 
-### Server as Daemon
-
-There's an example configuration for systemd in etc in this repo that should work for modern Linux systems on systemd.
-
-## Import/Export
-
-Import is a TODO
-
-Export de facto RSS feed standard OPML from the command line with --
-
-    $ neko --export opml
-
-Change `opml` to `text` for a simple list of feed URLs, or `json` for JSON formatted output.
-
-
 ## TODO
 
-   * automate database initializtion
-   * embed templates / static files into binary
-   * feed / item import
-   * mark all as read command
+   * import
+   * mark all as read
+   * initiate crawl from web interface
    * rewrite frontend in a modern js framework
    * less ugly frontend
+
+## History
+
+I decided I didn't like the [old version that was python and mongo](https://github.com/adammathes/neko_v1) so rewrote it. I wanted to learn some Go. So assume the code is not great since I don't know what I'm doing even more so than normal.
+
+The Javascript frontend is still the same, I might rewrite that too since it's old backbone.js code and in the intervening years it looks like nobody uses that anymore.
