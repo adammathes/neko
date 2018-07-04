@@ -16,26 +16,23 @@ func main() {
 	var dbfile, newFeed, export, password string
 	var port int
 
-	// dbfile
-	// port
-	// proxyImages
-	// username
-	// password
-
+	// commands // no command tries to run the web server
 	flag.BoolVarP(&help, "help", "h", false, "print usage information")
-
 	flag.BoolVarP(&update, "update", "u", false, "fetch feeds and store new items")
 	flag.StringVarP(&newFeed, "add", "a", "", "add the feed at URL `http://example.com/rss.xml`")
 	flag.StringVarP(&export, "export", "x", "", "export feed. format required: text, json or opml")
 
-	//	flag.BoolVarP(&serve, "serve", "s", false, "run neko app by starting HTTP server")
-
+	// options with sensible defaults
 	flag.StringVarP(&dbfile, "db", "d", "neko.db", "sqlite database file")
-	flag.StringVarP(&dbfile, "password", "p", "", "password to access web interface")
-
 	flag.IntVarP(&port, "http", "s", 4994, "HTTP port to serve on")
-	flag.BoolVarP(&verbose, "verbose", "v", true, "verbose output")
 	flag.BoolVarP(&proxyImages, "imageproxy", "i", false, "rewrite and proxy all image requests for privacy (experimental)")
+
+	// verbose output by default unless you know what you're doing
+	// this is probably wrong but keeping it this way for debugging
+	flag.BoolVarP(&verbose, "verbose", "v", true, "verbose output")
+
+	// passwords on command line are bad
+	flag.StringVarP(&password, "password", "p", "", "password to access web interface")
 
 	flag.Parse()
 
@@ -68,6 +65,9 @@ func main() {
 		return
 	}
 
+	if password == "" {
+		panic("Please specify an access password\n")
+	}
 	vlog.Printf("starting web server at 127.0.0.1:%d\n",
 		config.Config.Port)
 	web.Serve()
