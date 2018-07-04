@@ -7,9 +7,8 @@ import (
 )
 
 type Settings struct {
-	DBDriver       string `json:"db_driver"`
-	DBServer       string `json:"db"`
-	WebServer      string `json:"web"`
+	DBFile         string `json:"db"`
+	Port           int    `json:"web"`
 	Username       string `json:"username"`
 	DigestPassword string `json:"password"`
 	ProxyImages    bool   `json:"proxy_images"`

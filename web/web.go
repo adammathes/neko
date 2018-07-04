@@ -295,5 +295,5 @@ func Serve() {
 
 	http.HandleFunc("/", AuthWrap(indexHandler))
 
-	log.Fatal(http.ListenAndServe(config.Config.WebServer, nil))
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(config.Config.Port), nil))
 }
