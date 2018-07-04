@@ -1,0 +1,248 @@
+<pre style="font-family: menlo, courier, monospace;">
+                     ▄▄                 
+                     ██                 
+ ██▄████▄   ▄████▄   ██ ▄██▀    ▄████▄  
+ ██▀   ██  ██▄▄▄▄██  ██▄██     ██▀  ▀██ 
+ ██    ██  ██▀▀▀▀▀▀  ██▀██▄    ██    ██ 
+ ██    ██  ▀██▄▄▄▄█  ██  ▀█▄   ▀██▄▄██▀ 
+ ▀▀    ▀▀    ▀▀▀▀▀   ▀▀   ▀▀▀    ▀▀▀▀   
+                                        
+                                        
+
+              v0.2 manual
+               7/4/2018
+</pre>
+
+
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
+
+
+<p><strong>Table of Contents</strong></p>
+
+<ul>
+<li><a href="#neko">Neko</a>
+
+<ul>
+<li><a href="#features">Features</a></li>
+<li><a href="#screenshots">Screenshots</a></li>
+</ul>
+</li>
+<li><a href="#installation">Installation</a>
+
+<ul>
+<li><a href="#requirements">Requirements</a></li>
+<li><a href="#building">Building</a></li>
+</ul>
+</li>
+<li><a href="#configuration">Configuration</a>
+
+<ul>
+<li><a href="#storage">Storage</a></li>
+</ul>
+</li>
+<li><a href="#usage">Usage</a>
+
+<ul>
+<li><a href="#web-interface">Web Interface</a></li>
+<li><a href="#add-feed">Add Feed</a></li>
+<li><a href="#crawl-feeds">Crawl Feeds</a></li>
+<li><a href="#export">Export</a></li>
+</ul>
+</li>
+<li><a href="#all-command-line-options">All Command Line Options</a></li>
+<li><a href="#todo">TODO</a></li>
+<li><a href="#history">History</a>
+
+<ul>
+<li><a href="#early-2017">Early 2017</a></li>
+<li><a href="#july-2018----v02">July 2018 &ndash; v0.2</a></li>
+</ul>
+</li>
+<li><a href="#feedback">Feedback</a></li>
+</ul>
+
+
+<!-- markdown-toc end -->
+
+
+<h1>Neko</h1>
+
+<p><code>neko</code> is a self-hosted, rss reader focused on simplicity and efficiency.</p>
+
+<p>Backend is written in <code>Go</code> and there is a simple javascript frontend and cat ears.</p>
+
+<p><em>note: the cat ears are in your mind</em></p>
+
+<h2>Features</h2>
+
+<ul>
+<li> limited features (#1 feature)</li>
+<li> keyboard shortcuts
+
+<ul>
+<li><strong>j</strong> - next item</li>
+<li><strong>k</strong> - previous item</li>
+<li>that&rsquo;s all you should ever need</li>
+</ul>
+</li>
+<li> automatically marks items read in an infinite stream of never-ending content (until you run out of content and it ends)</li>
+</ul>
+
+
+<h2>Screenshots</h2>
+
+<p><img src="screenshot/neko.jpg?raw=true" title="Screenshot 1" alt="Screenshot 1" /></p>
+
+<p><img src="screenshot/neko2.jpg?raw=true" title="Screenshot 2" alt="Screenshot 2" /></p>
+
+<h1>Installation</h1>
+
+<h2>Requirements</h2>
+
+<ul>
+<li> <a href="https://golang.org">Go</a></li>
+<li> <a href="https://sqlite.org/">SQLite</a></li>
+</ul>
+
+
+<h2>Building</h2>
+
+<pre><code>$ go get adammathes.com/neko
+</code></pre>
+
+<p>This will download <code>neko</code>, dependencies, and build them all in <code>$GOPATH/src/</code>. By default this should be something like <code>$HOME/go/src/</code>.</p>
+
+<p>A <code>neko</code> binary should now be in <code>$GOPATH/bin/</code>. By default this is usually <code>$HOME/go/bin/</code></p>
+
+<h1>Configuration</h1>
+
+<p>There&rsquo;s no configuration file &ndash; everything is handled with a few command line flags. You shouldn&rsquo;t need to change the defaults most of the time.</p>
+
+<h2>Storage</h2>
+
+<p>By default <code>neko</code> will create the file <code>neko.db</code> in the current directory for storage.</p>
+
+<p>You can override the location of this database file with the <code>--database</code> command line option.</p>
+
+<pre><code>$ neko --database=/var/db/neko.db --add=http://trenchant.org/rss.xml
+</code></pre>
+
+<p>For expert users &ndash; this is a <a href="https://sqlite.org/">SQLite</a> database and can be manipulated with standard sqlite commands.</p>
+
+<h1>Usage</h1>
+
+<h2>Web Interface</h2>
+
+<p>You can do most of what you need to do with <code>neko</code> from the web interface, which is what <code>neko</code> does by default.</p>
+
+<pre><code>$ neko
+</code></pre>
+
+<p><code>neko</code> web interface should now be available at <code>127.0.0.1:4994</code> &ndash; opening a browser up to that should show you the interface.</p>
+
+<p>You can specify a different port using the <code>--http</code> option.</p>
+
+<pre><code>$ neko --http=9001
+</code></pre>
+
+<p>If you are hosting on a publicly available server instead of a personal computer, you can protect the interface with a password flag &ndash;</p>
+
+<pre><code>$ neko --password=rssisveryimportant
+</code></pre>
+
+<h2>Add Feed</h2>
+
+<p>You can add feeds directly from the command line for convenience &ndash;</p>
+
+<pre><code>$ neko --add=http://trenchant.org/rss.xml
+</code></pre>
+
+<h2>Crawl Feeds</h2>
+
+<p>By default <code>neko</code> will crawl your feeds every 60 minutes while the interface is running, but if you want to manually crawl from the command line &ndash;</p>
+
+<pre><code>$ neko --update
+</code></pre>
+
+<p>This will fetch, download, parse, and store in the database your feeds.</p>
+
+<h2>Export</h2>
+
+<p>Export de facto RSS feed standard OPML from the command line with &ndash;</p>
+
+<pre><code>$ neko --export=opml
+</code></pre>
+
+<p>Change <code>opml</code> to <code>text</code> for a simple list of feed URLs, or <code>json</code> for JSON formatted output.</p>
+
+<p>Export is also available in the web interface.</p>
+
+<p>Import of OPML and other things is a TODO item.</p>
+
+<h1>All Command Line Options</h1>
+
+<p>View all command line options with <code>-h</code> or <code>--help</code></p>
+
+<pre><code>$ neko -h
+</code></pre>
+
+<p>Usage of neko:
+  -a, &ndash;add http://example.com/rss.xml
+        add the feed at URL http://example.com/rss.xml
+  -d, &ndash;database string
+        sqlite database file (default &ldquo;neko.db&rdquo;)
+  -x, &ndash;export string
+        export feed. format required: text, json or opml
+  -h, &ndash;help
+        print usage information
+  -s, &ndash;http int
+        HTTP port to serve on (default 4994)
+  -i, &ndash;imageproxy
+        rewrite and proxy all image requests for privacy (experimental)
+  -m, &ndash;minutes int
+        minutes between crawling feeds (default 60)
+  -p, &ndash;password string
+        password to access web interface
+  -u, &ndash;update
+        fetch feeds and store new items
+  -v, &ndash;verbose
+        verbose output</p>
+
+<h1>TODO</h1>
+
+<ul>
+<li> manually initiate crawl/refresh from web interface</li>
+<li> auto-refresh feeds from web interface</li>
+<li> import</li>
+<li> mark all as read</li>
+<li> rewrite frontend in a modern js framework</li>
+<li> prettify interface</li>
+<li> cross-compilation of binaries for &ldquo;normal&rdquo; platforms</li>
+</ul>
+
+
+<h1>History</h1>
+
+<h2>Early 2017</h2>
+
+<p>I decided I didn&rsquo;t like the <a href="https://github.com/adammathes/neko_v1">original version of this that was python and mongo</a> so rewrote it. I wanted to learn some Go. So assume the code is not great since I don&rsquo;t know what I&rsquo;m doing even more so than normal.</p>
+
+<p>The Javascript frontend is still the same, I keep saying I will rewrite that too since it&rsquo;s old backbone.js code but it still seems to mostly work. It&rsquo;s not very pretty though.</p>
+
+<h2>July 2018 &ndash; v0.2</h2>
+
+<p>Significant changes to simplify setup, configuration, usage. The goal was typing <code>neko</code> should be all you need to do to get started and use the software.</p>
+
+<ul>
+<li> removed MySQL requirement (eliminating a ton of configuration and complexity)</li>
+<li> added SQLite support (easier!)</li>
+<li> auto-initialization of database file with embedded schema</li>
+<li> removed json-formatted config file &ndash; all options are command line options</li>
+<li> <code>neko</code> runs web server by default</li>
+<li> <code>neko</code> server crawls feeds regularly rather than requiring cron</li>
+</ul>
+
+
+<h1>Feedback</h1>
+
+<p>Pull requests and issues are welcomed at https://github.com/adammathes/snkt</p>
