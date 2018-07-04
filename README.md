@@ -104,14 +104,29 @@ Depending on your database file and other bits --
 
 ## TODO
 
+   * manually initiate crawl/refresh from web interface
+   * auto-refresh feeds from web interface
    * import
    * mark all as read
-   * initiate crawl from web interface
    * rewrite frontend in a modern js framework
-   * less ugly frontend
+   * prettify interface
+   * cross-compilation of binaries for "normal" platforms
 
 ## History
 
-I decided I didn't like the [old version that was python and mongo](https://github.com/adammathes/neko_v1) so rewrote it. I wanted to learn some Go. So assume the code is not great since I don't know what I'm doing even more so than normal.
+### Early 2017
 
-The Javascript frontend is still the same, I might rewrite that too since it's old backbone.js code and in the intervening years it looks like nobody uses that anymore.
+I decided I didn't like the [original version of this that was python and mongo](https://github.com/adammathes/neko_v1) so rewrote it. I wanted to learn some Go. So assume the code is not great since I don't know what I'm doing even more so than normal.
+
+The Javascript frontend is still the same, I keep saying I will rewrite that too since it's old backbone.js code but it still seems to mostly work. It's not very pretty though.
+
+### July 2018
+
+Significant changes to simplify setup, configuration, usage. The goal was typing `neko` should be all you need to do to get started and use the software.
+
+    * removed MySQL requirement (eliminating a ton of configuration and complexity)
+    * added SQLite support (easier!)
+    * auto-initialization of database file with embedded schema
+    * removed json-formatted config file -- all options are command line options
+    * `neko` runs web server by default
+    * `neko` server crawls feeds regularly rather than requiring cron

@@ -9,8 +9,8 @@ import (
 	"adammathes.com/neko/vlog"
 	"adammathes.com/neko/web"
 	"fmt"
-	"time"
 	flag "github.com/ogier/pflag"
+	"time"
 )
 
 func main() {
@@ -69,7 +69,7 @@ func main() {
 		if minutes < 1 {
 			return
 		}
-		ticker := time.NewTicker(time.Minute*time.Duration(minutes))
+		ticker := time.NewTicker(time.Minute * time.Duration(minutes))
 		defer ticker.Stop()
 		done := make(chan bool)
 		for {
@@ -88,4 +88,3 @@ func main() {
 		config.Config.Port)
 	web.Serve()
 }
-
