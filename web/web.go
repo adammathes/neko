@@ -3,6 +3,7 @@ package web
 import (
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/crawler"
+	"adammathes.com/neko/exporter"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
 	"encoding/base64"
@@ -193,6 +194,13 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func exportHandler(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.String()
+	w.Header().Set("content-type", "text/plain")
+	w.Write([]byte(exporter.ExportFeeds(format)))
+	return
+}
+
 func fullTextHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("request: %v\n\n", r)
 
@@ -289,6 +297,7 @@ func Serve() {
 	http.HandleFunc("/feed/", AuthWrap(feedHandler))
 	http.HandleFunc("/tag/", AuthWrap(categoryHandler))
 	http.Handle("/image/", http.StripPrefix("/image/", AuthWrap(imageProxyHandler)))
+	http.Handle("/export/", http.StripPrefix("/export/", AuthWrap(exportHandler)))
 
 	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/logout/", logoutHandler)

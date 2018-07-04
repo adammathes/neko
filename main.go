@@ -8,6 +8,7 @@ import (
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/vlog"
 	"adammathes.com/neko/web"
+	"fmt"
 	flag "github.com/ogier/pflag"
 )
 
@@ -26,10 +27,7 @@ func main() {
 	flag.StringVarP(&dbfile, "db", "d", "neko.db", "sqlite database file")
 	flag.IntVarP(&port, "http", "s", 4994, "HTTP port to serve on")
 	flag.BoolVarP(&proxyImages, "imageproxy", "i", false, "rewrite and proxy all image requests for privacy (experimental)")
-
-	// verbose output by default unless you know what you're doing
-	// this is probably wrong but keeping it this way for debugging
-	flag.BoolVarP(&verbose, "verbose", "v", true, "verbose output")
+	flag.BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 
 	// passwords on command line are bad
 	flag.StringVarP(&password, "password", "p", "", "password to access web interface")
@@ -60,14 +58,14 @@ func main() {
 		return
 	}
 	if export != "" {
-		vlog.Printf("feed export\n")
-		exporter.ExportFeeds(export)
+		vlog.Printf("exporting feeds in format %s\n", export)
+		fmt.Printf("%s", exporter.ExportFeeds(export))
 		return
 	}
 
-	if password == "" {
-		panic("Please specify an access password\n")
-	}
+	//	if password == "" {
+	//		panic("Please specify an access password\n")
+	//	}
 	vlog.Printf("starting web server at 127.0.0.1:%d\n",
 		config.Config.Port)
 	web.Serve()

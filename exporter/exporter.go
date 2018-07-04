@@ -2,37 +2,38 @@ package exporter
 
 import (
 	"adammathes.com/neko/models/feed"
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"html/template"
-	"os"
 )
 
-func ExportFeeds(format string) {
+func ExportFeeds(format string) string {
 	feeds, err := feed.All()
 	if err != nil {
 		panic(err)
 	}
 
+	s := ""
 	switch format {
 	case "text":
 		for _, f := range feeds {
-			fmt.Printf("%s\n", f.Url)
+			s = s + fmt.Sprintf("%s\n", f.Url)
 		}
 
 	case "opml":
-		fmt.Printf(`<opml version="2.0"><head><title>neko feeds</title></head><body>`)
-		fmt.Printf("\n")
+		s = s + fmt.Sprintf(`<opml version="2.0"><head><title>neko feeds</title></head><body>`)
+		s = s + fmt.Sprintf("\n")
 		for _, f := range feeds {
 			b, _ := xml.Marshal(f)
-			fmt.Printf("%s\n", string(b))
+			s = s + fmt.Sprintf("%s\n", string(b))
 		}
-		fmt.Printf(`</body></opml>`)
+		s = s + fmt.Sprintf(`</body></opml>`)
 
 	case "json":
 		js, _ := json.Marshal(feeds)
-		fmt.Printf("%s\n", js)
+		s = fmt.Sprintf("%s\n", js)
 
 	case "html":
 		htmlTemplateString := `<html>
@@ -48,10 +49,14 @@ func ExportFeeds(format string) {
 </ul>
 </body>
 </html>`
+		var bts bytes.Buffer
 		htmlTemplate, err := template.New("feeds").Parse(htmlTemplateString)
-		err = htmlTemplate.Execute(os.Stdout, feeds)
+		err = htmlTemplate.Execute(&bts, feeds)
 		if err != nil {
 			panic(err)
 		}
+		s = bts.String()
 	}
+
+	return s
 }
