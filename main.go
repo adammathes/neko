@@ -24,7 +24,7 @@ func main() {
 	flag.StringVarP(&export, "export", "x", "", "export feed. format required: text, json or opml")
 
 	// options with sensible defaults
-	flag.StringVarP(&dbfile, "db", "d", "neko.db", "sqlite database file")
+	flag.StringVarP(&dbfile, "database", "d", "neko.db", "sqlite database file")
 	flag.IntVarP(&port, "http", "s", 4994, "HTTP port to serve on")
 	flag.BoolVarP(&proxyImages, "imageproxy", "i", false, "rewrite and proxy all image requests for privacy (experimental)")
 	flag.BoolVarP(&verbose, "verbose", "v", false, "verbose output")
