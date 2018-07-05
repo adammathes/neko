@@ -201,6 +201,18 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func crawlHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "crawling...\n\n")
+	if f, ok := w.(http.Flusher); ok {
+		f.Flush()
+	} else {
+		log.Println("Damn, no flush")
+	}
+	crawler.Crawl()
+	fmt.Fprintf(w, "done...\n\n")
+	return
+}
+
 func fullTextHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("request: %v\n\n", r)
 
@@ -298,6 +310,7 @@ func Serve() {
 	http.HandleFunc("/tag/", AuthWrap(categoryHandler))
 	http.Handle("/image/", http.StripPrefix("/image/", AuthWrap(imageProxyHandler)))
 	http.Handle("/export/", http.StripPrefix("/export/", AuthWrap(exportHandler)))
+	http.HandleFunc("/crawl/", AuthWrap(crawlHandler))
 
 	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/logout/", logoutHandler)
