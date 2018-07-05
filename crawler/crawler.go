@@ -119,7 +119,7 @@ func CrawlFeed(f *feed.Feed, ch chan<- string) {
 	f.Update()
 
 	for _, i := range feed.Items {
-		vlog.Printf("storing item: %s", i.Link)
+		vlog.Printf("storing item: %s\n", i.Link)
 		var item item.Item
 		item.Title = i.Title
 		item.Url = i.Link
