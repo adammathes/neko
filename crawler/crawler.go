@@ -41,7 +41,7 @@ func Crawl() {
 func CrawlWorker(feeds <-chan *feed.Feed, results chan<- string) {
 
 	for f := range feeds {
-		vlog.Printf("crawl job recieved %s\n", f.Url)
+		vlog.Printf("crawl job received %s\n", f.Url)
 		CrawlFeed(f, results)
 		vlog.Printf("crawl job finished %s\n", f.Url)
 	}
