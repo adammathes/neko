@@ -122,7 +122,7 @@ You can add feeds directly from the command line for convenience --
 
 ## Crawl Feeds
 
-By default `neko` will crawl your feeds every 60 minutes while the interface is running, but if you want to manually crawl from the command line --
+Update feeds from the command line with --
 
     $ neko --update
 
@@ -159,8 +159,6 @@ Usage of neko:
     	HTTP port to serve on (default 4994)
   -i, --imageproxy
     	rewrite and proxy all image requests for privacy (experimental)
-  -m, --minutes int
-    	minutes between crawling feeds (default 60)
   -p, --password string
     	password to access web interface
   -u, --update

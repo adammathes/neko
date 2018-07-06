@@ -10,13 +10,14 @@ import (
 	"adammathes.com/neko/web"
 	"fmt"
 	flag "github.com/ogier/pflag"
-	"time"
 )
+
+var Version, Build string
 
 func main() {
 	var help, update, verbose, proxyImages bool
 	var dbfile, newFeed, export, password string
-	var port, minutes int
+	var port int
 
 	// commands // no command tries to run the web server
 	flag.BoolVarP(&help, "help", "h", false, "print usage information")
@@ -27,7 +28,7 @@ func main() {
 	// options with sensible defaults
 	flag.StringVarP(&dbfile, "database", "d", "neko.db", "sqlite database file")
 	flag.IntVarP(&port, "http", "s", 4994, "HTTP port to serve on")
-	flag.IntVarP(&minutes, "minutes", "m", 60, "minutes between crawling feeds")
+	// flag.IntVarP(&minutes, "minutes", "m", 60, "minutes between crawling feeds")
 	flag.BoolVarP(&proxyImages, "imageproxy", "i", false, "rewrite and proxy all image requests for privacy (experimental)")
 	flag.BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 
@@ -36,6 +37,7 @@ func main() {
 	flag.Parse()
 
 	if help {
+		fmt.Printf("neko v%s | build %s\n", Version, Build)
 		flag.Usage()
 		return
 	}
@@ -64,25 +66,27 @@ func main() {
 		return
 	}
 
-	go func() {
-		//		ticker := time.NewTicker(time.Second*5)
-		if minutes < 1 {
-			return
-		}
-		ticker := time.NewTicker(time.Minute * time.Duration(minutes))
-		defer ticker.Stop()
-		done := make(chan bool)
-		for {
-			select {
-			case <-done:
-				fmt.Println("done")
-				return
-			case t := <-ticker.C:
-				vlog.Printf("starting crawl at %s\n", t)
-				crawler.Crawl()
-			}
-		}
-	}()
+	//
+	// this doesn't seem quite right yet // will revise
+	// go func() {
+	// 	//		ticker := time.NewTicker(time.Second*5)
+	// 	if minutes < 1 {
+	// 		return
+	// 	}
+	// 	ticker := time.NewTicker(time.Minute * time.Duration(minutes))
+	// 	defer ticker.Stop()
+	// 	done := make(chan bool)
+	// 	for {
+	// 		select {
+	// 		case <-done:
+	// 			fmt.Println("done")
+	// 			return
+	// 		case t := <-ticker.C:
+	// 			vlog.Printf("starting crawl at %s\n", t)
+	// 			crawler.Crawl()
+	// 		}
+	// 	}
+	// }()
 
 	vlog.Printf("starting web server at 127.0.0.1:%d\n",
 		config.Config.Port)
