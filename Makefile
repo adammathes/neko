@@ -1,18 +1,22 @@
+BINARY=neko
+VERSION=0.2
+BUILD=`git rev-parse HEAD`
+
+LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
+
+
 SOURCES = $(wildcard *.go) $(wildcard */*.go)
 BINARIES = nekoweb nekocrawl
 
-DEPS = github.com/mmcdole/gofeed github.com/abbot/go-http-auth github.com/axgle/mahonia github.com/go-sql-driver/mysql github.com/microcosm-cc/bluemonday
+default: build
 
-default: $(BINARIES)
+all: clean build_all
 
+build:
+	go build ${LDFLAGS} -o ${BINARY}
 
-$(BINARIES): $(SOURCES)
-	go build
+install:
+	go install
 
-.PHONY: deps run
-
-.PHONY: run
-deps:
-	go get $(DEPS)
-run:
-	./neko -update -serve
+docs:
+	ghmarkdown README.md > readme.html
