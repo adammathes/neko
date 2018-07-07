@@ -36,6 +36,7 @@ func Crawl() {
 	for i := 0; i < len(feeds); i++ {
 		vlog.Println(<-results)
 	}
+	close(results)
 }
 
 func CrawlWorker(feeds <-chan *feed.Feed, results chan<- string) {
