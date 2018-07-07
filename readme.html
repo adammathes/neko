@@ -27,8 +27,6 @@ article { padding: 30px; }
 
 
 
-<p><strong>Table of Contents</strong></p>
-
 <ul>
 <li><a href="#neko" rel="nofollow">Neko</a>
 
@@ -60,6 +58,7 @@ article { padding: 30px; }
 <li><a href="#export" rel="nofollow">Export</a></li>
 </ul></li>
 <li><a href="#all-command-line-options" rel="nofollow">All Command Line Options</a></li>
+<li><a href="#configuration-file" rel="nofollow">Configuration File</a></li>
 <li><a href="#todo" rel="nofollow">TODO</a></li>
 <li><a href="#history" rel="nofollow">History</a>
 
@@ -133,15 +132,22 @@ Dependencies</h3>
 <h1><a name="configuration" class="anchor" href="#configuration" rel="nofollow" aria-hidden="true"><span class="octicon octicon-link"></span></a>
 Configuration</h1>
 
-<p>There&#39;s no configuration file -- everything is handled with a few command line flags. You shouldn&#39;t need to change the defaults most of the time.</p>
+<p>Everything can handled with a few command line flags. You shouldn&#39;t need to change the defaults most of the time.</p>
+
+<p>You can also set options using a configuration file <a href="http://yaml.org" rel="nofollow"><code>yaml</code></a>, described at the end of this README (but you probably don&#39;t need to.)</p>
 <h2><a name="storage" class="anchor" href="#storage" rel="nofollow" aria-hidden="true"><span class="octicon octicon-link"></span></a>
 Storage</h2>
 
 <p>By default <code>neko</code> will create the file <code>neko.db</code> in the current directory for storage.</p>
 
-<p>You can override the location of this database file with the <code>--database</code> command line option.</p>
+<p>You can override the location of this database file with the <code>--database</code> command line option or <code>-d</code> short option.</p>
 
 <pre><code>$ neko --database=/var/db/neko.db --add=http://trenchant.org/rss.xml
+</code></pre>
+
+<p>which is equivalent to --</p>
+
+<pre><code>$ neko -d /var/db/neko.db --add=http://trenchant.org/rss.xml
 </code></pre>
 
 <p>For expert users -- this is a <a href="https://sqlite.org/" rel="nofollow">SQLite</a> database and can be manipulated with standard sqlite commands --</p>
@@ -214,9 +220,14 @@ All Command Line Options</h1>
 <pre><code>    add the feed at URL http://example.com/rss.xml
 </code></pre>
 
+<p>-c, --config string</p>
+
+<pre><code>    read configuration from file
+</code></pre>
+
 <p>-d, --database string</p>
 
-<pre><code>    sqlite database file (default &#34;neko.db&#34;)
+<pre><code>    sqlite database file
 </code></pre>
 
 <p>-x, --export string</p>
@@ -231,12 +242,17 @@ All Command Line Options</h1>
 
 <p>-s, --http int</p>
 
-<pre><code>    HTTP port to serve on (default 4994)
+<pre><code>    HTTP port to serve on
 </code></pre>
 
 <p>-i, --imageproxy</p>
 
 <pre><code>    rewrite and proxy all image requests for privacy (experimental)
+</code></pre>
+
+<p>-m, --minutes int</p>
+
+<pre><code>    minutes between crawling feeds
 </code></pre>
 
 <p>-p, --password string</p>
@@ -253,12 +269,49 @@ All Command Line Options</h1>
 
 <pre><code>    verbose output
 </code></pre>
+
+<p>These are POSIX style flags so --</p>
+
+<pre><code>$ neko --minutes=120
+</code></pre>
+
+<p>is equivalent to</p>
+
+<pre><code>$ neko -m 120
+</code></pre>
+<h1><a name="configuration-file" class="anchor" href="#configuration-file" rel="nofollow" aria-hidden="true"><span class="octicon octicon-link"></span></a>
+Configuration File</h1>
+
+<p>For convenience, you can specify options in a configuration file.</p>
+
+<pre><code>$ neko -c /etc/neko.conf
+</code></pre>
+
+<p>A subset of the command line options are supported in the configuration file, with the same semantics --</p>
+
+<ul>
+<li>database</li>
+<li>http</li>
+<li>imageproxy</li>
+<li>minutes</li>
+<li>password</li>
+</ul>
+
+<p>For example --</p>
+
+<pre><code>database: /var/db/neko.db
+http: 9001
+imageproxy: true
+minutes: 90
+password: VeryLongRandomStringBecauseSecurityIsFun
+
+</code></pre>
 <h1><a name="todo" class="anchor" href="#todo" rel="nofollow" aria-hidden="true"><span class="octicon octicon-link"></span></a>
 TODO</h1>
 
 <ul>
-<li>manually initiate crawl/refresh from web interface</li>
-<li>auto-refresh feeds from web interface</li>
+<li>manually initiate crawl/refresh from web interface (done: /crawl/)</li>
+<li>auto-refresh feeds from web interface (wip: but may not be working right)</li>
 <li>import</li>
 <li>mark all as read</li>
 <li>rewrite frontend in a modern js framework</li>

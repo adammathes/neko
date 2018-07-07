@@ -17,7 +17,6 @@
 </pre>
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
-**Table of Contents**
 
 - [Neko](#neko)
     - [Features](#features)
@@ -34,6 +33,7 @@
     - [Crawl Feeds](#crawl-feeds)
     - [Export](#export)
 - [All Command Line Options](#all-command-line-options)
+- [Configuration File](#configuration-file)
 - [TODO](#todo)
 - [History](#history)
     - [Early 2017](#early-2017)
@@ -93,15 +93,21 @@ A `neko` binary should now be in `$GOPATH/bin/`. By default this is usually `$HO
 
 # Configuration
 
-There's no configuration file -- everything is handled with a few command line flags. You shouldn't need to change the defaults most of the time.
+Everything can handled with a few command line flags. You shouldn't need to change the defaults most of the time.
+
+You can also set options using a configuration file [`yaml`](http://yaml.org), described at the end of this README (but you probably don't need to.)
 
 ## Storage
 
 By default `neko` will create the file `neko.db` in the current directory for storage.
 
-You can override the location of this database file with the `--database` command line option.
+You can override the location of this database file with the `--database` command line option or `-d` short option.
 
     $ neko --database=/var/db/neko.db --add=http://trenchant.org/rss.xml
+
+which is equivalent to --
+
+    $ neko -d /var/db/neko.db --add=http://trenchant.org/rss.xml
 
 For expert users -- this is a [SQLite](https://sqlite.org/) database and can be manipulated with standard sqlite commands --
 
@@ -162,16 +168,20 @@ View all command line options with `-h` or `--help`
 Usage of neko:
   -a, --add http://example.com/rss.xml
     	add the feed at URL http://example.com/rss.xml
+  -c, --config string
+    	read configuration from file
   -d, --database string
-    	sqlite database file (default "neko.db")
+    	sqlite database file
   -x, --export string
     	export feed. format required: text, json or opml
   -h, --help
     	print usage information
   -s, --http int
-    	HTTP port to serve on (default 4994)
+    	HTTP port to serve on
   -i, --imageproxy
     	rewrite and proxy all image requests for privacy (experimental)
+  -m, --minutes int
+    	minutes between crawling feeds
   -p, --password string
     	password to access web interface
   -u, --update
@@ -179,10 +189,44 @@ Usage of neko:
   -v, --verbose
     	verbose output
 
+These are POSIX style flags so --
+
+    $ neko --minutes=120
+
+is equivalent to
+
+    $ neko -m 120
+
+# Configuration File
+
+For convenience, you can specify options in a configuration file.
+
+    $ neko -c /etc/neko.conf
+
+A subset of the command line options are supported in the configuration file, with the same semantics --
+
+   * database
+   * http
+   * imageproxy
+   * minutes
+   * password
+
+For example --
+
+```
+database: /var/db/neko.db
+http: 9001
+imageproxy: true
+minutes: 90
+password: VeryLongRandomStringBecauseSecurityIsFun
+
+```
+
+
 # TODO
 
-   * manually initiate crawl/refresh from web interface
-   * auto-refresh feeds from web interface
+   * manually initiate crawl/refresh from web interface (done: /crawl/)
+   * auto-refresh feeds from web interface (wip: but may not be working right)
    * import
    * mark all as read
    * rewrite frontend in a modern js framework
