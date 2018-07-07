@@ -1,17 +1,21 @@
 <pre style="font-family: menlo, courier, monospace;">
-                     ▄▄                 
-                     ██                 
- ██▄████▄   ▄████▄   ██ ▄██▀    ▄████▄  
- ██▀   ██  ██▄▄▄▄██  ██▄██     ██▀  ▀██ 
- ██    ██  ██▀▀▀▀▀▀  ██▀██▄    ██    ██ 
- ██    ██  ▀██▄▄▄▄█  ██  ▀█▄   ▀██▄▄██▀ 
- ▀▀    ▀▀    ▀▀▀▀▀   ▀▀   ▀▀▀    ▀▀▀▀   
-                                        
-                                        
+                     ██
+                     ██
+                     ██
+ ██░████    ░████▒   ██  ▓██▒   ░████░
+ ███████▓  ░██████▒  ██ ▓██▒   ░██████░
+ ███  ▒██  ██▒  ▒██  ██▒██▒    ███  ███
+ ██    ██  ████████  ████▓     ██░  ░██
+ ██    ██  ████████  █████     ██    ██
+ ██    ██  ██        ██░███    ██░  ░██
+ ██    ██  ███░  ▒█  ██  ██▒   ███  ███
+ ██    ██  ░███████  ██  ▒██   ░██████░
+ ██    ██   ░█████▒  ██   ███   ░████░
 
-              v0.2 manual
+             v0.2 manual
                7/4/2018
 </pre>
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
 **Table of Contents**
 
@@ -21,6 +25,7 @@
 - [Installation](#installation)
     - [Requirements](#requirements)
     - [Building](#building)
+        - [Dependencies](#dependencies)
 - [Configuration](#configuration)
     - [Storage](#storage)
 - [Usage](#usage)
@@ -67,10 +72,18 @@ Backend is written in `Go` and there is a simple javascript frontend and cat ear
 
 ## Requirements
 
-   * [Go](https://golang.org)
-   * [SQLite](https://sqlite.org/)
-   
+If you are using a binary, no dependencies!
+
+NOTE: I haven't put up any binaries yet.
+ 
 ## Building
+
+### Dependencies
+
+   * [Go](https://golang.org)
+   * [go-sqlite3](https://github.com/mattn/go-sqlite3)
+      * [sqlite](https://sqlite.org/index.html)
+      * [gcc](https://gcc.gnu.org)
 
     $ go get adammathes.com/neko
    
