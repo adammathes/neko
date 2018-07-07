@@ -17,23 +17,26 @@ var Version, Build string
 
 func main() {
 	var help, update, verbose, proxyImages bool
-	var dbfile, newFeed, export, password string
+	var configFile, dbfile, newFeed, export, password string
 	var port, minutes int
 
-	// commands // no command tries to run the web server
+	// config file
+	flag.StringVarP(&configFile, "config", "c", "", "read configuration from file")
+
+	// commands -- no command runs the web server
 	flag.BoolVarP(&help, "help", "h", false, "print usage information")
 	flag.BoolVarP(&update, "update", "u", false, "fetch feeds and store new items")
 	flag.StringVarP(&newFeed, "add", "a", "", "add the feed at URL `http://example.com/rss.xml`")
 	flag.StringVarP(&export, "export", "x", "", "export feed. format required: text, json or opml")
 
-	// options with sensible defaults
-	flag.StringVarP(&dbfile, "database", "d", "neko.db", "sqlite database file")
-	flag.IntVarP(&port, "http", "s", 4994, "HTTP port to serve on")
-	flag.IntVarP(&minutes, "minutes", "m", 60, "minutes between crawling feeds")
+	// options -- defaults are set in config/main.go and overridden by cmd line
+	flag.StringVarP(&dbfile, "database", "d", "", "sqlite database file")
+	flag.IntVarP(&port, "http", "s", 0, "HTTP port to serve on")
+	flag.IntVarP(&minutes, "minutes", "m", 0, "minutes between crawling feeds")
 	flag.BoolVarP(&proxyImages, "imageproxy", "i", false, "rewrite and proxy all image requests for privacy (experimental)")
 	flag.BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 
-	// passwords on command line are bad
+	// passwords on command line are bad, you should use the config file
 	flag.StringVarP(&password, "password", "p", "", "password to access web interface")
 	flag.Parse()
 
@@ -43,11 +46,30 @@ func main() {
 		return
 	}
 
+	// reads config if present and sets defaults
+	config.Init(configFile)
+
+	// override config file with flags if present
 	vlog.VERBOSE = verbose
-	config.Config.DBFile = dbfile
-	config.Config.Port = port
-	config.Config.ProxyImages = proxyImages
-	config.Config.DigestPassword = password
+	if dbfile != "" {
+		config.Config.DBFile = dbfile
+	}
+
+	if port != 0 {
+		config.Config.Port = port
+	}
+
+	if password != "" {
+		config.Config.DigestPassword = password
+	}
+
+	if minutes != 0 {
+		config.Config.CrawlMinutes = minutes
+	}
+
+	if proxyImages != false {
+		config.Config.ProxyImages = proxyImages
+	}
 
 	models.InitDB()
 
