@@ -74,20 +74,8 @@ func main() {
 }
 
 func backgroundCrawl(minutes int) {
-	if minutes < 1 {
-		return
-	}
-	ticker := time.NewTicker(time.Minute * time.Duration(minutes))
-	defer ticker.Stop()
-	done := make(chan bool)
 	for {
-		select {
-		case <-done:
-			fmt.Println("done")
-			return
-		case t := <-ticker.C:
-			vlog.Printf("starting crawl at %s\n", t)
-			crawler.Crawl()
-		}
+		time.Sleep(time.Minute * time.Duration(minutes))
+		crawler.Crawl()
 	}
 }
