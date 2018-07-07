@@ -89,13 +89,16 @@ func main() {
 		return
 	}
 
-	go backgroundCrawl(minutes)
+	go backgroundCrawl(config.Config.CrawlMinutes)
 	vlog.Printf("starting web server at 127.0.0.1:%d\n",
 		config.Config.Port)
 	web.Serve()
 }
 
 func backgroundCrawl(minutes int) {
+	if minutes < 1 {
+		return
+	}
 	for {
 		time.Sleep(time.Minute * time.Duration(minutes))
 		crawler.Crawl()
