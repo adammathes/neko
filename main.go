@@ -89,7 +89,7 @@ func main() {
 		return
 	}
 
-	go backgroundCrawl(config.Config.CrawlMinutes)
+	// go backgroundCrawl(config.Config.CrawlMinutes)
 	vlog.Printf("starting web server at 127.0.0.1:%d\n",
 		config.Config.Port)
 	web.Serve()
