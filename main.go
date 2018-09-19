@@ -27,7 +27,7 @@ func main() {
 	flag.BoolVarP(&help, "help", "h", false, "print usage information")
 	flag.BoolVarP(&update, "update", "u", false, "fetch feeds and store new items")
 	flag.StringVarP(&newFeed, "add", "a", "", "add the feed at URL `http://example.com/rss.xml`")
-	flag.StringVarP(&export, "export", "x", "", "export feed. format required: text, json or opml")
+	flag.StringVarP(&export, "export", "x", "", "export feed. format required: text, opml, html, or json")
 
 	// options -- defaults are set in config/main.go and overridden by cmd line
 	flag.StringVarP(&dbfile, "database", "d", "", "sqlite database file")
