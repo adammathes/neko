@@ -4,6 +4,7 @@ $(document).ready(function() {
     if ( $(window).width() < 1024 ) {
         $('#filters').addClass('hidden');
     }
+    document.body.className = localStorage.getItem('theme');
     boot();
 });
 
@@ -170,6 +171,9 @@ var ControlsView = Backbone.View.extend({
         'click .unread_filter': 'filterToUnread',
         'click .new_feed': 'newFeed',
         'click .search_go': 'filterToSearch',
+        'click .light_theme': 'lightTheme',
+        'click .dark_theme': 'darkTheme',
+        'click .black_theme': 'blackTheme',
     },
 
     initialize: function() {
@@ -206,6 +210,21 @@ var ControlsView = Backbone.View.extend({
         return this;
     },
 
+    lightTheme: function() {
+        document.body.className = "light";
+        localStorage.setItem("theme", "light");
+    },
+
+    darkTheme: function() {
+        document.body.className = "dark";
+        localStorage.setItem("theme", "dark");
+    },
+
+    blackTheme: function() {
+        document.body.className = "black";
+        localStorage.setItem("theme", "black");
+    },
+    
 });
 
 
@@ -637,7 +656,6 @@ function infini_scroll() {
     }
     window.setTimeout(infini_scroll, 1000);
 }
-
 
 var ItemSelector =  {
     selected_index: 0,

@@ -283,3 +283,30 @@ button {
         width: 100%;
     }
 }
+
+body.dark {
+    color: #fff;
+    background-color: #24292e;
+}
+
+body.black {
+    color: #fff;
+    background-color: black;
+}
+
+body.dark a, body.black a {
+    color: rgb(90, 200, 250);
+}
+
+body.dark button, body.dark #controls li a {
+    color: black;
+}
+
+
+body.black button, body.black #controls li a {
+    color: black;
+}
+
+.themes button {
+    width: 30%;
+}
