@@ -632,10 +632,6 @@ function boot() {
             event.preventDefault();
             App.star();
         }
-        if (event.which == 70) {
-            event.preventDefault();
-            App.full();
-        }
     });
 
     App.boot();
