@@ -79,7 +79,7 @@ func (f *Feed) Update() {
 		return
 	}
 
-	models.DB.Query(`UPDATE feed 
+	_, _ = models.DB.Exec(`UPDATE feed 
                      SET title=?, url=?, web_url=?, category=?
                      WHERE id=?`, f.Title, f.Url, f.WebUrl, f.Category, f.Id)
 }

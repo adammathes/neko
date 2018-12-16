@@ -45,7 +45,6 @@ func main() {
 		flag.Usage()
 		return
 	}
-
 	// reads config if present and sets defaults
 	config.Init(configFile)
 
@@ -89,7 +88,7 @@ func main() {
 		return
 	}
 
-	// go backgroundCrawl(config.Config.CrawlMinutes)
+	go backgroundCrawl(config.Config.CrawlMinutes)
 	vlog.Printf("starting web server at 127.0.0.1:%d\n",
 		config.Config.Port)
 	web.Serve()
@@ -99,6 +98,7 @@ func backgroundCrawl(minutes int) {
 	if minutes < 1 {
 		return
 	}
+	vlog.Printf("starting background crawl every %d minutes\n", minutes)
 	for {
 		time.Sleep(time.Minute * time.Duration(minutes))
 		crawler.Crawl()
