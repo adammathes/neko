@@ -38,10 +38,9 @@ func ExportFeeds(format string) string {
 	case "html":
 		htmlTemplateString := `<html>
 <head>
-<title>neko exported feeds</title>
+<title>feeds</title>
 </head>
 <body>
-<h1>neko exported feeds</h1>
 <ul>
 {{ range . }}
 <li><a href="{{.WebUrl}}">{{.Title}}</a> | <a href="{{.Url}}">xml</a></li>
