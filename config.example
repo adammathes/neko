@@ -1,8 +1,5 @@
-{
-    "db_driver": "sqlite3",
-    "db": "neko.db",    
-    "web": "127.0.0.0.1:4994",
-    "username": "username",
-    "password": "plaintextexamplepasswordpleasereplacethis",
-    "proxy_images": false
-}
+database: /var/db/neko.db
+http: 9001
+imageproxy: true
+minutes: 90
+password: VeryLongRandomStringBecauseSecurityIsFun
