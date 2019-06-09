@@ -102,7 +102,7 @@ func (i *Item) GetFullContent() {
 	var md, img string
 	md = ""
 	img = ""
-	md = string(blackfriday.MarkdownCommon([]byte(article.CleanedText)))
+	md = string(blackfriday.Run([]byte(article.CleanedText)))
 
 	ht, err := article.TopNode.Html()
 	if err != nil {

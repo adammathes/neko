@@ -17,7 +17,8 @@ require (
 	github.com/mmcdole/goxpp v0.0.0-20181012175147-0068e33feabf // indirect
 	github.com/ogier/pflag v0.0.1
 	github.com/olekukonko/tablewriter v0.0.1 // indirect
-	github.com/russross/blackfriday v1.5.2
+	github.com/russross/blackfriday v2.0.0+incompatible
+	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/stretchr/testify v1.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
