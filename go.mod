@@ -24,6 +24,7 @@ require (
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/fatih/set v0.2.1 // indirect
 	github.com/gigawattio/window v0.0.0-20180317192513-0f5467e35573 // indirect
+	github.com/gilliek/go-opml v1.0.0 // indirect
 	github.com/go-resty/resty/v2 v2.3.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/jaytaylor/html2text v0.0.0-20200412013138-3577fbdbcff7 // indirect

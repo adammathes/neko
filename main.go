@@ -4,6 +4,7 @@ import (
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/crawler"
 	"adammathes.com/neko/exporter"
+	"adammathes.com/neko/importer"
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/vlog"
@@ -17,7 +18,7 @@ var Version, Build string
 
 func main() {
 	var help, update, verbose, proxyImages bool
-	var configFile, dbfile, newFeed, export, password string
+	var configFile, dbfile, newFeed, export, password, importOPMLFile string
 	var port, minutes int
 
 	// config file
@@ -28,6 +29,7 @@ func main() {
 	flag.BoolVarP(&update, "update", "u", false, "fetch feeds and store new items")
 	flag.StringVarP(&newFeed, "add", "a", "", "add the feed at URL `http://example.com/rss.xml`")
 	flag.StringVarP(&export, "export", "x", "", "export feed. format required: text, opml, html, or json")
+	flag.StringVarP(&importOPMLFile, "import-opml", "I", "", "import feeds from an OPML file at `filepath`")
 
 	// options -- defaults are set in config/main.go and overridden by cmd line
 	flag.StringVarP(&dbfile, "database", "d", "", "sqlite database file")
@@ -71,6 +73,12 @@ func main() {
 	}
 
 	models.InitDB()
+
+	if importOPMLFile != "" {
+		vlog.Printf("importing feeds from OPML file %s\n", importOPMLFile)
+		importer.ImportOPML(importOPMLFile)
+		return // Exit after import
+	}
 
 	if update {
 		vlog.Printf("starting crawl\n")
