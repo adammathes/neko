@@ -1,8 +1,8 @@
 module adammathes.com/neko
 
-go 1.21
+go 1.23.0
 
-toolchain go1.22.1
+toolchain go1.24.3
 
 require (
 	github.com/GeertJohan/go.rice v1.0.0
@@ -13,7 +13,7 @@ require (
 	github.com/mmcdole/gofeed v1.1.0
 	github.com/ogier/pflag v0.0.1
 	github.com/russross/blackfriday v2.0.0+incompatible
-	golang.org/x/crypto v0.14.0
+	golang.org/x/crypto v0.35.0
 	gopkg.in/yaml.v2 v2.3.0
 )
 
@@ -36,6 +36,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
-	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 )
