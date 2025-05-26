@@ -1,5 +1,5 @@
-config.json
-neko
-nekocrawl
-nekoweb
 .DS_Store
+config.json
+go.sum
+neko
+neko.db
