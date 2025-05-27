@@ -1,8 +1,82 @@
 var templates = {};
 
-$(document).ready(function() {
-    if ( $(window).width() < 1024 ) {
-        $('#filters').addClass('hidden');
+function getOffset(el) {
+  const rect = el.getBoundingClientRect();
+  return {
+    top: rect.top + window.scrollY,
+    left: rect.left + window.scrollX
+  };
+}
+
+// Helper function to safely access nested properties
+function getProperty(obj, path) {
+    if (!path) return undefined;
+    const parts = path.split('.');
+    let current = obj;
+    for (let i = 0; i < parts.length; i++) {
+        if (current && typeof current === 'object' && parts[i] in current) {
+            current = current[parts[i]];
+        } else {
+            return undefined;
+        }
+    }
+    return current;
+}
+
+// Basic HTML escaping function for ${...}
+function escapeHtml(unsafe) {
+    if (unsafe === undefined || unsafe === null) return '';
+    return String(unsafe)
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+}
+
+function renderTemplate(templateString, dataObject) {
+    let result = templateString;
+
+    // 1. Handle {{html property}}
+    result = result.replace(/{{\s*html\s+([a-zA-Z0-9_.]+)\s*}}/g, (match, propertyPath) => {
+        const value = getProperty(dataObject, propertyPath);
+        return value !== undefined ? String(value) : ''; // Render as raw HTML
+    });
+
+    // 2. Handle {{if condition}}...{{else}}...{{/if}}
+    // This regex handles simple, non-nested if/else blocks.
+    // It needs to be applied iteratively if there are multiple such blocks.
+    const ifRegex = /{{\s*if\s+([a-zA-Z0-9_.]+)\s*}}([\s\S]*?)(?:{{\s*else\s*}}([\s\S]*?))?{{\s*\/if\s*}}/;
+    let match;
+    while ((match = ifRegex.exec(result)) !== null) {
+        const conditionPath = match[1];
+        const ifContent = match[2];
+        const elseContent = match[3] || ''; // Handles cases with no {{else}}
+
+        const conditionValue = getProperty(dataObject, conditionPath);
+
+        if (conditionValue) {
+            // Recursively render the 'if' block content
+            result = result.replace(match[0], renderTemplate(ifContent, dataObject));
+        } else {
+            // Recursively render the 'else' block content
+            result = result.replace(match[0], renderTemplate(elseContent, dataObject));
+        }
+    }
+
+    // 3. Handle ${property}
+    result = result.replace(/\$\{([a-zA-Z0-9_.]+)\}/g, (match, propertyPath) => {
+        const value = getProperty(dataObject, propertyPath);
+        return escapeHtml(value); // Escape HTML for variables
+    });
+
+    return result;
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    if ( window.innerWidth < 1024 ) {
+        document.querySelector('#filters').classList.add('hidden');
     }
     document.body.className = localStorage.getItem('theme');
     boot();
@@ -92,7 +166,7 @@ var AppModel =  Backbone.Model.extend({
     },
 
     filterToSearch: function() {
-        this.set('searchFilter', $('#search').val());
+        this.set('searchFilter', document.querySelector('#search').value);
         this.set('starredFilter', false);
         this.set('allFilter', true);
         this.set('unreadFilter', false);
@@ -100,12 +174,13 @@ var AppModel =  Backbone.Model.extend({
     },
 
     update_read_status: function() {
-        var screen_top = $(window).scrollTop();
-        var screen_bottom = $(window).scrollTop() +  $(window).height();
+        var screen_top = window.scrollY;
+        var screen_bottom = window.scrollY +  window.innerHeight;
 
         // // mark all visible items as read
-        $.each($('.item'), function(i,v) {
-            var item_top = $(v).offset().top;
+        // $.each($('.item'), function(i,v) { // $.each will be handled later
+        document.querySelectorAll('.item').forEach(function(v, i) {
+            var item_top = getOffset(v).top;
             // console.log("i ", i, "item_top ", item_top, "screen_top ", screen_top, "screen_bottom ", screen_bottom);
 
             if( (item_top < screen_top)) {
@@ -117,12 +192,15 @@ var AppModel =  Backbone.Model.extend({
     },
 
     scroll_to_selected: function() {
-        var item = $('.item').eq(this.get('selectedIndex'));
-        if(item.offset()) {
-            var item_top = item.offset().top;
-            $('.item').removeClass('selected');
-            item.addClass('selected');
-            $(window).scrollTop(item_top);
+        var items = document.querySelectorAll('.item');
+        var item = items[this.get('selectedIndex')];
+        if(item && getOffset(item)) { // ensure item exists
+            var item_top = getOffset(item).top;
+            items.forEach(function(el) {
+                el.classList.remove('selected');
+            });
+            item.classList.add('selected');
+            window.scrollTo(0, item_top);
         }
         App.items.at(this.get('selectedIndex')).markRead();
         if(App.items.models.length>1) {
@@ -165,19 +243,9 @@ var App = new AppModel();
 var ControlsView = Backbone.View.extend({
     className: 'controls',
 
-    events: {
-        'click .starred_filter': 'filterToStarred',
-        'click .all_filter': 'filterToAll',
-        'click .unread_filter': 'filterToUnread',
-        'click .new_feed': 'newFeed',
-        'click .search_go': 'filterToSearch',
-        'click .light_theme': 'lightTheme',
-        'click .dark_theme': 'darkTheme',
-        'click .black_theme': 'blackTheme',
-    },
-
+    // events hash removed
     initialize: function() {
-        _.bindAll(this, 'render');
+        _.bindAll(this, 'render', 'filterToStarred', 'filterToAll', 'filterToUnread', 'newFeed', 'filterToSearch', 'lightTheme', 'darkTheme', 'blackTheme');
         this.model.bind('change', this.render);
     },
 
@@ -205,9 +273,36 @@ var ControlsView = Backbone.View.extend({
     },
 
     render: function() {
-        var h = $.tmpl(templates.controls_template, { 'app': this.model.toJSON() });
-        $(this.el).html(h);
+        var h = renderTemplate(templates.controls_template, { 'app': this.model.toJSON() });
+        this.el.innerHTML = h;
+        this.attachEvents();
         return this;
+    },
+
+    attachEvents: function() {
+        const starredFilterEl = this.el.querySelector('.starred_filter');
+        if (starredFilterEl) starredFilterEl.addEventListener('click', this.filterToStarred);
+
+        const allFilterEl = this.el.querySelector('.all_filter');
+        if (allFilterEl) allFilterEl.addEventListener('click', this.filterToAll);
+
+        const unreadFilterEl = this.el.querySelector('.unread_filter');
+        if (unreadFilterEl) unreadFilterEl.addEventListener('click', this.filterToUnread);
+
+        const newFeedEl = this.el.querySelector('.new_feed');
+        if (newFeedEl) newFeedEl.addEventListener('click', this.newFeed);
+
+        const searchGoEl = this.el.querySelector('.search_go');
+        if (searchGoEl) searchGoEl.addEventListener('click', this.filterToSearch);
+
+        const lightThemeEl = this.el.querySelector('.light_theme');
+        if (lightThemeEl) lightThemeEl.addEventListener('click', this.lightTheme);
+
+        const darkThemeEl = this.el.querySelector('.dark_theme');
+        if (darkThemeEl) darkThemeEl.addEventListener('click', this.darkTheme);
+
+        const blackThemeEl = this.el.querySelector('.black_theme');
+        if (blackThemeEl) blackThemeEl.addEventListener('click', this.blackTheme);
     },
 
     lightTheme: function() {
@@ -280,10 +375,20 @@ var Item = Backbone.Model.extend({
         // so just hacking this in for now
 
         if(this.get('full_content') == "") {
-            $.getJSON('/item/' + this.get('_id'), function(data) {
-                var i = App.items.get(data['_id'])
-                i.set('full_content', data['full_content']);
-            });
+            fetch('/item/' + this.get('_id'))
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    var i = App.items.get(data['_id']);
+                    i.set('full_content', data['full_content']);
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
         }
     }
 
@@ -330,29 +435,39 @@ var ItemCollection = Backbone.Collection.extend({
 
         console.log('fetching from ', url);
         var t = this;
-        $.getJSON(url, function(data) {
-            var items = [];
-            $.each(data, function(i,v) {
-                var item = new Item(v);
-                t.add(item);
-                items.push(item);
-                if(t.models.length==1){
-                    App.set('selectedIndex', 0);
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
                 }
+                return response.json();
+            })
+            .then(data => {
+                var items = [];
+                data.forEach(function(itemData, index) {
+                    var item = new Item(itemData);
+                    t.add(item);
+                    items.push(item);
+                    if(t.models.length==1){
+                        App.set('selectedIndex', 0);
+                    }
+                });
+                // console.log("items ", items)
+                if(items.length == 0) {
+                    // console.log("no more items");
+                    App.noMore = true;
+                    // App.loading = true;
+                }
+                else {
+                    App.loading = false;
+                }
+                // we wait and add them all at once for performance on mobile
+                App.itemListView.addAll(items);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+                App.loading = false; // Reset loading state on error
             });
-            // console.log("items ", items)
-            if(items.length == 0) {
-                // console.log("no more items");
-                App.noMore = true;
-                // App.loading = true;
-            }
-            else {
-                App.loading = false;
-            }
-            // we wait and add them all at once for performance on mobile
-            App.itemListView.addAll(items);
-
-        });
     },
 
     reboot: function() {
@@ -371,14 +486,10 @@ var ItemView = Backbone.View.extend({
     tagName: "div",
     className: "item",
     template: templates.item_template,
-    events: {
-        "click .star": "star",
-        "click .unstar": "unstar",
-        "click .full": "full",
-    },
+    // events hash removed
 
     initialize: function() {
-        _.bindAll(this, 'render', 'star');
+        _.bindAll(this, 'render', 'star', 'unstar', 'full');
         this.model.bind('change', this.render);
     },
 
@@ -398,9 +509,21 @@ var ItemView = Backbone.View.extend({
     },
 
     render: function() {
-        var h = $.tmpl(templates.item_template, { 'item': this.model.toJSON() });
-        $(this.el).html(h);
+        var h = renderTemplate(templates.item_template, { 'item': this.model.toJSON() });
+        this.el.innerHTML = h;
+        this.attachEvents();
         return this;
+    },
+
+    attachEvents: function() {
+        const starEl = this.el.querySelector('.star');
+        if (starEl) starEl.addEventListener('click', this.star);
+
+        const unstarEl = this.el.querySelector('.unstar');
+        if (unstarEl) unstarEl.addEventListener('click', this.unstar);
+
+        const fullEl = this.el.querySelector('.full');
+        if (fullEl) fullEl.addEventListener('click', this.full);
     },
 });
 
@@ -412,14 +535,14 @@ var ItemListView = Backbone.View.extend( {
     },
     addOne: function(item) {
         var view = new ItemView({'model': item});
-        this.$el.append(view.render().el);
+        this.el.appendChild(view.render().el);
     },
     addAll: function(items) {
         // Posts.each(this.addOne);
         for(i in items) {
             item = items[i];
             var view = new ItemView({'model': item});
-            this.$el.append(view.render().el);
+            this.el.appendChild(view.render().el);
         };
     },
     change: function() {
@@ -427,7 +550,10 @@ var ItemListView = Backbone.View.extend( {
     render: function() {
     },
     reset: function() {
-        this.$el.children().remove();
+        // this.$el.children().remove();
+        while (this.el.firstChild) {
+            this.el.removeChild(this.el.firstChild);
+        }
     }
 });
 
@@ -442,12 +568,22 @@ var TagCollection = Backbone.Collection.extend({
 
     boot: function() {
         var t = this;
-        $.getJSON('/tag/', function(data) {
-            $.each(data, function(i,v) {
-                var tag = new Tag(v);
-                t.add(tag);
+        fetch('/tag/')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                data.forEach(function(tagData, index) {
+                    var tag = new Tag(tagData);
+                    t.add(tag);
+                });
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
             });
-        });
     }
 });
 App.tags = new TagCollection();
@@ -456,18 +592,24 @@ App.tags = new TagCollection();
 var TagView = Backbone.View.extend({
     tagName: "li",	
     className: "tag",
-    events: {
-        "click": "filterTo",
-    },
+    // events hash removed
+
     initialize: function() {
         _.bindAll(this, 'render', 'filterTo');
         this.model.bind('change', this.render);
     },
     render: function() {
-        var h = $.tmpl(templates.tag_template, { 'tag': this.model.toJSON() });
-        $(this.el).html(h);
+        var h = renderTemplate(templates.tag_template, { 'tag': this.model.toJSON() });
+        this.el.innerHTML = h;
+        this.attachEvents();
         return this;
     },
+
+    attachEvents: function() {
+        // Event is directly on this.el
+        this.el.addEventListener('click', this.filterTo);
+    },
+
     filterTo: function() {
         App.filterToTag(this.model);
     }
@@ -484,7 +626,7 @@ var TagListView = Backbone.View.extend( {
     },
     addOne: function(tag) {
         var view = new TagView({'model': tag});
-        this.$el.append(view.render().el);
+        this.el.appendChild(view.render().el);
     },
     addAll: function() {
         App.tags.each(this.addOne);
@@ -518,20 +660,30 @@ App.feeds = new FeedCollection();
 var FeedView = Backbone.View.extend({
     tagName: "li",
     className: "feed",
-    events: {
-        "click .txt": "filterTo",
-        "click .delete": "del",
-        "click .edit": "edit",
-    },
+    // events hash removed
+
     initialize: function() {
-        _.bindAll(this, 'render', 'filterTo', "del");
+        _.bindAll(this, 'render', 'filterTo', "del", "edit"); // Added 'edit' to bindAll
         this.model.bind('change', this.render);
     },
     render: function() {
-        var h = $.tmpl(templates.feed_template, { 'feed': this.model.toJSON() });
-        $(this.el).html(h);
+        var h = renderTemplate(templates.feed_template, { 'feed': this.model.toJSON() });
+        this.el.innerHTML = h;
+        this.attachEvents();
         return this;
     },
+
+    attachEvents: function() {
+        const txtEl = this.el.querySelector('.txt');
+        if (txtEl) txtEl.addEventListener('click', this.filterTo);
+
+        const deleteEl = this.el.querySelector('.delete');
+        if (deleteEl) deleteEl.addEventListener('click', this.del);
+
+        const editEl = this.el.querySelector('.edit');
+        if (editEl) editEl.addEventListener('click', this.edit);
+    },
+
     filterTo: function() {
         //        console.log('filtering to feed ', this.model);
         App.filterToFeed(this.model);
@@ -539,7 +691,7 @@ var FeedView = Backbone.View.extend({
     del: function() {
         if( window.confirm("Unsubscribe from " + this.model.get("url") + "?" ) ) {
             this.model.destroy();
-            this.$el.remove();
+            this.el.remove();
         }
     },
     edit: function() {
@@ -562,7 +714,7 @@ var FeedListView = Backbone.View.extend( {
     addOne: function(feed) {
         // console.log('adding a feed...', feed);
         var view = new FeedView({'model': feed});
-        this.$el.append(view.render().el);
+        this.el.appendChild(view.render().el);
     },
     addAll: function() {
         // console.log('feed add all...');
@@ -582,41 +734,41 @@ var FeedListView = Backbone.View.extend( {
 var selected_item = 0;
 
 function boot() {
-    templates['item_template'] = $('#item_template').html();
-    templates['tag_template'] = $('#tag_template').html();
-    templates['feed_template'] = $('#feed_template').html();
-    templates['controls_template'] = $('#controls_template').html();
+    templates['item_template'] = document.querySelector('#item_template').innerHTML;
+    templates['tag_template'] = document.querySelector('#tag_template').innerHTML;
+    templates['feed_template'] = document.querySelector('#feed_template').innerHTML;
+    templates['controls_template'] = document.querySelector('#controls_template').innerHTML;
 
     App.itemListView = new ItemListView();
-    App.itemListView.setElement($('#items'));
+    App.itemListView.setElement(document.querySelector('#items'));
     App.tagListView = new TagListView();
-    App.tagListView.setElement($('#tags'));
+    App.tagListView.setElement(document.querySelector('#tags'));
     App.feedListView = new FeedListView();
-    App.feedListView.setElement($('#feeds'));
+    App.feedListView.setElement(document.querySelector('#feeds'));
     App.controlsView = new ControlsView({model: App});
-    App.controlsView.setElement($('#controls'));
+    App.controlsView.setElement(document.querySelector('#controls'));
     App.controlsView.render();
 
     infini_scroll();
 
-    $('#unread_filter').on('click', function() {
+    document.querySelector('#unread_filter').addEventListener('click', function() {
         App.read_filter = 'unread';
         App.items.reboot();
     });
 
-    $('#all_filter').on('click', function() {
+    document.querySelector('#all_filter').addEventListener('click', function() {
         App.read_filter = 'all';
         App.items.reboot();
     });
 
-//    $('.logo').on('click', function() {
+//    document.querySelector('.logo').addEventListener('click', function() { // Example, if it were to be uncommented
         //        App.set('feedFilter', undefined);
         //        App.items.reboot();
 
 //    });
 
     // keyboard shortcuts
-    $('body').keydown(function(event) {
+    document.body.addEventListener('keydown', function(event) {
         if(document.activeElement.id == "search") {
             return;
         }
@@ -644,8 +796,10 @@ function infini_scroll() {
     if(App.loading) {
     }
     else {
-        var dh = $('#items').height() - $(window).height();
-        var st = $(window).scrollTop();
+        var itemsEl = document.querySelector('#items');
+        // Ensure itemsEl is not null before trying to get its height
+        var dh = (itemsEl ? itemsEl.offsetHeight : 0) - window.innerHeight;
+        var st = window.scrollY;
         if  ( (dh-st) < 100   ){
             App.items.boot();
         }

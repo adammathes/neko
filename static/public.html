@@ -3,8 +3,6 @@
   <head>
     <title>neko rss mode</title>
     <link rel="stylesheet" href="/static/style.css" />
-    <script src="/static/jquery.min.js"></script>
-    <script src="/static/jquery.tmpl.min.js"></script>
     <script src="/static/underscore.min.js"></script>
     <script src="/static/backbone.min.js"></script>
     <script>
@@ -21,7 +19,7 @@
         <p style="font-size: 10px;">this is an rss aggregator</p>
         <a href="/login/">LOGIN</a>
 
-        <h4 onclick="$('#feeds').toggle();">Feeds</h4>
+        <h4 onclick="document.querySelector('#feeds').style.display = document.querySelector('#feeds').style.display === 'none' ? '' : 'none';">Feeds</h4>
         <ul id="feeds" style="display: none;">
         </ul>
 
