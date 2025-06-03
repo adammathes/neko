@@ -1,3 +1,39 @@
+// Place at the very top of static/ui.js
+(function() {
+  // A very minimal DOM utility function to satisfy Backbone's requirements
+  // when jQuery is not present.
+  var $ = function(selectorOrElement) {
+    var el;
+    if (typeof selectorOrElement === 'string') {
+      el = document.querySelector(selectorOrElement);
+    } else {
+      el = selectorOrElement; // Assume it's a DOM element
+    }
+    // Backbone expects $el to be an object with the element at index 0
+    // and a length property. It also checks `el instanceof Backbone.$`.
+    // To satisfy `instanceof $`, we make the returned object an instance of `$`.
+    var wrapper = Object.create($.prototype);
+    if (el) {
+      wrapper[0] = el;
+      wrapper.length = 1;
+    } else {
+      wrapper.length = 0; // No element found or passed
+    }
+    return wrapper;
+  };
+  // You can add other minimal methods to $.prototype if Backbone needs them,
+  // e.g., .addClass, .removeClass, but start with the minimum for _setElement.
+  // For example, a simple 'find' might be needed by some view operations if they use it internally.
+  // $.prototype.find = function(selector) {
+  //   if (!this[0]) return $(); // Return empty wrapper
+  //   return $(this[0].querySelectorAll(selector)); // Basic find
+  // };
+
+  // Expose this to Backbone
+  Backbone.$ = $;
+})();
+
+// ... rest of ui.js starting with var templates = {}; ...
 var templates = {};
 
 function getOffset(el) {
