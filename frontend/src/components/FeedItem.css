@@ -1,8 +1,8 @@
 .feed-item {
-    border-bottom: 1px solid #f0f0f0;
-    padding: 1rem 0;
+    padding: 1rem;
+    margin-top: 5rem;
     list-style: none;
-    /* Ensure no bullets if used in ul */
+    border-bottom: none;
 }
 
 .feed-item.read .item-title {
@@ -18,21 +18,22 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    margin-bottom: 0.5rem;
 }
 
 .item-title {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
+    /* Legacy h3 size approx */
     text-decoration: none;
     color: #333;
     display: block;
-    margin-bottom: 0.5rem;
     flex: 1;
-    /* Take up remaining space */
 }
 
 .item-title:hover {
-    text-decoration: underline;
-    color: #007bff;
+    text-decoration: none;
+    color: blue;
+    /* Legacy link color */
 }
 
 .item-actions {
@@ -41,36 +42,39 @@
     margin-left: 1rem;
 }
 
+/* Legacy controls were simple text/links, but buttons are fine if minimal */
 .action-btn {
-    background: none;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    background: whitesmoke;
+    border: none;
     cursor: pointer;
     padding: 2px 6px;
     font-size: 1rem;
-    line-height: 1;
+    color: blue;
+    font-weight: bold;
 }
 
 .action-btn:hover {
-    background-color: #f8f9fa;
-    border-color: #ccc;
+    background-color: #eee;
 }
 
-.action-btn.is-starred {
-    color: gold;
-    border-color: gold;
+.dateline {
+    margin-top: 0;
+    font-weight: normal;
+    font-size: .75em;
+    color: #ccc;
+    margin-bottom: 1rem;
 }
 
-.item-meta {
-    font-size: 0.85rem;
-    color: #666;
-    margin-bottom: 0.5rem;
+.dateline a {
+    color: #ccc;
+    text-decoration: none;
 }
 
 .item-description {
-    color: #444;
+    color: #000;
     line-height: 1.5;
-    font-size: 0.95rem;
+    font-size: 1rem;
+    margin-top: 1rem;
 }
 
 .item-description img {
@@ -78,4 +82,11 @@
     height: auto;
     display: block;
     margin: 1rem 0;
+}
+
+.item-description blockquote {
+    padding: 1rem 1rem 0 1rem;
+    border-left: 4px solid #ddd;
+    color: #666;
+    margin-left: 0;
 }

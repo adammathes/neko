@@ -22,19 +22,45 @@ body {
 }
 
 .dashboard-header {
-  background: #2c3e50;
+  /* Legacy didn't really have a top header, but we need one for settings/logout. 
+     Keeping it minimal/flat or matching sidebar bg if we want to blend in. 
+     For now, let's make it dark gray to stand out less or match legacy dark mode if applicable.
+     Actually, let's keep it distinct but apply the font styles. */
+  background: #222;
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: bold;
 }
 
 .dashboard-header h1 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-variant: small-caps;
+  text-transform: lowercase;
+}
+
+.nav-link,
+.logout-btn {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  font-size: 1rem;
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
+.nav-link:hover,
+.logout-btn:hover {
+  color: white;
+  text-decoration: underline;
 }
 
 .dashboard-content {
@@ -44,19 +70,27 @@ body {
 }
 
 .dashboard-sidebar {
-  width: 300px;
-  background: #f8f9fa;
-  border-right: 1px solid #ddd;
+  width: 15rem;
+  background: var(--sidebar-bg);
+  border-right: 1px solid #999;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  padding: 1rem;
 }
 
 .dashboard-main {
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
-  background: #fff;
+  background: var(--bg-color);
+  margin-left: 0;
+}
+
+.dashboard-main>* {
+  max-width: 35rem;
+  /* Legacy width */
+  margin: 0 auto;
 }
 
 .logout-btn {

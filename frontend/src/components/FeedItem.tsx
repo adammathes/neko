@@ -60,26 +60,28 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
                 <a href={item.url} target="_blank" rel="noopener noreferrer" className="item-title">
                     {item.title || '(No Title)'}
                 </a>
-                <div className="item-actions">
+            </div>
+            <div className="dateline">
+                <a href={item.url} target="_blank" rel="noopener noreferrer">
+                    {new Date(item.publish_date).toLocaleDateString()}
+                    {item.feed_title && ` - ${item.feed_title}`}
+                </a>
+                <div className="item-actions" style={{ display: 'inline-block', float: 'right' }}>
                     <button
                         onClick={toggleRead}
                         className={`action-btn ${item.read ? 'is-read' : 'is-unread'}`}
                         title={item.read ? "Mark as unread" : "Mark as read"}
                     >
-                        {item.read ? '📖' : 'uo'}
+                        {item.read ? 'keep unread' : 'mark read'}
                     </button>
                     <button
                         onClick={toggleStar}
                         className={`action-btn ${item.starred ? 'is-starred' : 'is-unstarred'}`}
                         title={item.starred ? "Unstar" : "Star"}
                     >
-                        {item.starred ? '★' : '☆'}
+                        {item.starred ? 'unstar' : 'star'}
                     </button>
                 </div>
-            </div>
-            <div className="item-meta">
-                <span className="item-date">{new Date(item.publish_date).toLocaleDateString()}</span>
-                {item.feed_title && <span className="item-feed"> - {item.feed_title}</span>}
             </div>
             {item.description && (
                 <div className="item-description" dangerouslySetInnerHTML={{ __html: item.description }} />
