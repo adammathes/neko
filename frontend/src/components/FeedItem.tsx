@@ -10,9 +10,6 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
     const [item, setItem] = useState(initialItem);
     const [loading, setLoading] = useState(false);
 
-    const toggleRead = () => {
-        updateItem({ ...item, read: !item.read });
-    };
 
     const toggleStar = () => {
         updateItem({ ...item, starred: !item.starred });
@@ -67,13 +64,6 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
                     {item.feed_title && ` - ${item.feed_title}`}
                 </a>
                 <div className="item-actions" style={{ display: 'inline-block', float: 'right' }}>
-                    <button
-                        onClick={toggleRead}
-                        className={`action-btn ${item.read ? 'is-read' : 'is-unread'}`}
-                        title={item.read ? "Mark as unread" : "Mark as read"}
-                    >
-                        {item.read ? 'keep unread' : 'mark read'}
-                    </button>
                     <button
                         onClick={toggleStar}
                         className={`action-btn ${item.starred ? 'is-starred' : 'is-unstarred'}`}
