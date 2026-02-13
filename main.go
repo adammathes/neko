@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/crawler"
 	"adammathes.com/neko/exporter"
@@ -8,9 +11,7 @@ import (
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/vlog"
 	"adammathes.com/neko/web"
-	"fmt"
 	flag "github.com/ogier/pflag"
-	"time"
 )
 
 var Version, Build string
@@ -46,7 +47,10 @@ func main() {
 		return
 	}
 	// reads config if present and sets defaults
-	config.Init(configFile)
+	if err := config.Init(configFile); err != nil {
+		fmt.Printf("config error: %v\n", err)
+		return
+	}
 
 	// override config file with flags if present
 	vlog.VERBOSE = verbose

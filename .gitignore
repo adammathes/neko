@@ -3,3 +3,5 @@ config.json
 go.sum
 neko
 neko.db
+coverage.out
+coverage_cross.out

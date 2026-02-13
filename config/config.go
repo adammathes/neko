@@ -1,9 +1,9 @@
 package config
 
 import (
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"log"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Settings struct {
@@ -16,22 +16,26 @@ type Settings struct {
 
 var Config Settings
 
-func Init(filename string) {
+func Init(filename string) error {
 	if filename != "" {
-		readConfig(filename)
+		if err := readConfig(filename); err != nil {
+			return err
+		}
 	}
 	addDefaults()
+	return nil
 }
 
-func readConfig(filename string) {
-	file, e := ioutil.ReadFile(filename)
-	if e != nil {
-		log.Fatal("Can not read config file\n", e)
+func readConfig(filename string) error {
+	file, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
 	}
-	e = yaml.Unmarshal(file, &Config)
-	if e != nil {
-		log.Fatal("Config read error\n", e)
+	err = yaml.Unmarshal(file, &Config)
+	if err != nil {
+		return err
 	}
+	return nil
 }
 
 func addDefaults() {

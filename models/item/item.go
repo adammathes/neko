@@ -1,16 +1,17 @@
 package item
 
 import (
+	"encoding/base64"
+	"fmt"
+	"strings"
+
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/vlog"
-	"encoding/base64"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/advancedlogic/GoOse"
+	goose "github.com/advancedlogic/GoOse"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
-	"strings"
 )
 
 type Item struct {
@@ -37,7 +38,7 @@ type Item struct {
 func (i *Item) Print() {
 	fmt.Printf("id: %d\n", i.Id)
 	fmt.Printf("title: %s\n", i.Title)
-	fmt.Printf("ReadState: %d\n", i.ReadState)
+	fmt.Printf("ReadState: %t\n", i.ReadState)
 }
 
 func (i *Item) Create() error {
