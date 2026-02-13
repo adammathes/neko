@@ -12,8 +12,8 @@
  ██    ██  ░███████  ██  ▒██   ░██████░
  ██    ██   ░█████▒  ██   ███   ░████░
 
-             v0.2 manual
-               7/4/2018
+             v0.3 manual
+            February 2026
 </pre>
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
@@ -47,7 +47,7 @@
 
 `neko` is a self-hosted, rss reader focused on simplicity and efficiency.
 
-Backend is written in `Go` and there is a simple javascript frontend and cat ears.
+Backend is written in `Go` and there is a modern `React/Vite` SPA frontend.
 
 *note: the cat ears are in your mind*
 
@@ -74,24 +74,32 @@ Backend is written in `Go` and there is a simple javascript frontend and cat ear
 
 If you are using a binary, no dependencies!
 
-NOTE: I haven't put up any binaries yet.
+Binaries are not yet officially provided, but the project is designed for easy self-hosting.
  
 ## Building
 
-### Dependencies
+### Build with React Frontend
 
-   * [Go](https://golang.org)
-   * [go-sqlite3](https://github.com/mattn/go-sqlite3)
-      * [sqlite](https://sqlite.org/index.html)
-      * [gcc](https://gcc.gnu.org)
-   * [go.rice](https://github.com/GeertJohan/go.rice)
-      * `go install github.com/GeertJohan/go.rice/rice@latest`
+Neko now includes a modern React frontend. To build the full application:
 
-    $ go get adammathes.com/neko
-   
-This will download `neko`, dependencies, and build them all in `$GOPATH/src/`. By default this should be something like `$HOME/go/src/`.
+1. **Build the Frontend**:
+   ```bash
+   cd frontend
+   npm install
+   npm run build
+   ```
+   This generates the static assets in `frontend/dist`.
 
-A `neko` binary should now be in `$GOPATH/bin/`. By default this is usually `$HOME/go/bin/`
+2. **Embed Assets and Build Backend**:
+   The backend uses `go.rice` to embed the static assets.
+   ```bash
+   # From the root directory
+   go install github.com/GeertJohan/go.rice/rice@latest
+   rice embed-go -i ./web
+   go build
+   ```
+
+A `neko` binary will be created in the root directory.
 
 # Configuration
 
@@ -159,7 +167,7 @@ Change `opml` to `text` for a simple list of feed URLs, or `json` for JSON forma
 
 Export is also available in the web interface.
 
-Import of OPML and other things is a TODO item.
+Import of OPML and other things is available via the web interface.
 
 # All Command Line Options
 
@@ -227,13 +235,14 @@ password: VeryLongRandomStringBecauseSecurityIsFun
 
 # TODO
 
-   * manually initiate crawl/refresh from web interface (done: /crawl/)
-   * auto-refresh feeds from web interface (wip: but may not be working right)
-   * import
-   * mark all as read
-   * rewrite frontend in a modern js framework
-   * prettify interface
+   * manually initiate crawl/refresh from web interface (done)
+   * auto-refresh feeds from web interface (done)
+   * import (done)
+   * mark all as read (done)
+   * rewrite frontend in a modern js framework (done: React/Vite)
+   * prettify interface (done)
    * cross-compilation of binaries for "normal" platforms
+   * implement Gzip compression (done)
 
 # History
 
@@ -253,6 +262,16 @@ Significant changes to simplify setup, configuration, usage. The goal was typing
    * removed json-formatted config file -- all options are command line options
    * `neko` runs web server by default
    * `neko` server crawls feeds regularly rather than requiring cron
+
+## February 2026 -- Vibe-code Modernization
+
+The project underwent a significant modernization phase:
+
+   * **Architecture**: Refactored backend into a clean REST API.
+   * **Frontend**: Completely rewrote the legacy Backbone.js frontend in React/Vite as a modern Single Page Application (SPA).
+   * **Performance**: Implemented robust Gzip compression and optimized asset delivery.
+   * **Stability**: Added a comprehensive test suite with high coverage across both backend and frontend.
+   * **Modern Standards**: Fully adopted Go modules and modern JavaScript build tooling.
 
 # Feedback
 
