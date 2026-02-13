@@ -8,7 +8,10 @@ LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 default: build
 all: clean build docs
 
-build:
+ui:
+	cd frontend && npm install && npm run build
+
+build: ui
 	rice -i ./web embed-go
 	go build ${LDFLAGS} -o ${BINARY}
 

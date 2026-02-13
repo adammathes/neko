@@ -148,6 +148,9 @@ func Serve() {
 	staticFileServer := http.StripPrefix("/static/", http.FileServer(box.HTTPBox()))
 	http.Handle("/static/", staticFileServer)
 
+	// New Frontend
+	http.Handle("/v2/", http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend)))
+
 	// New REST API
 	apiRouter := api.NewRouter()
 	http.Handle("/api/", http.StripPrefix("/api", AuthWrapHandler(apiRouter)))
