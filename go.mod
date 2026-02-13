@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.3
 
 require (
-	github.com/GeertJohan/go.rice v1.0.0
+	github.com/GeertJohan/go.rice v1.0.3
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/advancedlogic/GoOse v0.0.0-20200830213114-1225d531e0ad
 	github.com/mattn/go-sqlite3 v1.14.16
@@ -21,7 +21,7 @@ require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/araddon/dateparse v0.0.0-20201001162425-8aadafed4dc4 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
-	github.com/daaku/go.zipexe v1.0.1 // indirect
+	github.com/daaku/go.zipexe v1.0.2 // indirect
 	github.com/fatih/set v0.2.1 // indirect
 	github.com/gigawattio/window v0.0.0-20180317192513-0f5467e35573 // indirect
 	github.com/go-resty/resty/v2 v2.3.0 // indirect
