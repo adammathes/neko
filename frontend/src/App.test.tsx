@@ -1,3 +1,5 @@
+import React from 'react';
+import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import App from './App';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -18,15 +20,15 @@ describe('App', () => {
     });
 
     it('renders dashboard when authenticated', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
-            ok: true,
-        });
+        (global.fetch as any)
+            .mockResolvedValueOnce({ ok: true }) // /api/auth
+            .mockResolvedValueOnce({ ok: true, json: async () => [] }); // /api/feed/
 
         window.history.pushState({}, 'Test page', '/v2/');
         render(<App />);
 
         await waitFor(() => {
-            expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+            expect(screen.getByText(/neko reader/i)).toBeInTheDocument();
         });
     });
 });

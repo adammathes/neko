@@ -31,14 +31,27 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
   return children;
 }
 
+import FeedList from './components/FeedList';
+
 function Dashboard() {
-  // Placeholder for now
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>Welcome to the new Neko/v2 frontend.</p>
+    <div className="dashboard">
+      <header className="dashboard-header">
+        <h1>Neko Reader</h1>
+        <nav>
+          {/* Add logout later */}
+        </nav>
+      </header>
+      <div className="dashboard-content">
+        <aside className="dashboard-sidebar">
+          <FeedList />
+        </aside>
+        <main className="dashboard-main">
+          <p>Select a feed to view items.</p>
+        </main>
+      </div>
     </div>
-  )
+  );
 }
 
 function App() {
