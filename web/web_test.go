@@ -317,6 +317,61 @@ func TestAuthWrapHandlerUnauthenticated(t *testing.T) {
 	}
 }
 
+func TestApiLoginHandlerSuccess(t *testing.T) {
+	config.Config.DigestPassword = "testpass"
+	req := httptest.NewRequest("POST", "/api/login", nil)
+	req.Form = map[string][]string{"password": {"testpass"}}
+	rr := httptest.NewRecorder()
+	apiLoginHandler(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected 200, got %d", rr.Code)
+	}
+	body := rr.Body.String()
+	if body != `{"status":"ok"}` {
+		t.Errorf("Expected ok status, got %q", body)
+	}
+}
+
+func TestApiLoginHandlerFail(t *testing.T) {
+	config.Config.DigestPassword = "testpass"
+	req := httptest.NewRequest("POST", "/api/login", nil)
+	req.Form = map[string][]string{"password": {"wrongpass"}}
+	rr := httptest.NewRecorder()
+	apiLoginHandler(rr, req)
+	if rr.Code != http.StatusUnauthorized {
+		t.Errorf("Expected 401, got %d", rr.Code)
+	}
+}
+
+func TestApiAuthStatusHandlerAuthenticated(t *testing.T) {
+	config.Config.DigestPassword = "secret"
+	req := httptest.NewRequest("GET", "/api/auth", nil)
+	req.AddCookie(authCookie())
+	rr := httptest.NewRecorder()
+	apiAuthStatusHandler(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected 200, got %d", rr.Code)
+	}
+	body := rr.Body.String()
+	if body != `{"status":"ok", "authenticated":true}` {
+		t.Errorf("Expected authenticated true, got %q", body)
+	}
+}
+
+func TestApiAuthStatusHandlerUnauthenticated(t *testing.T) {
+	config.Config.DigestPassword = "secret"
+	req := httptest.NewRequest("GET", "/api/auth", nil)
+	rr := httptest.NewRecorder()
+	apiAuthStatusHandler(rr, req)
+	if rr.Code != http.StatusUnauthorized {
+		t.Errorf("Expected 401, got %d", rr.Code)
+	}
+	body := rr.Body.String()
+	if body != `{"status":"error", "authenticated":false}` {
+		t.Errorf("Expected authenticated false, got %q", body)
+	}
+}
+
 func TestLoginHandlerGet(t *testing.T) {
 	req := httptest.NewRequest("GET", "/login/", nil)
 	rr := httptest.NewRecorder()

@@ -143,6 +143,43 @@ func serveBoxedFile(w http.ResponseWriter, r *http.Request, filename string) {
 	http.ServeContent(w, r, filename, fi.ModTime(), ui)
 }
 
+func apiLoginHandler(w http.ResponseWriter, r *http.Request) {
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	// support JSON body as well
+	if username == "" && password == "" {
+		// try parsing json
+		/*
+			type loginReq struct {
+				Username string `json:"username"`
+				Password string `json:"password"`
+			}
+			// left as todo for now as we can use form data from fetch too
+		*/
+	}
+
+	if password == config.Config.DigestPassword {
+		v, _ := bcrypt.GenerateFromPassword([]byte(password), 0)
+		c := http.Cookie{Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly: false}
+		http.SetCookie(w, &c)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"status":"ok"}`)
+	} else {
+		http.Error(w, `{"status":"error", "message":"bad login"}`, 401)
+	}
+}
+
+func apiAuthStatusHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if Authenticated(r) {
+		fmt.Fprintf(w, `{"status":"ok", "authenticated":true}`)
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprintf(w, `{"status":"error", "authenticated":false}`)
+	}
+}
+
 func Serve() {
 	box := rice.MustFindBox("../static")
 	staticFileServer := http.StripPrefix("/static/", http.FileServer(box.HTTPBox()))
@@ -167,6 +204,8 @@ func Serve() {
 
 	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/logout/", logoutHandler)
+	http.HandleFunc("/api/login", apiLoginHandler)
+	http.HandleFunc("/api/auth", apiAuthStatusHandler)
 
 	http.HandleFunc("/", AuthWrap(indexHandler))
 
