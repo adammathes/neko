@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"adammathes.com/neko/api"
@@ -20,8 +21,17 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
-	imgURL := r.URL.String()
+	imgURL := strings.TrimPrefix(r.URL.Path, "/")
+	if imgURL == "" {
+		http.Error(w, "no image url provided", http.StatusNotFound)
+		return
+	}
+
 	decodedURL, err := base64.URLEncoding.DecodeString(imgURL)
+	if err != nil {
+		http.Error(w, "invalid image url", http.StatusNotFound)
+		return
+	}
 
 	// pseudo-caching
 	if r.Header.Get("If-None-Match") == string(decodedURL) {

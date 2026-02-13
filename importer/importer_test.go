@@ -11,7 +11,7 @@ import (
 
 func setupTestDB(t *testing.T) {
 	t.Helper()
-	config.Config.DBFile = ":memory:"
+	config.Config.DBFile = filepath.Join(t.TempDir(), "test.db")
 	models.InitDB()
 	t.Cleanup(func() {
 		if models.DB != nil {
@@ -125,5 +125,25 @@ func TestImportJSON(t *testing.T) {
 	models.DB.QueryRow("SELECT COUNT(*) FROM feed").Scan(&feedCount)
 	if feedCount != 1 {
 		t.Errorf("Expected 1 feed after import, got %d", feedCount)
+	}
+}
+
+func TestImportJSONInvalid(t *testing.T) {
+	setupTestDB(t)
+	dir := t.TempDir()
+	jsonFile := filepath.Join(dir, "invalid.json")
+	os.WriteFile(jsonFile, []byte("not json"), 0644)
+
+	err := ImportJSON(jsonFile)
+	if err == nil {
+		t.Error("ImportJSON should error on invalid JSON")
+	}
+}
+
+func TestImportJSONNonexistent(t *testing.T) {
+	setupTestDB(t)
+	err := ImportJSON("/nonexistent/file.json")
+	if err == nil {
+		t.Error("ImportJSON should error on nonexistent file")
 	}
 }

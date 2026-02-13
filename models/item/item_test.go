@@ -3,7 +3,11 @@ package item
 import (
 	"bytes"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"adammathes.com/neko/config"
@@ -12,7 +16,7 @@ import (
 
 func setupTestDB(t *testing.T) {
 	t.Helper()
-	config.Config.DBFile = ":memory:"
+	config.Config.DBFile = filepath.Join(t.TempDir(), "test.db")
 	models.InitDB()
 	t.Cleanup(func() {
 		if models.DB != nil {
@@ -46,7 +50,7 @@ func TestPrint(t *testing.T) {
 	buf.ReadFrom(r)
 	output := buf.String()
 
-	expected := fmt.Sprintf("id: 42\ntitle: Test Title\nReadState: true\n")
+	expected := "id: 42\ntitle: Test Title\nReadState: true\n"
 	if output != expected {
 		t.Errorf("Print() output mismatch:\ngot:  %q\nwant: %q", output, expected)
 	}
@@ -510,6 +514,56 @@ func TestFilterCombined(t *testing.T) {
 	}
 	if len(items) != 1 {
 		t.Fatalf("Combined filter should return 1 item, got %d", len(items))
+	}
+}
+
+func TestGetFullContent(t *testing.T) {
+	setupTestDB(t)
+	feedId := createTestFeed(t)
+
+	// Mock server to provide article content
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `<html><body><article><h1>Test Title</h1><p>Full Article Content is here and it is long enough to be detected as content by GoOse.</p></article></body></html>`)
+	}))
+	defer ts.Close()
+
+	i := &Item{
+		Title:  "Test Item",
+		Url:    ts.URL,
+		FeedId: feedId,
+	}
+	i.Create()
+
+	i.GetFullContent()
+
+	// Verify content was fetched and saved
+	if !strings.Contains(i.FullContent, "Full Article Content") {
+		t.Errorf("Expected full content to be fetched, got %q", i.FullContent)
+	}
+
+	var fullContent string
+	err := models.DB.QueryRow("SELECT full_content FROM item WHERE id=?", i.Id).Scan(&fullContent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The DB uses md which is from article.CleanedText
+	if !strings.Contains(fullContent, "Full Article Content") {
+		t.Errorf("Full content (markdown) should be saved in DB, got %q", fullContent)
+	}
+}
+
+func TestGetFullContentEmpty(t *testing.T) {
+	setupTestDB(t)
+	// Provide HTML without an article or clear content
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `<html><body></body></html>`)
+	}))
+	defer ts.Close()
+
+	i := &Item{Url: ts.URL}
+	i.GetFullContent()
+	if i.FullContent != "" {
+		t.Errorf("Expected empty content for empty HTML, got %q", i.FullContent)
 	}
 }
 

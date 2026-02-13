@@ -6,9 +6,10 @@ import (
 	//"fmt"
 	"io"
 	"log"
+	"os"
+
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
-	"os"
 )
 
 type IItem struct {
@@ -31,12 +32,13 @@ type IDate struct {
 	Date string `json:"$date"`
 }
 
-func ImportJSON(filename string) {
+func ImportJSON(filename string) error {
 
 	f, err := os.Open(filename)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	defer f.Close()
 
 	dec := json.NewDecoder(f)
 	for {
@@ -44,24 +46,31 @@ func ImportJSON(filename string) {
 		if err := dec.Decode(&ii); err == io.EOF {
 			break
 		} else if err != nil {
-			log.Println(err)
+			return err
 		} else {
-			InsertIItem(&ii)
+			err := InsertIItem(&ii)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 	}
+	return nil
 }
 
-func InsertIItem(ii *IItem) {
+func InsertIItem(ii *IItem) error {
 	var f feed.Feed
 
 	if ii.Feed == nil {
-		return
+		return nil
 	}
 	err := f.ByUrl(ii.Feed.Url)
 	if err != nil {
 		f.Url = ii.Feed.Url
 		f.Title = ii.Feed.Title
-		f.Create()
+		err = f.Create()
+		if err != nil {
+			return err
+		}
 	}
 
 	var i item.Item
@@ -70,11 +79,11 @@ func InsertIItem(ii *IItem) {
 	i.Url = ii.Url
 	i.Description = ii.Description
 
-	i.PublishDate = ii.Date.Date
+	if ii.Date != nil {
+		i.PublishDate = ii.Date.Date
+	}
 
 	err = i.Create()
 	log.Printf("inserted %s\n", i.Url)
-	if err != nil {
-		log.Println(err)
-	}
+	return err
 }

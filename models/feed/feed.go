@@ -1,10 +1,11 @@
 package feed
 
 import (
-	"adammathes.com/neko/models"
-	"github.com/PuerkitoBio/goquery"
 	"log"
 	"net/http"
+
+	"adammathes.com/neko/models"
+	"github.com/PuerkitoBio/goquery"
 )
 
 type Feed struct {
@@ -103,8 +104,8 @@ func (f *Feed) ByUrl(url string) error {
 }
 
 func (f *Feed) Create() error {
-	res, err := models.DB.Exec(`INSERT INTO feed(url, title)
-                                VALUES(?, ?)`, f.Url, f.Title)
+	res, err := models.DB.Exec(`INSERT INTO feed(url, title, category)
+                                VALUES(?, ?, ?)`, f.Url, f.Title, f.Category)
 	if err != nil {
 		return err
 	}

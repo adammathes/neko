@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"path/filepath"
 	"testing"
 
 	"adammathes.com/neko/api"
@@ -15,7 +16,7 @@ import (
 
 func setupTestDB(t *testing.T) {
 	t.Helper()
-	config.Config.DBFile = ":memory:"
+	config.Config.DBFile = filepath.Join(t.TempDir(), "test.db")
 	models.InitDB()
 	t.Cleanup(func() {
 		if models.DB != nil {
@@ -236,6 +237,24 @@ func TestImageProxyHandlerBadRemote(t *testing.T) {
 	}
 }
 
+func TestImageProxyHandlerEmptyId(t *testing.T) {
+	req := httptest.NewRequest("GET", "/image/", nil)
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 404, got %d", rr.Code)
+	}
+}
+
+func TestImageProxyHandlerBadBase64(t *testing.T) {
+	req := httptest.NewRequest("GET", "/image/notbase64!", nil)
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 404, got %d", rr.Code)
+	}
+}
+
 func TestApiMounting(t *testing.T) {
 	setupTestDB(t)
 	seedData(t)
@@ -257,5 +276,54 @@ func TestApiMounting(t *testing.T) {
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("Expected 200 via API mount, got %d", rr.Code)
+	}
+}
+
+func TestIndexHandler(t *testing.T) {
+	config.Config.DigestPassword = "secret"
+	req := httptest.NewRequest("GET", "/", nil)
+	req.AddCookie(authCookie())
+	rr := httptest.NewRecorder()
+	indexHandler(rr, req)
+
+	if rr.Code != http.StatusOK && rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 200 or 404, got %d", rr.Code)
+	}
+}
+
+func TestServeBoxedFile(t *testing.T) {
+	config.Config.DigestPassword = "secret"
+	req := httptest.NewRequest("GET", "/style.css", nil)
+	req.AddCookie(authCookie())
+	rr := httptest.NewRecorder()
+	serveBoxedFile(rr, req, "style.css")
+
+	if rr.Code != http.StatusOK && rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 200 or 404, got %d", rr.Code)
+	}
+}
+
+func TestAuthWrapHandlerUnauthenticated(t *testing.T) {
+	config.Config.DigestPassword = "secret"
+	apiRouter := api.NewRouter()
+	handler := AuthWrapHandler(http.StripPrefix("/api", apiRouter))
+
+	req := httptest.NewRequest("GET", "/api/stream", nil)
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusTemporaryRedirect {
+		t.Errorf("Expected 307 redirect, got %d", rr.Code)
+	}
+}
+
+func TestLoginHandlerGet(t *testing.T) {
+	req := httptest.NewRequest("GET", "/login/", nil)
+	rr := httptest.NewRecorder()
+	loginHandler(rr, req)
+
+	// should return login.html from rice box
+	if rr.Code != http.StatusOK && rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 200 or 404, got %d", rr.Code)
 	}
 }

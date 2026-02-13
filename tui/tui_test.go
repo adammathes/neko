@@ -1,13 +1,40 @@
 package tui
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"adammathes.com/neko/config"
+	"adammathes.com/neko/models"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
 	tea "github.com/charmbracelet/bubbletea"
 )
+
+func setupTestDB(t *testing.T) {
+	t.Helper()
+	config.Config.DBFile = filepath.Join(t.TempDir(), "test.db")
+	models.InitDB()
+	t.Cleanup(func() {
+		if models.DB != nil {
+			models.DB.Close()
+		}
+	})
+}
+
+func seedData(t *testing.T) {
+	t.Helper()
+	f := &feed.Feed{Url: "http://example.com", Title: "Test Feed", Category: "tech"}
+	f.Create()
+
+	i := &item.Item{
+		Title:  "Test Item",
+		Url:    "http://example.com/1",
+		FeedId: f.Id,
+	}
+	i.Create()
+}
 
 func TestNewModel(t *testing.T) {
 	m := NewModel()
@@ -88,5 +115,46 @@ func TestStateTransitions(t *testing.T) {
 	}
 	if v := tm5m.View(); !strings.Contains(v, "Test Item") {
 		t.Error("View should contain Item title in content view")
+	}
+
+	// Test scrolling in content view
+	// Scroll down
+	tmS1, _ := tm5m.Update(tea.KeyMsg{Type: tea.KeyDown})
+	// Home/End
+	tmS2, _ := tmS1.(Model).Update(tea.KeyMsg{Type: tea.KeyEnd})
+	tmS3, _ := tmS2.(Model).Update(tea.KeyMsg{Type: tea.KeyHome})
+
+	if tmS3.(Model).state != viewContent {
+		t.Errorf("Should stay in viewContent, got %v", tmS3.(Model).state)
+	}
+}
+
+func TestTuiCommands(t *testing.T) {
+	setupTestDB(t)
+	seedData(t)
+
+	m := NewModel()
+	cmd := m.Init()
+	if cmd == nil {
+		t.Fatal("Init should return a command")
+	}
+
+	msg := loadFeeds()
+	feeds, ok := msg.(feedsMsg)
+	if !ok || len(feeds) == 0 {
+		t.Errorf("loadFeeds should return feedsMsg, got %T", msg)
+	}
+
+	msg2 := loadItems(feeds[0].Id)()
+	_, ok = msg2.(itemsMsg)
+	if !ok {
+		t.Errorf("loadItems should return itemsMsg, got %T", msg2)
+	}
+}
+
+func TestItemString(t *testing.T) {
+	is := itemString("hello")
+	if is.FilterValue() != "hello" {
+		t.Errorf("Expected 'hello', got %s", is.FilterValue())
 	}
 }

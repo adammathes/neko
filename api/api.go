@@ -88,7 +88,13 @@ func HandleItem(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "invalid json", http.StatusBadRequest)
 			return
 		}
-		i.Id = id
+		if i.Id == 0 {
+			i.Id = id
+		}
+		if i.Id != id {
+			jsonError(w, "id mismatch", http.StatusBadRequest)
+			return
+		}
 		i.Save()
 		jsonResponse(w, i)
 
@@ -148,6 +154,10 @@ func HandleFeed(w http.ResponseWriter, r *http.Request) {
 		var f feed.Feed
 		if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
 			jsonError(w, "invalid json", http.StatusBadRequest)
+			return
+		}
+		if f.Id == 0 {
+			jsonError(w, "missing feed id", http.StatusBadRequest)
 			return
 		}
 		f.Update()

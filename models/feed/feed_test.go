@@ -3,6 +3,7 @@ package feed
 import (
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 
 	"adammathes.com/neko/config"
@@ -11,7 +12,7 @@ import (
 
 func setupTestDB(t *testing.T) {
 	t.Helper()
-	config.Config.DBFile = ":memory:"
+	config.Config.DBFile = filepath.Join(t.TempDir(), "test.db")
 	models.InitDB()
 	t.Cleanup(func() {
 		if models.DB != nil {
@@ -407,5 +408,37 @@ func TestCategoriesEmpty(t *testing.T) {
 	}
 	if len(cats) != 0 {
 		t.Errorf("Should have 0 categories on empty DB, got %d", len(cats))
+	}
+}
+
+func TestResolveFeedURLRelativePaths(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(200)
+		w.Write([]byte(`<html><head><link rel="alternate" type="application/rss+xml" href="/rss.xml"/></head></html>`))
+	}))
+	defer ts.Close()
+
+	result := ResolveFeedURL(ts.URL)
+	if result != ts.URL+"/rss.xml" {
+		t.Errorf("Expected joined relative URL, got %q", result)
+	}
+}
+
+func TestResolveFeedURLMultipleLinks(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(200)
+		w.Write([]byte(`<html><head>
+			<link rel="alternate" type="application/atom+xml" href="http://example.com/atom.xml"/>
+			<link rel="alternate" type="application/rss+xml" href="http://example.com/rss.xml"/>
+		</head></html>`))
+	}))
+	defer ts.Close()
+
+	result := ResolveFeedURL(ts.URL)
+	// it should pick the first matched one or whichever type is handled first in the code
+	if result != "http://example.com/atom.xml" && result != "http://example.com/rss.xml" {
+		t.Errorf("Expected one of the discovered feed URLs, got %q", result)
 	}
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"path/filepath"
 	"testing"
 
 	"adammathes.com/neko/config"
@@ -33,11 +34,21 @@ func TestInitDB(t *testing.T) {
 	}
 }
 
-// SetupTestDB initializes an in-memory SQLite database for testing.
-// Call this from other packages' tests to get a working DB.
+func TestInitDBError(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("InitDB should panic for invalid DB file")
+		}
+	}()
+	// Using a directory path instead of a file should cause a failure in Ping
+	config.Config.DBFile = t.TempDir()
+	InitDB()
+}
+
+// SetupTestDB initializes an isolated SQLite database for testing.
 func SetupTestDB(t *testing.T) {
 	t.Helper()
-	config.Config.DBFile = ":memory:"
+	config.Config.DBFile = filepath.Join(t.TempDir(), "test.db")
 	InitDB()
 	t.Cleanup(func() {
 		if DB != nil {

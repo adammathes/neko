@@ -83,7 +83,10 @@ func filterPolicy() *bluemonday.Policy {
 }
 
 func ItemById(id int64) *Item {
-	items, _ := Filter(0, 0, "", false, false, id, "")
+	items, err := Filter(0, 0, "", false, false, id, "")
+	if err != nil || len(items) == 0 {
+		return nil
+	}
 	return items[0]
 }
 
