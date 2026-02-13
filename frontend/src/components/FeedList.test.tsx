@@ -4,6 +4,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import FeedList from './FeedList';
 
+import { BrowserRouter } from 'react-router-dom';
+
 describe('FeedList Component', () => {
     beforeEach(() => {
         vi.resetAllMocks();
@@ -12,7 +14,11 @@ describe('FeedList Component', () => {
 
     it('renders loading state initially', () => {
         (global.fetch as any).mockImplementation(() => new Promise(() => { }));
-        render(<FeedList />);
+        render(
+            <BrowserRouter>
+                <FeedList />
+            </BrowserRouter>
+        );
         expect(screen.getByText(/loading feeds/i)).toBeInTheDocument();
     });
 
@@ -27,7 +33,11 @@ describe('FeedList Component', () => {
             json: async () => mockFeeds,
         });
 
-        render(<FeedList />);
+        render(
+            <BrowserRouter>
+                <FeedList />
+            </BrowserRouter>
+        );
 
         await waitFor(() => {
             expect(screen.getByText('Feed One')).toBeInTheDocument();
@@ -39,7 +49,11 @@ describe('FeedList Component', () => {
     it('handles fetch error', async () => {
         (global.fetch as any).mockRejectedValueOnce(new Error('API Error'));
 
-        render(<FeedList />);
+        render(
+            <BrowserRouter>
+                <FeedList />
+            </BrowserRouter>
+        );
 
         await waitFor(() => {
             expect(screen.getByText(/error: api error/i)).toBeInTheDocument();
@@ -52,7 +66,11 @@ describe('FeedList Component', () => {
             json: async () => [],
         });
 
-        render(<FeedList />);
+        render(
+            <BrowserRouter>
+                <FeedList />
+            </BrowserRouter>
+        );
 
         await waitFor(() => {
             expect(screen.getByText(/no feeds found/i)).toBeInTheDocument();

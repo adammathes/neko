@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Feed } from '../types';
 import './FeedList.css';
 
@@ -37,9 +38,9 @@ export default function FeedList() {
                 <ul className="feed-list-items">
                     {feeds.map((feed) => (
                         <li key={feed._id} className="feed-item">
-                            <a href={feed.web_url} target="_blank" rel="noopener noreferrer" className="feed-title">
+                            <Link to={`/feed/${feed._id}`} className="feed-title">
                                 {feed.title || feed.url}
-                            </a>
+                            </Link>
                             {feed.category && <span className="feed-category">{feed.category}</span>}
                         </li>
                     ))}

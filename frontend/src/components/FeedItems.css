@@ -1,0 +1,60 @@
+.feed-items {
+    padding: 1rem;
+}
+
+.feed-items h2 {
+    margin-top: 0;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+.item-list {
+    list-style: none;
+    padding: 0;
+}
+
+.item {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1rem 0;
+}
+
+.item.read .item-title {
+    color: #888;
+    font-weight: normal;
+}
+
+.item.unread .item-title {
+    font-weight: bold;
+}
+
+.item-title {
+    font-size: 1.2rem;
+    text-decoration: none;
+    color: #333;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.item-title:hover {
+    text-decoration: underline;
+    color: #007bff;
+}
+
+.item-meta {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.item-description {
+    color: #444;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.item-description img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem 0;
+}

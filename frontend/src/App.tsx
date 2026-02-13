@@ -32,6 +32,7 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
 }
 
 import FeedList from './components/FeedList';
+import FeedItems from './components/FeedItems';
 
 function Dashboard() {
   return (
@@ -47,7 +48,10 @@ function Dashboard() {
           <FeedList />
         </aside>
         <main className="dashboard-main">
-          <p>Select a feed to view items.</p>
+          <Routes>
+            <Route path="/feed/:feedId" element={<FeedItems />} />
+            <Route path="/" element={<p>Select a feed to view items.</p>} />
+          </Routes>
         </main>
       </div>
     </div>

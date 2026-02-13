@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/App.css</title>
+    <title>Code coverage report for src/components/FeedItems.css</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../prettify.css" />
-    <link rel="stylesheet" href="../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../sort-arrow-sprite.png);
+            background-image: url(../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,7 +19,7 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">src</a> App.css</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/components</a> FeedItems.css</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
@@ -181,65 +181,65 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/* Resets and Base Styles */
-* {
-  box-sizing: border-box;
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">.feed-items {
+    padding: 1rem;
 }
 &nbsp;
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.feed-items h2 {
+    margin-top: 0;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
 }
 &nbsp;
-/* Dashboard Layout */
-.dashboard {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-  /* Prevent body scroll */
+.item-list {
+    list-style: none;
+    padding: 0;
 }
 &nbsp;
-.dashboard-header {
-  background: #2c3e50;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
+.item {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1rem 0;
 }
 &nbsp;
-.dashboard-header h1 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+.item.read .item-title {
+    color: #888;
+    font-weight: normal;
 }
 &nbsp;
-.dashboard-content {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
+.item.unread .item-title {
+    font-weight: bold;
 }
 &nbsp;
-.dashboard-sidebar {
-  width: 300px;
-  background: #f8f9fa;
-  border-right: 1px solid #ddd;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
+.item-title {
+    font-size: 1.2rem;
+    text-decoration: none;
+    color: #333;
+    display: block;
+    margin-bottom: 0.5rem;
 }
 &nbsp;
-.dashboard-main {
-  flex: 1;
-  padding: 2rem;
-  overflow-y: auto;
-  background: #fff;
+.item-title:hover {
+    text-decoration: underline;
+    color: #007bff;
+}
+&nbsp;
+.item-meta {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+&nbsp;
+.item-description {
+    color: #444;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+&nbsp;
+.item-description img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem 0;
 }</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -249,14 +249,14 @@ body {
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
                 at 2026-02-13T06:02:51.320Z
             </div>
-        <script src="../prettify.js"></script>
+        <script src="../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../sorter.js"></script>
-        <script src="../block-navigation.js"></script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
     </body>
 </html>
     
