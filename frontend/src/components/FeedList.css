@@ -46,3 +46,37 @@
     font-size: 0.8rem;
     color: #666;
 }
+.tag-section {
+    margin-top: 2rem;
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+}
+
+.tag-list-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag-item {
+    display: inline-block;
+}
+
+.tag-link {
+    display: block;
+    padding: 0.3rem 0.6rem;
+    background: #e9ecef;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.tag-link:hover {
+    background: #dde2e6;
+    color: #000;
+}

@@ -20,9 +20,12 @@ describe('App', () => {
     });
 
     it('renders dashboard when authenticated', async () => {
-        (global.fetch as any)
-            .mockResolvedValueOnce({ ok: true }) // /api/auth
-            .mockResolvedValueOnce({ ok: true, json: async () => [] }); // /api/feed/
+        (global.fetch as any).mockImplementation((url: string) => {
+            if (url.includes('/api/auth')) return Promise.resolve({ ok: true });
+            if (url.includes('/api/feed/')) return Promise.resolve({ ok: true, json: async () => [] });
+            if (url.includes('/api/tag')) return Promise.resolve({ ok: true, json: async () => [] });
+            return Promise.resolve({ ok: true }); // Fallback
+        });
 
         window.history.pushState({}, 'Test page', '/v2/');
         render(<App />);
@@ -47,7 +50,7 @@ describe('App', () => {
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith('/api/logout', expect.objectContaining({ method: 'POST' }));
-            expect(window.location.href).toBe('/login/');
+            expect(window.location.href).toBe('/v2/login');
         });
     });
 });

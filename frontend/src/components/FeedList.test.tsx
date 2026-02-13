@@ -28,9 +28,20 @@ describe('FeedList Component', () => {
             { _id: 2, title: 'Feed Two', url: 'http://test.com/rss', web_url: 'http://test.com', category: 'News' },
         ];
 
-        (global.fetch as any).mockResolvedValueOnce({
-            ok: true,
-            json: async () => mockFeeds,
+        (global.fetch as any).mockImplementation((url: string) => {
+            if (url.includes('/api/feed/')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: async () => mockFeeds,
+                });
+            }
+            if (url.includes('/api/tag')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: async () => [{ title: 'Tech' }],
+                });
+            }
+            return Promise.reject(new Error(`Unknown URL: ${url}`));
         });
 
         render(
@@ -42,12 +53,13 @@ describe('FeedList Component', () => {
         await waitFor(() => {
             expect(screen.getByText('Feed One')).toBeInTheDocument();
             expect(screen.getByText('Feed Two')).toBeInTheDocument();
-            expect(screen.getByText('Tech')).toBeInTheDocument();
+            const techElements = screen.getAllByText('Tech');
+            expect(techElements.length).toBeGreaterThan(0);
         });
     });
 
     it('handles fetch error', async () => {
-        (global.fetch as any).mockRejectedValueOnce(new Error('API Error'));
+        (global.fetch as any).mockImplementation(() => Promise.reject(new Error('API Error')));
 
         render(
             <BrowserRouter>
@@ -61,9 +73,20 @@ describe('FeedList Component', () => {
     });
 
     it('handles empty feed list', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
-            ok: true,
-            json: async () => [],
+        (global.fetch as any).mockImplementation((url: string) => {
+            if (url.includes('/api/feed/')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: async () => [],
+                });
+            }
+            if (url.includes('/api/tag')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: async () => [],
+                });
+            }
+            return Promise.reject(new Error(`Unknown URL: ${url}`));
         });
 
         render(

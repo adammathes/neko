@@ -5,7 +5,7 @@ import FeedItem from './FeedItem';
 import './FeedItems.css';
 
 export default function FeedItems() {
-    const { feedId } = useParams<{ feedId: string }>();
+    const { feedId, tagName } = useParams<{ feedId: string; tagName: string }>();
     const [items, setItems] = useState<Item[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -14,9 +14,12 @@ export default function FeedItems() {
         setLoading(true);
         setError('');
 
-        const url = feedId
-            ? `/api/stream?feed_id=${feedId}`
-            : '/api/stream'; // Default or "all" view? For now let's assume we need a feedId or handle "all" logic later
+        let url = '/api/stream';
+        if (feedId) {
+            url = `/api/stream?feed_id=${feedId}`;
+        } else if (tagName) {
+            url = `/api/stream?tag=${encodeURIComponent(tagName)}`;
+        }
 
         fetch(url)
             .then((res) => {
@@ -33,15 +36,14 @@ export default function FeedItems() {
                 setError(err.message);
                 setLoading(false);
             });
-    }, [feedId]);
+    }, [feedId, tagName]);
 
     if (loading) return <div className="feed-items-loading">Loading items...</div>;
     if (error) return <div className="feed-items-error">Error: {error}</div>;
 
     return (
         <div className="feed-items">
-            <h2>Items</h2>
-            {/* TODO: Add Feed Title here if possible, maybe pass from location state or fetch feed details */}
+            <h2>{tagName ? `Tag: ${tagName}` : 'Items'}</h2>
             {items.length === 0 ? (
                 <p>No items found.</p>
             ) : (

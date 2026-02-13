@@ -19,3 +19,6 @@ export interface Item {
     header_image?: string;
     feed_title?: string;
 }
+export interface Category {
+    title: string;
+}
