@@ -1,146 +1,22 @@
 package web
 
 import (
-	"adammathes.com/neko/config"
-	"adammathes.com/neko/crawler"
-	"adammathes.com/neko/exporter"
-	"adammathes.com/neko/models/feed"
-	"adammathes.com/neko/models/item"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"github.com/GeertJohan/go.rice"
-	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
+
+	"adammathes.com/neko/api"
+	"adammathes.com/neko/config"
+	rice "github.com/GeertJohan/go.rice"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	serveBoxedFile(w, r, "ui.html")
-}
-
-func streamHandler(w http.ResponseWriter, r *http.Request) {
-
-	max_id := 0
-	if r.FormValue("max_id") != "" {
-		max_id, _ = strconv.Atoi(r.FormValue("max_id"))
-	}
-
-	feed_id := int64(0)
-	if r.FormValue("feed_url") != "" {
-		feed_url := r.FormValue("feed_url")
-		var f feed.Feed
-		f.ByUrl(feed_url)
-		feed_id = f.Id
-	}
-
-	category := ""
-	if r.FormValue("tag") != "" {
-		category = r.FormValue("tag")
-	}
-
-	unread_only := true
-	if r.FormValue("read_filter") != "" {
-		unread_only = false
-	}
-
-	starred_only := false
-	if r.FormValue("starred") != "" {
-		starred_only = true
-	}
-
-	search_query := ""
-	if r.FormValue("q") != "" {
-		search_query = r.FormValue("q")
-		unread_only = false
-	}
-
-	var items []*item.Item
-	items, err := item.Filter(int64(max_id), feed_id, category, unread_only, starred_only, 0, search_query)
-	if err != nil {
-		log.Println(err)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	js, _ := json.Marshal(items)
-	w.Write(js)
-}
-
-func itemHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "PUT":
-		var i item.Item
-		err := json.NewDecoder(r.Body).Decode(&i)
-		if err != nil {
-			log.Println(err)
-		} else {
-			i.Save()
-		}
-	case "GET":
-		fullTextHandler(w, r)
-	}
-	defer r.Body.Close()
-}
-
-func feedHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		feeds, err := feed.All()
-		if err != nil {
-			log.Println(err)
-		}
-
-		js, err := json.Marshal(feeds)
-		if err != nil {
-			log.Println(err)
-		}
-		w.Write(js)
-		return
-	}
-
-	var f feed.Feed
-	err := json.NewDecoder(r.Body).Decode(&f)
-	if err != nil {
-		log.Println(err)
-	}
-
-	switch r.Method {
-	case "POST":
-		feed.NewFeed(f.Url)
-		f.ByUrl(f.Url)
-		ch := make(chan string)
-		// log.Println("crawling")
-		crawler.CrawlFeed(&f, ch)
-		log.Println(<-ch)
-	case "PUT":
-		f.Update()
-	case "DELETE":
-		feed_id, err := strconv.Atoi(r.URL.Path[len("/feed/"):])
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		f.Id = int64(feed_id)
-		f.Delete()
-	}
-}
-
-func categoryHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		categories, err := feed.Categories()
-		if err != nil {
-			log.Println(err)
-		}
-
-		js, err := json.Marshal(categories)
-		if err != nil {
-			log.Println(err)
-		}
-		w.Write(js)
-		return
-	}
 }
 
 func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
@@ -158,11 +34,8 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// set headers
-
 	// grab the img
 	c := &http.Client{
-		// give up after 5 seconds
 		Timeout: 5 * time.Second,
 	}
 
@@ -191,51 +64,6 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public")
 	w.Header().Set("Expires", time.Now().Add(48*time.Hour).Format(time.RFC1123))
 	w.Write(bts)
-	return
-}
-
-func exportHandler(w http.ResponseWriter, r *http.Request) {
-	format := r.URL.String()
-	w.Header().Set("content-type", "text/plain")
-	w.Write([]byte(exporter.ExportFeeds(format)))
-	return
-}
-
-func crawlHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "crawling...\n\n")
-	if f, ok := w.(http.Flusher); ok {
-		f.Flush()
-	} else {
-		log.Println("Damn, no flush")
-	}
-	crawler.Crawl()
-	fmt.Fprintf(w, "done...\n\n")
-	return
-}
-
-func fullTextHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("request: %v\n\n", r)
-
-	fmt.Printf("url string: %s\n\n", r.URL.String())
-
-	itemID, _ := strconv.Atoi(r.URL.String())
-	//	fmt.Printf("item id: %v\n\n", itemID)
-
-	if itemID == 0 {
-		fmt.Printf("wah wah wah\n")
-		return
-	}
-
-	i := item.ItemById(int64(itemID))
-	// fmt.Println("item fetched: %v\n\n", i)
-
-	if i.FullContent == "" {
-		i.GetFullContent()
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	js, _ := json.Marshal(i)
-	w.Write(js)
 }
 
 var AuthCookie = "auth"
@@ -272,10 +100,7 @@ func Authenticated(r *http.Request) bool {
 		return false
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(pc.Value), []byte(config.Config.DigestPassword))
-	if err == nil {
-		return true
-	}
-	return false
+	return err == nil
 }
 
 func AuthWrap(wrapped http.HandlerFunc) http.HandlerFunc {
@@ -286,6 +111,16 @@ func AuthWrap(wrapped http.HandlerFunc) http.HandlerFunc {
 			http.Redirect(w, r, "/login/", 307)
 		}
 	}
+}
+
+func AuthWrapHandler(wrapped http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if Authenticated(r) {
+			wrapped.ServeHTTP(w, r)
+		} else {
+			http.Redirect(w, r, "/login/", 307)
+		}
+	})
 }
 
 func serveBoxedFile(w http.ResponseWriter, r *http.Request, filename string) {
@@ -299,18 +134,23 @@ func serveBoxedFile(w http.ResponseWriter, r *http.Request, filename string) {
 }
 
 func Serve() {
-
 	box := rice.MustFindBox("../static")
 	staticFileServer := http.StripPrefix("/static/", http.FileServer(box.HTTPBox()))
 	http.Handle("/static/", staticFileServer)
 
-	http.HandleFunc("/stream/", AuthWrap(streamHandler))
-	http.Handle("/item/", http.StripPrefix("/item/", AuthWrap(itemHandler)))
-	http.HandleFunc("/feed/", AuthWrap(feedHandler))
-	http.HandleFunc("/tag/", AuthWrap(categoryHandler))
+	// New REST API
+	apiRouter := api.NewRouter()
+	http.Handle("/api/", http.StripPrefix("/api", AuthWrapHandler(apiRouter)))
+
+	// Legacy routes for backward compatibility
+	http.HandleFunc("/stream/", AuthWrap(api.HandleStream))
+	http.HandleFunc("/item/", AuthWrap(api.HandleItem))
+	http.HandleFunc("/feed/", AuthWrap(api.HandleFeed))
+	http.HandleFunc("/tag/", AuthWrap(api.HandleCategory))
+	http.HandleFunc("/export/", AuthWrap(api.HandleExport))
+	http.HandleFunc("/crawl/", AuthWrap(api.HandleCrawl))
+
 	http.Handle("/image/", http.StripPrefix("/image/", AuthWrap(imageProxyHandler)))
-	http.Handle("/export/", http.StripPrefix("/export/", AuthWrap(exportHandler)))
-	http.HandleFunc("/crawl/", AuthWrap(crawlHandler))
 
 	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/logout/", logoutHandler)
