@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">73.68% </span>
+                <span class="strong">78.94% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>14/19</span>
+                <span class='fraction'>15/19</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">73.68% </span>
+                <span class="strong">78.94% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>14/19</span>
+                <span class='fraction'>15/19</span>
             </div>
         
             
@@ -153,13 +153,7 @@
 <a name='L88'></a><a href='#L88'>88</a>
 <a name='L89'></a><a href='#L89'>89</a>
 <a name='L90'></a><a href='#L90'>90</a>
-<a name='L91'></a><a href='#L91'>91</a>
-<a name='L92'></a><a href='#L92'>92</a>
-<a name='L93'></a><a href='#L93'>93</a>
-<a name='L94'></a><a href='#L94'>94</a>
-<a name='L95'></a><a href='#L95'>95</a>
-<a name='L96'></a><a href='#L96'>96</a>
-<a name='L97'></a><a href='#L97'>97</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L91'></a><a href='#L91'>91</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -198,23 +192,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -256,7 +244,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
 import './App.css';
 &nbsp;
@@ -293,24 +281,17 @@ import FeedItems from './components/FeedItems';
 import Settings from './components/Settings';
 &nbsp;
 function Dashboard() {
+  const navigate = useNavigate();
   return (
     &lt;div className="dashboard"&gt;
       &lt;header className="dashboard-header"&gt;
         &lt;h1&gt;Neko Reader&lt;/h1&gt;
         &lt;nav&gt;
-          &lt;a href="/settings" onClick={<span class="fstat-no" title="function not covered" >(e</span>) =&gt; {
-<span class="cstat-no" title="statement not covered" >            e.preventDefault();</span>
-<span class="cstat-no" title="statement not covered" >            window.history.pushState({}, '', '/settings');</span>
-            // Quick hack for navigation without full router link if inside Router context, 
-            // but here we are inside BrowserRouter so we should use Link or just simple navigation
-            // actually let's just use a real Link if we can, but we need import.
-            // For now, let's just rely on the Router catching the URL change if we use proper Link
-            // or just a button that navigates.
-          }} style={{ color: 'white', marginRight: '1rem' }}&gt;Settings&lt;/a&gt;
+          &lt;button onClick={<span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >n</span>avigate('/settings')} c</span>lassName="nav-link" style={{ color: 'white', marginRight: '1rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}&gt;Settings&lt;/button&gt;
 &nbsp;
           &lt;button onClick={() =&gt; {
             fetch('/api/logout', { method: 'POST' })
-              .then(() =&gt; window.location.href = '/login/');
+              .then(() =&gt; window.location.href = '/v2/login');
           }} className="logout-btn"&gt;
             Logout
           &lt;/button&gt;
@@ -323,8 +304,9 @@ function Dashboard() {
         &lt;main className="dashboard-main"&gt;
           &lt;Routes&gt;
             &lt;Route path="/feed/:feedId" element={&lt;FeedItems /&gt;} /&gt;
+            &lt;Route path="/tag/:tagName" element={&lt;FeedItems /&gt;} /&gt;
             &lt;Route path="/settings" element={&lt;Settings /&gt;} /&gt;
-            &lt;Route path="/" element={&lt;p&gt;Select a feed to view items.&lt;/p&gt;} /&gt;
+            &lt;Route path="/" element={&lt;FeedItems /&gt;} /&gt;
           &lt;/Routes&gt;
         &lt;/main&gt;
       &lt;/div&gt;
@@ -358,7 +340,7 @@ export default App;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-13T15:03:42.999Z
+                at 2026-02-13T21:49:58.924Z
             </div>
         <script src="../prettify.js"></script>
         <script>
