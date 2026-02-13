@@ -76,6 +76,9 @@ describe('Tag View Integration', () => {
             expect(screen.getByText('Tag Item 1')).toBeInTheDocument();
         });
 
-        expect(global.fetch).toHaveBeenCalledWith('/api/stream?tag=Tech');
+        const params = new URLSearchParams();
+        params.append('tag', 'Tech');
+        params.append('read_filter', 'unread');
+        expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`);
     });
 });

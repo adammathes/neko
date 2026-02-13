@@ -12,3 +12,10 @@
     list-style: none;
     padding: 0;
 }
+.selected-item-container {
+    border-left: 4px solid #007bff;
+    background-color: #f8f9fa;
+    padding-left: 0.5rem;
+    margin-left: -0.5rem; /* Compensate for padding/border to keep alignment */
+    transition: background-color 0.2s;
+}

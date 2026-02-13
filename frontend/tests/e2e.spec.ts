@@ -33,6 +33,9 @@ test.describe('Neko Reader E2E', () => {
 
         // 5. Navigate to Feed
         await page.goto('/v2/');
+        // Default view is now "Unread Items" or "Items", depending on state.
+        // It should NOT show "Select a feed" anymore.
+        await expect(page.getByText('Unread Items')).toBeVisible();
 
         // 6. Verify Tag View
         // Go to a tag URL (simulated, since we can't easily add tags via UI in this test yet without setup)

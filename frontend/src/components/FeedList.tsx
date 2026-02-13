@@ -36,6 +36,13 @@ export default function FeedList() {
 
     return (
         <div className="feed-list">
+            <div className="filter-section">
+                <ul className="filter-list">
+                    <li><Link to="/?filter=unread">Unread</Link></li>
+                    <li><Link to="/?filter=all">All</Link></li>
+                    <li><Link to="/?filter=starred">Starred</Link></li>
+                </ul>
+            </div>
             <div className="feed-section">
                 <h2>Feeds</h2>
                 {feeds.length === 0 ? (

@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import type { Item } from '../types';
 import FeedItem from './FeedItem';
 import './FeedItems.css';
 
 export default function FeedItems() {
     const { feedId, tagName } = useParams<{ feedId: string; tagName: string }>();
+    const [searchParams] = useSearchParams();
+    const filterFn = searchParams.get('filter') || 'unread';
+
     const [items, setItems] = useState<Item[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -15,10 +18,28 @@ export default function FeedItems() {
         setError('');
 
         let url = '/api/stream';
+        const params = new URLSearchParams();
+
         if (feedId) {
-            url = `/api/stream?feed_id=${feedId}`;
+            params.append('feed_id', feedId);
         } else if (tagName) {
-            url = `/api/stream?tag=${encodeURIComponent(tagName)}`;
+            params.append('tag', tagName);
+        }
+
+        // Apply filters
+        if (filterFn === 'all') {
+            params.append('read_filter', 'all');
+        } else if (filterFn === 'starred') {
+            params.append('starred', 'true');
+            params.append('read_filter', 'all');
+        } else {
+            // default to unread
+            params.append('read_filter', 'unread');
+        }
+
+        const queryString = params.toString();
+        if (queryString) {
+            url += `?${queryString}`;
         }
 
         fetch(url)
@@ -36,20 +57,133 @@ export default function FeedItems() {
                 setError(err.message);
                 setLoading(false);
             });
-    }, [feedId, tagName]);
+    }, [feedId, tagName, filterFn]);
+
+    const [selectedIndex, setSelectedIndex] = useState(-1);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (items.length === 0) return;
+
+            if (e.key === 'j') {
+                setSelectedIndex((prev) => {
+                    const nextIndex = Math.min(prev + 1, items.length - 1);
+                    if (nextIndex !== prev) {
+                        const item = items[nextIndex];
+                        if (!item.read) {
+                            markAsRead(item);
+                        }
+                        scrollToItem(nextIndex);
+                    }
+                    return nextIndex;
+                });
+            } else if (e.key === 'k') {
+                setSelectedIndex((prev) => {
+                    const nextIndex = Math.max(prev - 1, 0);
+                    if (nextIndex !== prev) {
+                        scrollToItem(nextIndex);
+                    }
+                    return nextIndex;
+                });
+            } else if (e.key === 's') {
+                setSelectedIndex((currentIndex) => {
+                    if (currentIndex >= 0 && currentIndex < items.length) {
+                        toggleStar(items[currentIndex]);
+                    }
+                    return currentIndex;
+                });
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [items]);
+
+    const scrollToItem = (index: number) => {
+        const element = document.getElementById(`item-${index}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    const markAsRead = (item: Item) => {
+        const updatedItem = { ...item, read: true };
+        // Optimistic update
+        setItems((prevItems) => prevItems.map((i) => (i._id === item._id ? updatedItem : i)));
+
+        fetch(`/api/item/${item._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ read: true, starred: item.starred }),
+        }).catch((err) => console.error('Failed to mark read', err));
+    };
+
+    const toggleStar = (item: Item) => {
+        const updatedItem = { ...item, starred: !item.starred };
+        // Optimistic update
+        setItems((prevItems) => prevItems.map((i) => (i._id === item._id ? updatedItem : i)));
+
+        fetch(`/api/item/${item._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ read: item.read, starred: !item.starred }),
+        }).catch((err) => console.error('Failed to toggle star', err));
+    };
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    // If item is not intersecting and is above the viewport, it's been scrolled past
+                    if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
+                        const index = Number(entry.target.getAttribute('data-index'));
+                        if (!isNaN(index) && index >= 0 && index < items.length) {
+                            const item = items[index];
+                            if (!item.read) {
+                                markAsRead(item);
+                            }
+                        }
+                    }
+                });
+            },
+            { root: null, threshold: 0 }
+        );
+
+        items.forEach((_, index) => {
+            const el = document.getElementById(`item-${index}`);
+            if (el) observer.observe(el);
+        });
+
+        return () => observer.disconnect();
+    }, [items]);
 
     if (loading) return <div className="feed-items-loading">Loading items...</div>;
     if (error) return <div className="feed-items-error">Error: {error}</div>;
 
+    let title = 'Items';
+    if (tagName) title = `Tag: ${tagName}`;
+    else if (feedId) title = 'Feed Items';
+    else if (filterFn === 'starred') title = 'Starred Items';
+    else if (filterFn === 'all') title = 'All Items';
+    else title = 'Unread Items';
+
     return (
         <div className="feed-items">
-            <h2>{tagName ? `Tag: ${tagName}` : 'Items'}</h2>
+            <h2>{title}</h2>
             {items.length === 0 ? (
                 <p>No items found.</p>
             ) : (
                 <ul className="item-list">
-                    {items.map((item) => (
-                        <FeedItem key={item._id} item={item} />
+                    {items.map((item, index) => (
+                        <div
+                            id={`item-${index}`}
+                            key={item._id}
+                            data-index={index}
+                            className={index === selectedIndex ? 'selected-item-container' : ''}
+                            onClick={() => setSelectedIndex(index)}
+                        >
+                            <FeedItem item={item} />
+                        </div>
                     ))}
                 </ul>
             )}

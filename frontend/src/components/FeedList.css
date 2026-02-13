@@ -80,3 +80,27 @@
     background: #dde2e6;
     color: #000;
 }
+
+.filter-section {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 1rem;
+}
+
+.filter-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 1rem;
+}
+
+.filter-list li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+.filter-list li a:hover {
+    color: #007bff;
+}

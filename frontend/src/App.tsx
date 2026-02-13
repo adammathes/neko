@@ -61,7 +61,7 @@ function Dashboard() {
             <Route path="/feed/:feedId" element={<FeedItems />} />
             <Route path="/tag/:tagName" element={<FeedItems />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/" element={<p>Select a feed to view items.</p>} />
+            <Route path="/" element={<FeedItems />} />
           </Routes>
         </main>
       </div>
