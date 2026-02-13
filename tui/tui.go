@@ -54,9 +54,13 @@ type Model struct {
 }
 
 func NewModel() Model {
-	return Model{
+	m := Model{
 		state: viewFeeds,
 	}
+	// Initialize lists with empty items to avoid nil dereference in SetSize
+	m.feedList = list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
+	m.itemList = list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
+	return m
 }
 
 func (m Model) Init() tea.Cmd {
@@ -113,7 +117,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			items[i] = itemString(it.Title)
 		}
 		m.itemList = list.New(items, list.NewDefaultDelegate(), m.width, m.height-4)
-		m.itemList.Title = m.selectedFeed.Title
+		if m.selectedFeed != nil {
+			m.itemList.Title = m.selectedFeed.Title
+		} else {
+			m.itemList.Title = "Items"
+		}
 		m.state = viewItems
 
 	case errMsg:
