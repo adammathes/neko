@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import App from './App';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
@@ -29,6 +29,25 @@ describe('App', () => {
 
         await waitFor(() => {
             expect(screen.getByText(/neko reader/i)).toBeInTheDocument();
+        });
+
+        // Test Logout
+        const logoutBtn = screen.getByText(/logout/i);
+        expect(logoutBtn).toBeInTheDocument();
+
+        // Mock window.location
+        Object.defineProperty(window, 'location', {
+            configurable: true,
+            value: { href: '' },
+        });
+
+        (global.fetch as any).mockResolvedValueOnce({ ok: true });
+
+        fireEvent.click(logoutBtn);
+
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith('/api/logout', expect.objectContaining({ method: 'POST' }));
+            expect(window.location.href).toBe('/login/');
         });
     });
 });

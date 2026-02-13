@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1770994662747" clover="3.2.0">
-  <project timestamp="1770994662747" name="All files">
-    <metrics statements="87" coveredstatements="79" conditionals="58" coveredconditionals="47" methods="28" coveredmethods="26" elements="173" coveredelements="152" complexity="0" loc="87" ncloc="87" packages="2" files="10" classes="10"/>
+<coverage generated="1770994870810" clover="3.2.0">
+  <project timestamp="1770994870810" name="All files">
+    <metrics statements="89" coveredstatements="81" conditionals="58" coveredconditionals="47" methods="30" coveredmethods="28" elements="177" coveredelements="156" complexity="0" loc="89" ncloc="89" packages="2" files="10" classes="10"/>
     <package name="src">
-      <metrics statements="15" coveredstatements="12" conditionals="6" coveredconditionals="4" methods="6" coveredmethods="5"/>
+      <metrics statements="17" coveredstatements="14" conditionals="6" coveredconditionals="4" methods="8" coveredmethods="7"/>
       <file name="App.css" path="/Users/adam/workspace/vibecode/neko/frontend/src/App.css">
         <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       </file>
       <file name="App.tsx" path="/Users/adam/workspace/vibecode/neko/frontend/src/App.tsx">
-        <metrics statements="15" coveredstatements="12" conditionals="6" coveredconditionals="4" methods="6" coveredmethods="5"/>
+        <metrics statements="17" coveredstatements="14" conditionals="6" coveredconditionals="4" methods="8" coveredmethods="7"/>
         <line num="8" count="2" type="stmt"/>
         <line num="9" count="2" type="stmt"/>
         <line num="11" count="2" type="stmt"/>
@@ -23,7 +23,9 @@
         <line num="28" count="0" type="stmt"/>
         <line num="31" count="1" type="stmt"/>
         <line num="38" count="1" type="stmt"/>
-        <line num="62" count="2" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="67" count="2" type="stmt"/>
       </file>
     </package>
     <package name="src.components">
@@ -84,10 +86,10 @@
       </file>
       <file name="FeedList.tsx" path="/Users/adam/workspace/vibecode/neko/frontend/src/components/FeedList.tsx">
         <metrics statements="16" coveredstatements="15" conditionals="12" coveredconditionals="10" methods="6" coveredmethods="6"/>
-        <line num="7" count="8" type="stmt"/>
-        <line num="8" count="8" type="stmt"/>
-        <line num="9" count="8" type="stmt"/>
-        <line num="11" count="8" type="stmt"/>
+        <line num="7" count="9" type="stmt"/>
+        <line num="8" count="9" type="stmt"/>
+        <line num="9" count="9" type="stmt"/>
+        <line num="11" count="9" type="stmt"/>
         <line num="12" count="5" type="stmt"/>
         <line num="14" count="3" type="cond" truecount="1" falsecount="1"/>
         <line num="15" count="0" type="stmt"/>
@@ -96,9 +98,9 @@
         <line num="21" count="3" type="stmt"/>
         <line num="24" count="1" type="stmt"/>
         <line num="25" count="1" type="stmt"/>
-        <line num="29" count="8" type="cond" truecount="2" falsecount="0"/>
-        <line num="30" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="32" count="2" type="stmt"/>
+        <line num="29" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="30" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="32" count="3" type="stmt"/>
         <line num="40" count="2" type="stmt"/>
       </file>
       <file name="Login.css" path="/Users/adam/workspace/vibecode/neko/frontend/src/components/Login.css">

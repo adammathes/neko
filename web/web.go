@@ -205,9 +205,17 @@ func Serve() {
 	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/logout/", logoutHandler)
 	http.HandleFunc("/api/login", apiLoginHandler)
+	http.HandleFunc("/api/logout", apiLogoutHandler)
 	http.HandleFunc("/api/auth", apiAuthStatusHandler)
 
 	http.HandleFunc("/", AuthWrap(indexHandler))
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(config.Config.Port), nil))
+}
+
+func apiLogoutHandler(w http.ResponseWriter, r *http.Request) {
+	c := http.Cookie{Name: AuthCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: false}
+	http.SetCookie(w, &c)
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"status":"ok"}`)
 }

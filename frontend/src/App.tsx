@@ -40,7 +40,12 @@ function Dashboard() {
       <header className="dashboard-header">
         <h1>Neko Reader</h1>
         <nav>
-          {/* Add logout later */}
+          <button onClick={() => {
+            fetch('/api/logout', { method: 'POST' })
+              .then(() => window.location.href = '/login/');
+          }} className="logout-btn">
+            Logout
+          </button>
         </nav>
       </header>
       <div className="dashboard-content">

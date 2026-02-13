@@ -356,6 +356,32 @@ func TestApiAuthStatusHandlerAuthenticated(t *testing.T) {
 	if body != `{"status":"ok", "authenticated":true}` {
 		t.Errorf("Expected authenticated true, got %q", body)
 	}
+
+	// Test Logout
+	req, _ = http.NewRequest("POST", "/api/logout", nil)
+	rr = httptest.NewRecorder()
+	handler := http.HandlerFunc(apiLogoutHandler)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("logout handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	// Verify cookie is cleared
+	cookies := rr.Result().Cookies()
+	found := false
+	for _, c := range cookies {
+		if c.Name == AuthCookie {
+			found = true
+			if c.MaxAge != -1 {
+				t.Errorf("auth cookie not expired: got MaxAge %v want -1", c.MaxAge)
+			}
+		}
+	}
+	if !found {
+		t.Errorf("auth cookie not found in response")
+	}
 }
 
 func TestApiAuthStatusHandlerUnauthenticated(t *testing.T) {
