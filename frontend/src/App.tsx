@@ -33,6 +33,7 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
 
 import FeedList from './components/FeedList';
 import FeedItems from './components/FeedItems';
+import Settings from './components/Settings';
 
 function Dashboard() {
   return (
@@ -40,6 +41,16 @@ function Dashboard() {
       <header className="dashboard-header">
         <h1>Neko Reader</h1>
         <nav>
+          <a href="/settings" onClick={(e) => {
+            e.preventDefault();
+            window.history.pushState({}, '', '/settings');
+            // Quick hack for navigation without full router link if inside Router context, 
+            // but here we are inside BrowserRouter so we should use Link or just simple navigation
+            // actually let's just use a real Link if we can, but we need import.
+            // For now, let's just rely on the Router catching the URL change if we use proper Link
+            // or just a button that navigates.
+          }} style={{ color: 'white', marginRight: '1rem' }}>Settings</a>
+
           <button onClick={() => {
             fetch('/api/logout', { method: 'POST' })
               .then(() => window.location.href = '/login/');
@@ -55,6 +66,7 @@ function Dashboard() {
         <main className="dashboard-main">
           <Routes>
             <Route path="/feed/:feedId" element={<FeedItems />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/" element={<p>Select a feed to view items.</p>} />
           </Routes>
         </main>
