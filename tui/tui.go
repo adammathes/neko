@@ -7,6 +7,7 @@ import (
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -18,24 +19,6 @@ const (
 	viewContent
 )
 
-type itemDelegate struct{}
-
-func (d itemDelegate) Height() int                               { return 1 }
-func (d itemDelegate) Spacing() int                              { return 0 }
-func (d itemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
-func (d itemDelegate) Render(w strings.Builder, m list.Model, index int, listItem list.Item) {
-	str, ok := listItem.(itemString)
-	if !ok {
-		return
-	}
-
-	if index == m.Index() {
-		fmt.Fprint(&w, SelectedItemStyle.Render(string(str)))
-	} else {
-		fmt.Fprint(&w, ItemStyle.Render(string(str)))
-	}
-}
-
 type itemString string
 
 func (i itemString) FilterValue() string { return string(i) }
@@ -44,6 +27,7 @@ type Model struct {
 	state        viewState
 	feedList     list.Model
 	itemList     list.Model
+	contentView  viewport.Model
 	feeds        []*feed.Feed
 	items        []*item.Item
 	selectedFeed *feed.Feed
@@ -57,9 +41,10 @@ func NewModel() Model {
 	m := Model{
 		state: viewFeeds,
 	}
-	// Initialize lists with empty items to avoid nil dereference in SetSize
+	// Initialize lists and viewport with empty items to avoid nil dereference
 	m.feedList = list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	m.itemList = list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
+	m.contentView = viewport.New(0, 0)
 	return m
 }
 
@@ -100,6 +85,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.feedList.SetSize(msg.Width, msg.Height-4)
 		m.itemList.SetSize(msg.Width, msg.Height-4)
+		m.contentView.Width = msg.Width - 4
+		m.contentView.Height = msg.Height - 8
 
 	case feedsMsg:
 		m.feeds = msg
@@ -130,7 +117,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
+			return m, tea.Quit
+
+		case "q", "esc":
 			if m.state == viewFeeds {
 				return m, tea.Quit
 			}
@@ -151,6 +141,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				idx := m.itemList.Index()
 				if idx >= 0 && idx < len(m.items) {
 					m.selectedItem = m.items[idx]
+
+					content := fmt.Sprintf("%s\n\n%s",
+						HeaderStyle.Render(m.selectedItem.Title),
+						m.selectedItem.Description)
+
+					m.contentView.SetContent(content)
+					m.contentView.YPosition = 0
 					m.state = viewContent
 				}
 			}
@@ -161,6 +158,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.feedList, cmd = m.feedList.Update(msg)
 	} else if m.state == viewItems {
 		m.itemList, cmd = m.itemList.Update(msg)
+	} else if m.state == viewContent {
+		m.contentView, cmd = m.contentView.Update(msg)
 	}
 
 	return m, cmd
@@ -181,9 +180,8 @@ func (m Model) View() string {
 		s.WriteString(m.itemList.View())
 	case viewContent:
 		if m.selectedItem != nil {
-			s.WriteString(HeaderStyle.Render(m.selectedItem.Title) + "\n")
-			s.WriteString(ContentStyle.Render(m.selectedItem.Description) + "\n\n")
-			s.WriteString(StatusStyle.Render("Press 'q' or 'esc' to go back"))
+			s.WriteString(m.contentView.View() + "\n")
+			s.WriteString(StatusStyle.Render("Press 'q' or 'esc' to go back | j/k or arrows to scroll"))
 		}
 	}
 
