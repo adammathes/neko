@@ -422,13 +422,55 @@ func TestServeFrontend(t *testing.T) {
 	// We expect 200 if built, or maybe panic if box not found (rice.MustFindBox)
 	// But rice usually works in dev mode by looking at disk.
 	if rr.Code != http.StatusOK {
-		// If 404/500, it might be that dist is missing, but for this specific verification 
+		// If 404/500, it might be that dist is missing, but for this specific verification
 		// where we know we built it, we expect 200.
 		// However, protecting against CI failures where build might not happen:
 		t.Logf("Got code %d for frontend request", rr.Code)
 	}
-    // Check for unauthenticated access (no cookie needed)
-    if rr.Code == http.StatusTemporaryRedirect {
-        t.Error("Frontend should not redirect to login")
-    }
+	// Check for unauthenticated access (no cookie needed)
+	if rr.Code == http.StatusTemporaryRedirect {
+		t.Error("Frontend should not redirect to login")
+	}
+}
+
+func TestGzipCompression(t *testing.T) {
+	handler := GzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("this is a test string that should be compressed when gzip is enabled and the client supports it"))
+	}))
+
+	// Case 1: Client supports gzip
+	req := httptest.NewRequest("GET", "/", nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Header().Get("Content-Encoding") != "gzip" {
+		t.Errorf("Expected Content-Encoding: gzip, got %q", rr.Header().Get("Content-Encoding"))
+	}
+
+	// Case 2: Client does NOT support gzip
+	req = httptest.NewRequest("GET", "/", nil)
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Header().Get("Content-Encoding") == "gzip" {
+		t.Error("Expected no Content-Encoding: gzip for client without support")
+	}
+
+	// Case 3: 304 Not Modified (Should NOT be gzipped)
+	handler304 := GzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotModified)
+	}))
+	req = httptest.NewRequest("GET", "/", nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	rr = httptest.NewRecorder()
+	handler304.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusNotModified {
+		t.Errorf("Expected 304, got %d", rr.Code)
+	}
+	if rr.Header().Get("Content-Encoding") == "gzip" {
+		t.Error("Expected no Content-Encoding for 304 response")
+	}
 }

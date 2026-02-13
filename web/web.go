@@ -10,11 +10,22 @@ import (
 	"strings"
 	"time"
 
+	"compress/gzip"
+	"io"
+	"sync"
+
 	"adammathes.com/neko/api"
 	"adammathes.com/neko/config"
 	rice "github.com/GeertJohan/go.rice"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var gzPool = sync.Pool{
+	New: func() interface{} {
+		gz, _ := gzip.NewWriterLevel(io.Discard, gzip.BestSpeed)
+		return gz
+	},
+}
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	serveBoxedFile(w, r, "ui.html")
@@ -183,14 +194,14 @@ func apiAuthStatusHandler(w http.ResponseWriter, r *http.Request) {
 func Serve() {
 	box := rice.MustFindBox("../static")
 	staticFileServer := http.StripPrefix("/static/", http.FileServer(box.HTTPBox()))
-	http.Handle("/static/", staticFileServer)
+	http.Handle("/static/", GzipMiddleware(staticFileServer))
 
 	// New Frontend
-	http.Handle("/v2/", http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend)))
+	http.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))))
 
 	// New REST API
 	apiRouter := api.NewRouter()
-	http.Handle("/api/", http.StripPrefix("/api", AuthWrapHandler(apiRouter)))
+	http.Handle("/api/", GzipMiddleware(http.StripPrefix("/api", AuthWrapHandler(apiRouter))))
 
 	// Legacy routes for backward compatibility
 	http.HandleFunc("/stream/", AuthWrap(api.HandleStream))
@@ -208,9 +219,83 @@ func Serve() {
 	http.HandleFunc("/api/logout", apiLogoutHandler)
 	http.HandleFunc("/api/auth", apiAuthStatusHandler)
 
-	http.HandleFunc("/", AuthWrap(indexHandler))
+	http.Handle("/", GzipMiddleware(AuthWrap(http.HandlerFunc(indexHandler))))
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(config.Config.Port), nil))
+}
+
+type gzipWriter struct {
+	http.ResponseWriter
+	gz *gzip.Writer
+}
+
+func (w *gzipWriter) Write(b []byte) (int, error) {
+	if w.Header().Get("Content-Type") == "" {
+		w.Header().Set("Content-Type", http.DetectContentType(b))
+	}
+	contentType := w.Header().Get("Content-Type")
+	if w.gz == nil && isCompressible(contentType) && w.Header().Get("Content-Encoding") == "" {
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Del("Content-Length")
+		gz := gzPool.Get().(*gzip.Writer)
+		gz.Reset(w.ResponseWriter)
+		w.gz = gz
+	}
+	if w.gz != nil {
+		return w.gz.Write(b)
+	}
+	return w.ResponseWriter.Write(b)
+}
+
+func (w *gzipWriter) WriteHeader(status int) {
+	if status != http.StatusOK && status != http.StatusCreated && status != http.StatusAccepted {
+		w.ResponseWriter.WriteHeader(status)
+		return
+	}
+	contentType := w.Header().Get("Content-Type")
+	if isCompressible(contentType) && w.Header().Get("Content-Encoding") == "" {
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Del("Content-Length")
+		gz := gzPool.Get().(*gzip.Writer)
+		gz.Reset(w.ResponseWriter)
+		w.gz = gz
+	}
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func (w *gzipWriter) Flush() {
+	if w.gz != nil {
+		w.gz.Flush()
+	}
+	if f, ok := w.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
+func isCompressible(contentType string) bool {
+	ct := strings.ToLower(contentType)
+	return strings.Contains(ct, "text/") ||
+		strings.Contains(ct, "javascript") ||
+		strings.Contains(ct, "json") ||
+		strings.Contains(ct, "xml") ||
+		strings.Contains(ct, "rss") ||
+		strings.Contains(ct, "xhtml")
+}
+
+func GzipMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		gzw := &gzipWriter{ResponseWriter: w}
+		next.ServeHTTP(gzw, r)
+		if gzw.gz != nil {
+			gzw.gz.Close()
+			gzPool.Put(gzw.gz)
+		}
+	})
 }
 
 func apiLogoutHandler(w http.ResponseWriter, r *http.Request) {
