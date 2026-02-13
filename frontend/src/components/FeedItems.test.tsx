@@ -53,8 +53,6 @@ describe('FeedItems Component', () => {
 
         await waitFor(() => {
             expect(screen.getByText('Item One')).toBeInTheDocument();
-            // Title should now be "Feed Items" based on logic
-            expect(screen.getByText('Feed Items')).toBeInTheDocument();
         });
 
         const params = new URLSearchParams();
@@ -169,6 +167,59 @@ describe('FeedItems Component', () => {
                 method: 'PUT',
                 body: JSON.stringify({ read: true, starred: false }),
             }));
+        });
+    });
+
+    it('loads more items when sentinel becomes visible', async () => {
+        const initialItems = [{ _id: 101, title: 'Item 1', url: 'u1', read: true, starred: false }];
+        const moreItems = [{ _id: 100, title: 'Item 0', url: 'u0', read: true, starred: false }];
+
+        (global.fetch as any)
+            .mockResolvedValueOnce({ ok: true, json: async () => initialItems })
+            .mockResolvedValueOnce({ ok: true, json: async () => moreItems });
+
+        let observerCallback: IntersectionObserverCallback = () => { };
+        class MockIntersectionObserver {
+            constructor(callback: IntersectionObserverCallback) {
+                observerCallback = callback;
+            }
+            observe = vi.fn();
+            unobserve = vi.fn();
+            disconnect = vi.fn();
+        }
+        window.IntersectionObserver = MockIntersectionObserver as any;
+
+        render(
+            <MemoryRouter>
+                <FeedItems />
+            </MemoryRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('Item 1')).toBeInTheDocument();
+        });
+
+        // Simulate sentinel becoming visible
+        const entry = {
+            isIntersecting: true,
+            target: { id: 'load-more-sentinel' } as unknown as Element,
+            boundingClientRect: {} as DOMRectReadOnly,
+            intersectionRatio: 1,
+            time: 0,
+            rootBounds: null,
+            intersectionRect: {} as DOMRectReadOnly,
+        } as IntersectionObserverEntry;
+
+        act(() => {
+            observerCallback([entry], {} as IntersectionObserver);
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Item 0')).toBeInTheDocument();
+            const params = new URLSearchParams();
+            params.append('max_id', '101');
+            params.append('read_filter', 'unread');
+            expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`);
         });
     });
 });

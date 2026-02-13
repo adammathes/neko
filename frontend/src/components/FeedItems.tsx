@@ -11,10 +11,17 @@ export default function FeedItems() {
 
     const [items, setItems] = useState<Item[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        setLoading(true);
+    const fetchItems = (maxId?: string) => {
+        if (maxId) {
+            setLoadingMore(true);
+        } else {
+            setLoading(true);
+            setItems([]);
+        }
         setError('');
 
         let url = '/api/stream';
@@ -24,6 +31,10 @@ export default function FeedItems() {
             params.append('feed_id', feedId);
         } else if (tagName) {
             params.append('tag', tagName);
+        }
+
+        if (maxId) {
+            params.append('max_id', maxId);
         }
 
         // Apply filters
@@ -50,13 +61,24 @@ export default function FeedItems() {
                 return res.json();
             })
             .then((data) => {
-                setItems(data);
+                if (maxId) {
+                    setItems((prev) => [...prev, ...data]);
+                } else {
+                    setItems(data);
+                }
+                setHasMore(data.length > 0);
                 setLoading(false);
+                setLoadingMore(false);
             })
             .catch((err) => {
                 setError(err.message);
                 setLoading(false);
+                setLoadingMore(false);
             });
+    };
+
+    useEffect(() => {
+        fetchItems();
     }, [feedId, tagName, filterFn]);
 
     const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -134,6 +156,14 @@ export default function FeedItems() {
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
+                    // Infinity scroll sentinel
+                    if (entry.target.id === 'load-more-sentinel') {
+                        if (entry.isIntersecting && !loadingMore && hasMore && items.length > 0) {
+                            fetchItems(String(items[items.length - 1]._id));
+                        }
+                        return;
+                    }
+
                     // If item is not intersecting and is above the viewport, it's been scrolled past
                     if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
                         const index = Number(entry.target.getAttribute('data-index'));
@@ -154,8 +184,11 @@ export default function FeedItems() {
             if (el) observer.observe(el);
         });
 
+        const sentinel = document.getElementById('load-more-sentinel');
+        if (sentinel) observer.observe(sentinel);
+
         return () => observer.disconnect();
-    }, [items]);
+    }, [items, loadingMore, hasMore]);
 
     if (loading) return <div className="feed-items-loading">Loading items...</div>;
     if (error) return <div className="feed-items-error">Error: {error}</div>;
@@ -178,6 +211,11 @@ export default function FeedItems() {
                             <FeedItem item={item} />
                         </div>
                     ))}
+                    {hasMore && (
+                        <div id="load-more-sentinel" className="loading-more">
+                            {loadingMore ? 'Loading more...' : ''}
+                        </div>
+                    )}
                 </ul>
             )}
         </div>
