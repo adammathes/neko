@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import type { Item } from '../types';
+import FeedItem from './FeedItem';
 import './FeedItems.css';
 
 export default function FeedItems() {
@@ -46,18 +47,7 @@ export default function FeedItems() {
             ) : (
                 <ul className="item-list">
                     {items.map((item) => (
-                        <li key={item._id} className={`item ${item.read ? 'read' : 'unread'}`}>
-                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="item-title">
-                                {item.title || '(No Title)'}
-                            </a>
-                            <div className="item-meta">
-                                <span className="item-date">{new Date(item.publish_date).toLocaleDateString()}</span>
-                                {item.feed_title && <span className="item-feed"> - {item.feed_title}</span>}
-                            </div>
-                            {item.description && (
-                                <div className="item-description" dangerouslySetInnerHTML={{ __html: item.description }} />
-                            )}
-                        </li>
+                        <FeedItem key={item._id} item={item} />
                     ))}
                 </ul>
             )}

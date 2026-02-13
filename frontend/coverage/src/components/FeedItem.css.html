@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/components/Login.css</title>
+    <title>Code coverage report for src/components/FeedItem.css</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,7 +19,7 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/components</a> Login.css</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/components</a> FeedItem.css</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
@@ -126,7 +126,24 @@
 <a name='L61'></a><a href='#L61'>61</a>
 <a name='L62'></a><a href='#L62'>62</a>
 <a name='L63'></a><a href='#L63'>63</a>
-<a name='L64'></a><a href='#L64'>64</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -189,70 +206,104 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f5f5f5;
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">.feed-item {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1rem 0;
+    list-style: none;
+    /* Ensure no bullets if used in ul */
 }
 &nbsp;
-.login-form {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
+.feed-item.read .item-title {
+    color: #888;
+    font-weight: normal;
 }
 &nbsp;
-.login-form h1 {
-  margin-bottom: 2rem;
-  text-align: center;
-  color: #333;
+.feed-item.unread .item-title {
+    font-weight: bold;
 }
 &nbsp;
-.form-group {
-  margin-bottom: 1.5rem;
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 &nbsp;
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-  color: #555;
+.item-title {
+    font-size: 1.2rem;
+    text-decoration: none;
+    color: #333;
+    display: block;
+    margin-bottom: 0.5rem;
+    flex: 1;
+    /* Take up remaining space */
 }
 &nbsp;
-.form-group input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
+.item-title:hover {
+    text-decoration: underline;
+    color: #007bff;
 }
 &nbsp;
-.error-message {
-  color: #dc3545;
-  margin-bottom: 1rem;
-  text-align: center;
+.item-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
 }
 &nbsp;
-button[type="submit"] {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.action-btn {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 1rem;
+    line-height: 1;
 }
 &nbsp;
-button[type="submit"]:hover {
-  background-color: #0056b3;
+.action-btn:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
 }
-&nbsp;</pre></td></tr></table></pre>
+&nbsp;
+.action-btn.is-starred {
+    color: gold;
+    border-color: gold;
+}
+&nbsp;
+.item-meta {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+&nbsp;
+.item-description {
+    color: #444;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+&nbsp;
+.item-description img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem 0;
+}</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
