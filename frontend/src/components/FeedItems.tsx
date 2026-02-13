@@ -205,7 +205,7 @@ export default function FeedItems() {
                             id={`item-${index}`}
                             key={item._id}
                             data-index={index}
-                            className={index === selectedIndex ? 'selected-item-container' : ''}
+                            data-selected={index === selectedIndex}
                             onClick={() => setSelectedIndex(index)}
                         >
                             <FeedItem item={item} />
