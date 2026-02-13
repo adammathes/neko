@@ -23,7 +23,8 @@
 
 .item-title {
     font-size: 1.25rem;
-    /* Legacy h3 size approx */
+    font-weight: bold;
+    /* Legacy headers were bold */
     text-decoration: none;
     color: #333;
     display: block;

@@ -1,6 +1,11 @@
+:root,
+body,
+* {
+  font-family: 'Courier New', Courier, monospace !important;
+  /* Strongly force fixed width as requested */
+}
+
 :root {
-  font-family: 'Courier New', Courier, monospace;
-  /* Fixed width as requested */
   line-height: 1.5;
   font-weight: 400;
 
@@ -10,10 +15,6 @@
   --sidebar-bg: #ccc;
   --link-color: #0000EE;
   /* Standard blue link */
-
-  font-family: 'Courier New', Courier, monospace;
-  line-height: 1.5;
-  font-weight: 400;
 
   color-scheme: light dark;
   color: var(--text-color);
@@ -41,7 +42,6 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  /* Removed flex centering to allow natural flow */
 }
 
 h1 {

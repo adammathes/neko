@@ -50,7 +50,7 @@ export default function FeedList() {
                 ) : (
                     <ul className="feed-list-items">
                         {feeds.map((feed) => (
-                            <li key={feed._id} className="feed-item">
+                            <li key={feed._id} className="sidebar-feed-item">
                                 <Link to={`/feed/${feed._id}`} className="feed-title">
                                     {feed.title || feed.url}
                                 </Link>

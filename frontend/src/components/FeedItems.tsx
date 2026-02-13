@@ -160,16 +160,9 @@ export default function FeedItems() {
     if (loading) return <div className="feed-items-loading">Loading items...</div>;
     if (error) return <div className="feed-items-error">Error: {error}</div>;
 
-    let title = 'Items';
-    if (tagName) title = `Tag: ${tagName}`;
-    else if (feedId) title = 'Feed Items';
-    else if (filterFn === 'starred') title = 'Starred Items';
-    else if (filterFn === 'all') title = 'All Items';
-    else title = 'Unread Items';
 
     return (
         <div className="feed-items">
-            <h2>{title}</h2>
             {items.length === 0 ? (
                 <p>No items found.</p>
             ) : (
