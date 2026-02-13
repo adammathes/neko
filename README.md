@@ -84,6 +84,8 @@ NOTE: I haven't put up any binaries yet.
    * [go-sqlite3](https://github.com/mattn/go-sqlite3)
       * [sqlite](https://sqlite.org/index.html)
       * [gcc](https://gcc.gnu.org)
+   * [go.rice](https://github.com/GeertJohan/go.rice)
+      * `go install github.com/GeertJohan/go.rice/rice@latest`
 
     $ go get adammathes.com/neko
    
