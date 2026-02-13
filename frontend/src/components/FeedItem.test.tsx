@@ -36,10 +36,11 @@ describe('FeedItem Component', () => {
         render(<FeedItem item={mockItem} />);
 
         const starBtn = screen.getByTitle('Star');
+        expect(starBtn).toHaveTextContent('☆');
         fireEvent.click(starBtn);
 
         // Optimistic update
-        expect(await screen.findByTitle('Unstar')).toBeInTheDocument();
+        expect(await screen.findByTitle('Unstar')).toHaveTextContent('★');
 
         expect(global.fetch).toHaveBeenCalledWith('/api/item/1', expect.objectContaining({
             method: 'PUT',

@@ -54,6 +54,16 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
     return (
         <li className={`feed-item ${item.read ? 'read' : 'unread'} ${loading ? 'loading' : ''}`}>
             <div className="item-header">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleStar();
+                    }}
+                    className={`star-btn ${item.starred ? 'is-starred' : 'is-unstarred'}`}
+                    title={item.starred ? "Unstar" : "Star"}
+                >
+                    {item.starred ? '★' : '☆'}
+                </button>
                 <a href={item.url} target="_blank" rel="noopener noreferrer" className="item-title">
                     {item.title || '(No Title)'}
                 </a>
@@ -64,13 +74,6 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
                     {item.feed_title && ` - ${item.feed_title}`}
                 </a>
                 <div className="item-actions" style={{ display: 'inline-block', float: 'right' }}>
-                    <button
-                        onClick={toggleStar}
-                        className={`action-btn ${item.starred ? 'is-starred' : 'is-unstarred'}`}
-                        title={item.starred ? "Unstar" : "Star"}
-                    >
-                        {item.starred ? 'unstar' : 'star'}
-                    </button>
                 </div>
             </div>
             {item.description && (
