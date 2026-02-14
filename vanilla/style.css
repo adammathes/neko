@@ -1,0 +1,123 @@
+:root {
+    --bg-color: #f6f6f6;
+    --sidebar-bg: #eaeaea;
+    --item-bg: #fff;
+    --text-color: #222;
+    --link-color: #0000EE;
+    /* Standard blue link */
+    --border-color: #ddd;
+    --selected-bg: #e8f0fe;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overflow: hidden;
+    /* App container handles scrolling */
+}
+
+#app {
+    display: flex;
+    height: 100vh;
+}
+
+#sidebar {
+    width: 250px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+#sidebar header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#sidebar h1 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+#feeds-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.feed-item {
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.feed-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.feed-item.active {
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+#main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+#main-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: #fcfcfc;
+}
+
+#main-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+#entries-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.entry {
+    background-color: var(--item-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0;
+}
+
+.entry-header {
+    margin-bottom: 0.5rem;
+}
+
+.entry-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--link-color);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.entry-meta {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.entry-content {
+    line-height: 1.6;
+    max-width: 800px;
+}
+
+.entry-content img {
+    max-width: 100%;
+    height: auto;
+}

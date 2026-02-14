@@ -30,6 +30,7 @@ var gzPool = sync.Pool{
 var (
 	staticBox   *rice.Box
 	frontendBox *rice.Box
+	vanillaBox  *rice.Box
 )
 
 func init() {
@@ -42,6 +43,11 @@ func init() {
 	frontendBox, err = rice.FindBox("../frontend/dist")
 	if err != nil {
 		log.Printf("Warning: Could not find frontendBox at ../frontend/dist: %v", err)
+	}
+
+	vanillaBox, err = rice.FindBox("../vanilla")
+	if err != nil {
+		log.Printf("Warning: Could not find vanillaBox at ../vanilla: %v", err)
 	}
 }
 
@@ -235,6 +241,11 @@ func NewRouter() http.Handler {
 	// New REST API
 	apiRouter := api.NewRouter()
 	mux.Handle("/api/", GzipMiddleware(http.StripPrefix("/api", AuthWrapHandler(apiRouter))))
+
+	// Vanilla JS Prototype
+	if vanillaBox != nil {
+		mux.Handle("/vanilla/", GzipMiddleware(http.StripPrefix("/vanilla/", http.FileServer(vanillaBox.HTTPBox()))))
+	}
 
 	// Legacy routes for backward compatibility
 	mux.HandleFunc("/stream/", AuthWrap(api.HandleStream))
