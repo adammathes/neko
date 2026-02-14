@@ -44,6 +44,15 @@ function Dashboard({ theme, setTheme }: { theme: string; setTheme: (t: string) =
       className={`dashboard ${sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'} theme-${theme}`}
     >
       <div className="dashboard-content">
+        {!sidebarVisible && (
+          <button
+            className="sidebar-toggle fixed-toggle"
+            onClick={() => setSidebarVisible(true)}
+            title="Show Sidebar"
+          >
+            🐱
+          </button>
+        )}
         <aside className={`dashboard-sidebar ${sidebarVisible ? '' : 'hidden'}`}>
           <FeedList theme={theme} setTheme={setTheme} setSidebarVisible={setSidebarVisible} />
         </aside>
