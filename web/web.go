@@ -133,6 +133,11 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Authenticated(r *http.Request) bool {
+	// If no password is configured, authentication is not required
+	if config.Config.DigestPassword == "" {
+		return true
+	}
+
 	pc, err := r.Cookie("auth")
 	if err != nil {
 		return false
@@ -179,6 +184,17 @@ func apiLoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	// If no password is configured, authentication is not required
+	if config.Config.DigestPassword == "" {
+		// Still set a dummy auth cookie for consistency
+		c := http.Cookie{Name: AuthCookie, Value: "noauth", Path: "/", MaxAge: SecondsInAYear, HttpOnly: true}
+		http.SetCookie(w, &c)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"status":"ok"}`)
+		return
+	}
+
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
