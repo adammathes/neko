@@ -14,7 +14,6 @@ neko_test.db
 neko_test
 coverage.html
 run_e2e.sh
-.agent/workflows/
 frontend/playwright-report/
 frontend/test-results/
 frontend/coverage/
