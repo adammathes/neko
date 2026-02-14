@@ -31,7 +31,7 @@ vanilla-ui:
 	cp vanilla/index.html vanilla/app.js vanilla/style.css web/dist/vanilla/
 
 build:
-	${GO} build ${LDFLAGS} -o ${BINARY}
+	${GO} build ${LDFLAGS} -o ${BINARY} ./cmd/neko
 
 install: build
 	cp ${BINARY} ${GOBIN}
@@ -39,6 +39,9 @@ install: build
 test:
 	${GO} test ./...
 	cd frontend && ${NPM} test -- --run
+	
+lint:
+	golangci-lint run
 
 run: build
 	./${BINARY}

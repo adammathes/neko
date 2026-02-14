@@ -7,114 +7,126 @@ import FeedList from './FeedList';
 import { BrowserRouter } from 'react-router-dom';
 
 describe('FeedList Component', () => {
-    beforeEach(() => {
-        vi.resetAllMocks();
-        global.fetch = vi.fn();
+  beforeEach(() => {
+    vi.resetAllMocks();
+    global.fetch = vi.fn();
+  });
+
+  it('renders loading state initially', () => {
+    (global.fetch as any).mockImplementation(() => new Promise(() => {}));
+    render(
+      <BrowserRouter>
+        {/* @ts-ignore */}
+        <FeedList theme="light" setTheme={() => {}} />
+      </BrowserRouter>
+    );
+    expect(screen.getByText(/loading feeds/i)).toBeInTheDocument();
+  });
+
+  it('renders list of feeds', async () => {
+    const mockFeeds = [
+      {
+        _id: 1,
+        title: 'Feed One',
+        url: 'http://example.com/rss',
+        web_url: 'http://example.com',
+        category: 'Tech',
+      },
+      {
+        _id: 2,
+        title: 'Feed Two',
+        url: 'http://test.com/rss',
+        web_url: 'http://test.com',
+        category: 'News',
+      },
+    ];
+
+    (global.fetch as any).mockImplementation((url: string) => {
+      if (url.includes('/api/feed/')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockFeeds,
+        });
+      }
+      if (url.includes('/api/tag')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [{ title: 'Tech' }],
+        });
+      }
+      return Promise.reject(new Error(`Unknown URL: ${url}`));
     });
 
-    it('renders loading state initially', () => {
-        (global.fetch as any).mockImplementation(() => new Promise(() => { }));
-        render(
-            <BrowserRouter>
-                {/* @ts-ignore */}
-                <FeedList theme="light" setTheme={() => { }} />
-            </BrowserRouter>
-        );
-        expect(screen.getByText(/loading feeds/i)).toBeInTheDocument();
+    render(
+      <BrowserRouter>
+        {/* @ts-ignore */}
+        <FeedList theme="light" setTheme={() => {}} />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText(/loading feeds/i)).not.toBeInTheDocument();
     });
 
-    it('renders list of feeds', async () => {
-        const mockFeeds = [
-            { _id: 1, title: 'Feed One', url: 'http://example.com/rss', web_url: 'http://example.com', category: 'Tech' },
-            { _id: 2, title: 'Feed Two', url: 'http://test.com/rss', web_url: 'http://test.com', category: 'News' },
-        ];
+    // Expand feeds
+    fireEvent.click(screen.getByText(/feeds/i, { selector: 'h2' }));
 
-        (global.fetch as any).mockImplementation((url: string) => {
-            if (url.includes('/api/feed/')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => mockFeeds,
-                });
-            }
-            if (url.includes('/api/tag')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => [{ title: 'Tech' }],
-                });
-            }
-            return Promise.reject(new Error(`Unknown URL: ${url}`));
+    await waitFor(() => {
+      expect(screen.getByText('Feed One')).toBeInTheDocument();
+      expect(screen.getByText('Feed Two')).toBeInTheDocument();
+      const techElements = screen.getAllByText('Tech');
+      expect(techElements.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('handles fetch error', async () => {
+    (global.fetch as any).mockImplementation(() => Promise.reject(new Error('API Error')));
+
+    render(
+      <BrowserRouter>
+        {/* @ts-ignore */}
+        <FeedList theme="light" setTheme={() => {}} />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/error: api error/i)).toBeInTheDocument();
+    });
+  });
+
+  it('handles empty feed list', async () => {
+    (global.fetch as any).mockImplementation((url: string) => {
+      if (url.includes('/api/feed/')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [],
         });
-
-        render(
-            <BrowserRouter>
-                {/* @ts-ignore */}
-                <FeedList theme="light" setTheme={() => { }} />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            expect(screen.queryByText(/loading feeds/i)).not.toBeInTheDocument();
+      }
+      if (url.includes('/api/tag')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [],
         });
-
-        // Expand feeds
-        fireEvent.click(screen.getByText(/feeds/i, { selector: 'h2' }));
-
-        await waitFor(() => {
-            expect(screen.getByText('Feed One')).toBeInTheDocument();
-            expect(screen.getByText('Feed Two')).toBeInTheDocument();
-            const techElements = screen.getAllByText('Tech');
-            expect(techElements.length).toBeGreaterThan(0);
-        });
+      }
+      return Promise.reject(new Error(`Unknown URL: ${url}`));
     });
 
-    it('handles fetch error', async () => {
-        (global.fetch as any).mockImplementation(() => Promise.reject(new Error('API Error')));
+    render(
+      <BrowserRouter>
+        {/* @ts-ignore */}
+        <FeedList theme="light" setTheme={() => {}} />
+      </BrowserRouter>
+    );
 
-        render(
-            <BrowserRouter>
-                {/* @ts-ignore */}
-                <FeedList theme="light" setTheme={() => { }} />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            expect(screen.getByText(/error: api error/i)).toBeInTheDocument();
-        });
+    await waitFor(() => {
+      expect(screen.queryByText(/loading feeds/i)).not.toBeInTheDocument();
     });
 
-    it('handles empty feed list', async () => {
-        (global.fetch as any).mockImplementation((url: string) => {
-            if (url.includes('/api/feed/')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => [],
-                });
-            }
-            if (url.includes('/api/tag')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => [],
-                });
-            }
-            return Promise.reject(new Error(`Unknown URL: ${url}`));
-        });
+    // Expand feeds
+    fireEvent.click(screen.getByText(/feeds/i, { selector: 'h2' }));
 
-        render(
-            <BrowserRouter>
-                {/* @ts-ignore */}
-                <FeedList theme="light" setTheme={() => { }} />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            expect(screen.queryByText(/loading feeds/i)).not.toBeInTheDocument();
-        });
-
-        // Expand feeds
-        fireEvent.click(screen.getByText(/feeds/i, { selector: 'h2' }));
-
-        await waitFor(() => {
-            expect(screen.getByText(/no feeds found/i)).toBeInTheDocument();
-        });
+    await waitFor(() => {
+      expect(screen.getByText(/no feeds found/i)).toBeInTheDocument();
     });
+  });
 });

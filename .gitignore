@@ -17,3 +17,5 @@ run_e2e.sh
 .agent/workflows/
 frontend/playwright-report/
 frontend/test-results/
+frontend/coverage/
+readme.html

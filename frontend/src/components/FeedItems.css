@@ -1,22 +1,23 @@
 .feed-items {
-    padding: 1rem;
+  padding: 1rem 0;
+  /* Removing horizontal padding to avoid double-padding with FeedItem */
 }
 
 .feed-items h2 {
-    margin-top: 0;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 0.5rem;
+  margin-top: 0;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 0.5rem;
 }
 
 .item-list {
-    list-style: none;
-    padding: 0;
+  list-style: none;
+  padding: 0;
 }
 
 .loading-more {
-    padding: 2rem;
-    text-align: center;
-    color: #888;
-    font-size: 0.9rem;
-    min-height: 50px;
+  padding: 2rem;
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+  min-height: 50px;
 }

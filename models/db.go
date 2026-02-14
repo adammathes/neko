@@ -4,11 +4,12 @@ Package neko/models implements behavior for the entities necessary for the subsc
 package models
 
 import (
-	"adammathes.com/neko/config"
-	"adammathes.com/neko/vlog"
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
+
+	"adammathes.com/neko/config"
+	"adammathes.com/neko/internal/vlog"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sql.DB

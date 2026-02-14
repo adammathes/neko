@@ -16,24 +16,18 @@ h5,
 
 :root {
   line-height: 1.5;
-  font-weight: 400;
   font-size: 18px;
 
   /* Light Mode Defaults */
   --bg-color: #ffffff;
   --text-color: rgba(0, 0, 0, 0.87);
   --sidebar-bg: #ccc;
-  --link-color: #0000EE;
+  --link-color: #0000ee;
   /* Standard blue link */
 
   color-scheme: light dark;
   color: var(--text-color);
   background-color: var(--bg-color);
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -88,7 +82,7 @@ button {
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
-  font-weight: 500;
+  font-weight: bold;
   font-family: inherit;
   background-color: #1a1a1a;
   cursor: pointer;

@@ -21,6 +21,11 @@ jobs:
     - name: Vet
       run: go vet ./...
 
+    - name: Lint
+      uses: golangci/golangci-lint-action@v4
+      with:
+        version: v1.54
+
     - name: Test
       run: go test -v ./...
 
@@ -42,6 +47,9 @@ jobs:
 
     - name: Install dependencies
       run: npm ci
+
+    - name: Lint
+      run: npm run lint
 
     - name: Test
       run: npm test -- --run

@@ -1,83 +1,84 @@
 .settings-page {
-    padding: 2rem;
-    max-width: 800px;
-    margin: 0 auto;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .add-feed-section {
-    background: #f9f9f9;
-    padding: 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-    border: 1px solid #eee;
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 1px solid #eee;
 }
 
 .add-feed-form {
-    display: flex;
-    gap: 1rem;
+  display: flex;
+  gap: 1rem;
 }
 
 .feed-input {
-    flex: 1;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
 }
 
 .error-message {
-    color: #d32f2f;
-    margin-top: 1rem;
+  color: #d32f2f;
+  margin-top: 1rem;
 }
 
 .settings-feed-list {
-    list-style: none;
-    padding: 0;
-    border: 1px solid #eee;
-    border-radius: 8px;
+  list-style: none;
+  padding: 0;
+  border: 1px solid #eee;
+  border-radius: 8px;
 }
 
 .settings-feed-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
 }
 
 .settings-feed-item:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .feed-info {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .feed-title {
-    font-weight: bold;
-    font-size: 1.1rem;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-size: 1.1rem;
 }
 
 .feed-url {
-    color: #666;
-    font-size: 0.9rem;
+  color: #666;
+  font-size: 0.9rem;
 }
 
 .delete-btn {
-    background: #ff5252;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
+  background: #ff5252;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .delete-btn:hover {
-    background: #ff1744;
+  background: #ff1744;
 }
 
 .delete-btn:disabled {
-    background: #ffcdd2;
-    cursor: not-allowed;
+  background: #ffcdd2;
+  cursor: not-allowed;
 }

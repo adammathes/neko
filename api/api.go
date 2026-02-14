@@ -7,23 +7,36 @@ import (
 	"strconv"
 	"strings"
 
-	"adammathes.com/neko/crawler"
-	"adammathes.com/neko/exporter"
+	"adammathes.com/neko/config"
+	"adammathes.com/neko/internal/crawler"
+	"adammathes.com/neko/internal/exporter"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
 )
 
-// NewRouter returns a configured mux with all API routes.
-func NewRouter() *http.ServeMux {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/stream", HandleStream)
-	mux.HandleFunc("/item/", HandleItem)
-	mux.HandleFunc("/feed", HandleFeed)
-	mux.HandleFunc("/feed/", HandleFeed)
-	mux.HandleFunc("/tag", HandleCategory)
-	mux.HandleFunc("/export/", HandleExport)
-	mux.HandleFunc("/crawl", HandleCrawl)
-	return mux
+type Server struct {
+	Config *config.Settings
+	*http.ServeMux
+}
+
+// NewServer returns a configured server with all API routes.
+func NewServer(cfg *config.Settings) *Server {
+	s := &Server{
+		Config:   cfg,
+		ServeMux: http.NewServeMux(),
+	}
+	s.routes()
+	return s
+}
+
+func (s *Server) routes() {
+	s.HandleFunc("/stream", s.HandleStream)
+	s.HandleFunc("/item/", s.HandleItem)
+	s.HandleFunc("/feed", s.HandleFeed)
+	s.HandleFunc("/feed/", s.HandleFeed)
+	s.HandleFunc("/tag", s.HandleCategory)
+	s.HandleFunc("/export/", s.HandleExport)
+	s.HandleFunc("/crawl", s.HandleCrawl)
 }
 
 func jsonError(w http.ResponseWriter, msg string, code int) {
@@ -37,7 +50,7 @@ func jsonResponse(w http.ResponseWriter, data interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 
-func HandleStream(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleStream(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		jsonError(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -72,7 +85,7 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, items)
 }
 
-func HandleItem(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleItem(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/item/")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 
@@ -115,7 +128,7 @@ func HandleItem(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleFeed(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleFeed(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		feeds, err := feed.All()
@@ -180,7 +193,7 @@ func HandleFeed(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleCategory(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleCategory(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		jsonError(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -194,7 +207,7 @@ func HandleCategory(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, categories)
 }
 
-func HandleExport(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleExport(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		jsonError(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -208,7 +221,7 @@ func HandleExport(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(exporter.ExportFeeds(format)))
 }
 
-func HandleCrawl(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleCrawl(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		jsonError(w, "method not allowed", http.StatusMethodNotAllowed)
 		return

@@ -1,114 +1,108 @@
 .feed-item {
-    padding: 1rem;
-    margin-top: 5rem;
-    list-style: none;
-    border-bottom: none;
+  padding: 1rem;
+  margin-top: 5rem;
+  list-style: none;
+  border-bottom: none;
 }
 
-.feed-item.read .item-title {
-    font-weight: normal;
-}
-
-.feed-item.unread .item-title {
-    font-weight: bold;
-}
+/* removed read/unread specific font-weight to keep it always bold as requested */
 
 .item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
 }
 
 .item-title {
-    font-size: 1.35rem;
-    /* approx 24px */
-    font-weight: bold;
-    text-decoration: none;
-    color: var(--link-color);
-    display: block;
-    flex: 1;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: var(--link-color);
+  display: block;
+  flex: 1;
 }
 
 .item-title:hover {
-    text-decoration: none;
-    color: var(--link-color);
+  text-decoration: none;
+  color: var(--link-color);
 }
 
 .item-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-left: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
 }
 
 /* Legacy controls were simple text/links, but buttons are fine if minimal */
 .star-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.25rem;
-    padding: 0 0 0 0.5rem;
-    vertical-align: middle;
-    transition: color 0.2s;
-    line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  padding: 0 0 0 0.5rem;
+  vertical-align: middle;
+  transition: color 0.2s;
+  line-height: 1;
 }
 
 .star-btn.is-starred {
-    color: blue;
+  color: blue;
 }
 
 .star-btn.is-unstarred {
-    color: black;
+  color: black;
 }
 
 .star-btn:hover {
-    color: blue;
+  color: blue;
 }
 
 .action-btn {
-    background: whitesmoke;
-    border: none;
-    cursor: pointer;
-    padding: 2px 6px;
-    font-size: 1rem;
-    color: blue;
-    font-weight: bold;
+  background: whitesmoke;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 1rem;
+  color: blue;
+  font-weight: bold;
 }
 
 .action-btn:hover {
-    background-color: #eee;
+  background-color: #eee;
 }
 
 .dateline {
-    margin-top: 0;
-    font-weight: normal;
-    font-size: .75em;
-    color: #ccc;
-    margin-bottom: 1rem;
+  margin-top: 0;
+  font-weight: normal;
+  font-size: 0.75em;
+  color: #ccc;
+  margin-bottom: 1rem;
 }
 
 .dateline a {
-    color: #ccc;
-    text-decoration: none;
+  color: #ccc;
+  text-decoration: none;
 }
 
 .item-description {
-    color: #000;
-    line-height: 1.5;
-    font-size: 1rem;
-    margin-top: 1rem;
+  color: var(--text-color);
+  line-height: 1.5;
+  font-size: 1rem;
+  margin-top: 1rem;
 }
 
 .item-description img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 1rem 0;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem 0;
 }
 
 .item-description blockquote {
-    padding: 1rem 1rem 0 1rem;
-    border-left: 4px solid #ddd;
-    color: #666;
-    margin-left: 0;
+  padding: 1rem 1rem 0 1rem;
+  border-left: 4px solid #ddd;
+  color: #666;
+  margin-left: 0;
 }

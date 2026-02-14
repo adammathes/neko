@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"adammathes.com/neko/config"
+	"adammathes.com/neko/internal/vlog"
 	"adammathes.com/neko/models"
-	"adammathes.com/neko/vlog"
 	"github.com/PuerkitoBio/goquery"
 	goose "github.com/advancedlogic/GoOse"
 	"github.com/microcosm-cc/bluemonday"

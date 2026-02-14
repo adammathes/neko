@@ -6,79 +6,81 @@ import FeedList from './FeedList';
 import FeedItems from './FeedItems';
 
 describe('Tag View Integration', () => {
-    beforeEach(() => {
-        vi.resetAllMocks();
-        global.fetch = vi.fn();
+  beforeEach(() => {
+    vi.resetAllMocks();
+    global.fetch = vi.fn();
+  });
+
+  it('renders tags in FeedList and navigates to tag view', async () => {
+    const mockFeeds = [
+      { _id: 1, title: 'Feed 1', url: 'http://example.com/rss', category: 'Tech' },
+    ];
+    const mockTags = [{ title: 'Tech' }, { title: 'News' }];
+
+    (global.fetch as any).mockImplementation((url: string) => {
+      if (url.includes('/api/feed/')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockFeeds,
+        });
+      }
+      if (url.includes('/api/tag')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockTags,
+        });
+      }
+      return Promise.reject(new Error(`Unknown URL: ${url}`));
     });
 
-    it('renders tags in FeedList and navigates to tag view', async () => {
-        const mockFeeds = [{ _id: 1, title: 'Feed 1', url: 'http://example.com/rss', category: 'Tech' }];
-        const mockTags = [{ title: 'Tech' }, { title: 'News' }];
+    render(
+      <MemoryRouter>
+        <FeedList />
+      </MemoryRouter>
+    );
 
-        (global.fetch as any).mockImplementation((url: string) => {
-            if (url.includes('/api/feed/')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => mockFeeds,
-                });
-            }
-            if (url.includes('/api/tag')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => mockTags,
-                });
-            }
-            return Promise.reject(new Error(`Unknown URL: ${url}`));
-        });
-
-        render(
-            <MemoryRouter>
-                <FeedList />
-            </MemoryRouter>
-        );
-
-        await waitFor(() => {
-            const techTags = screen.getAllByText('Tech');
-            expect(techTags.length).toBeGreaterThan(0);
-            expect(screen.getByText('News')).toBeInTheDocument();
-        });
-
-        // Verify structure
-        const techTag = screen.getByText('News').closest('a');
-        expect(techTag).toHaveAttribute('href', '/tag/News');
+    await waitFor(() => {
+      const techTags = screen.getAllByText('Tech');
+      expect(techTags.length).toBeGreaterThan(0);
+      expect(screen.getByText('News')).toBeInTheDocument();
     });
 
-    it('fetches items by tag in FeedItems', async () => {
-        const mockItems = [
-            { _id: 101, title: 'Tag Item 1', url: 'http://example.com/1', feed_title: 'Feed 1' }
-        ];
+    // Verify structure
+    const techTag = screen.getByText('News').closest('a');
+    expect(techTag).toHaveAttribute('href', '/tag/News');
+  });
 
-        (global.fetch as any).mockImplementation((url: string) => {
-            if (url.includes('/api/stream')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => mockItems,
-                });
-            }
-            return Promise.reject(new Error(`Unknown URL: ${url}`));
+  it('fetches items by tag in FeedItems', async () => {
+    const mockItems = [
+      { _id: 101, title: 'Tag Item 1', url: 'http://example.com/1', feed_title: 'Feed 1' },
+    ];
+
+    (global.fetch as any).mockImplementation((url: string) => {
+      if (url.includes('/api/stream')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockItems,
         });
-
-        render(
-            <MemoryRouter initialEntries={['/tag/Tech']}>
-                <Routes>
-                    <Route path="/tag/:tagName" element={<FeedItems />} />
-                </Routes>
-            </MemoryRouter>
-        );
-
-        await waitFor(() => {
-            // expect(screen.getByText('Tag: Tech')).toBeInTheDocument();
-            expect(screen.getByText('Tag Item 1')).toBeInTheDocument();
-        });
-
-        const params = new URLSearchParams();
-        params.append('tag', 'Tech');
-        params.append('read_filter', 'unread');
-        expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`);
+      }
+      return Promise.reject(new Error(`Unknown URL: ${url}`));
     });
+
+    render(
+      <MemoryRouter initialEntries={['/tag/Tech']}>
+        <Routes>
+          <Route path="/tag/:tagName" element={<FeedItems />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      // expect(screen.getByText('Tag: Tech')).toBeInTheDocument();
+      expect(screen.getByText('Tag Item 1')).toBeInTheDocument();
+    });
+
+    const params = new URLSearchParams();
+    params.append('tag', 'Tech');
+    params.append('read_filter', 'unread');
+    expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`);
+  });
 });

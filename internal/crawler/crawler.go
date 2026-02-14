@@ -1,14 +1,15 @@
 package crawler
 
 import (
-	"adammathes.com/neko/models/feed"
-	"adammathes.com/neko/models/item"
-	"adammathes.com/neko/vlog"
-	"github.com/mmcdole/gofeed"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
+
+	"adammathes.com/neko/internal/vlog"
+	"adammathes.com/neko/models/feed"
+	"adammathes.com/neko/models/item"
+	"github.com/mmcdole/gofeed"
 )
 
 const MAX_CRAWLERS = 5
@@ -96,7 +97,7 @@ func GetFeedContent(feedURL string) string {
 }
 
 /*
- TODO: sanitize input on crawl
+TODO: sanitize input on crawl
 */
 func CrawlFeed(f *feed.Feed, ch chan<- string) {
 	c := &http.Client{

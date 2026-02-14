@@ -266,8 +266,8 @@ func TestApiMounting(t *testing.T) {
 	// Actually, Serve() sets up http.DefaultServeMux.
 
 	// Let's just verify that AuthWrapHandler works with the router
-	apiRouter := api.NewRouter()
-	handler := AuthWrapHandler(http.StripPrefix("/api", apiRouter))
+	apiServer := api.NewServer(&config.Config)
+	handler := AuthWrapHandler(http.StripPrefix("/api", apiServer))
 
 	req := httptest.NewRequest("GET", "/api/stream", nil)
 	req.AddCookie(authCookie())
@@ -305,8 +305,8 @@ func TestServeBoxedFile(t *testing.T) {
 
 func TestAuthWrapHandlerUnauthenticated(t *testing.T) {
 	config.Config.DigestPassword = "secret"
-	apiRouter := api.NewRouter()
-	handler := AuthWrapHandler(http.StripPrefix("/api", apiRouter))
+	apiServer := api.NewServer(&config.Config)
+	handler := AuthWrapHandler(http.StripPrefix("/api", apiServer))
 
 	req := httptest.NewRequest("GET", "/api/stream", nil)
 	rr := httptest.NewRecorder()
@@ -476,7 +476,7 @@ func TestGzipCompression(t *testing.T) {
 }
 
 func TestNewRouter(t *testing.T) {
-	router := NewRouter()
+	router := NewRouter(&config.Config)
 	if router == nil {
 		t.Fatal("NewRouter should not return nil")
 	}

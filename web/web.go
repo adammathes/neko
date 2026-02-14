@@ -214,7 +214,7 @@ func apiAuthStatusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewRouter() http.Handler {
+func NewRouter(cfg *config.Settings) http.Handler {
 	mux := http.NewServeMux()
 
 	// Static files from web/static
@@ -225,20 +225,28 @@ func NewRouter() http.Handler {
 	mux.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))))
 
 	// New REST API
-	apiRouter := api.NewRouter()
-	mux.Handle("/api/", GzipMiddleware(http.StripPrefix("/api", AuthWrapHandler(apiRouter))))
+	apiServer := api.NewServer(cfg)
+	// We need to mount the raw mux from apiServer if we want /api/ access,
+	// BUT apiServer.ServeMux handles /stream, /item/ etc. at root.
+	// We probably want to mount apiServer routes under /api/?
+	// The original code mounted apiRouter under /api/.
+	// api.NewRouter() returned a mux with /stream etc.
+	// So apiServer.ServeMux is a mux with /stream.
+	// mux.Handle("/api/", ... http.StripPrefix("/api", ...)) works if apiServer handles /stream.
+	// Wait, /api/stream -> StripPrefix -> /stream. apiServer handles /stream. Correct.
+	mux.Handle("/api/", GzipMiddleware(http.StripPrefix("/api", AuthWrapHandler(apiServer))))
 
 	// Vanilla JS Prototype from web/dist/vanilla
 	vanillaSub, _ := fs.Sub(vanillaFiles, "dist/vanilla")
 	mux.Handle("/vanilla/", GzipMiddleware(http.StripPrefix("/vanilla/", http.FileServer(http.FS(vanillaSub)))))
 
 	// Legacy routes for backward compatibility
-	mux.HandleFunc("/stream/", AuthWrap(api.HandleStream))
-	mux.HandleFunc("/item/", AuthWrap(api.HandleItem))
-	mux.HandleFunc("/feed/", AuthWrap(api.HandleFeed))
-	mux.HandleFunc("/tag/", AuthWrap(api.HandleCategory))
-	mux.HandleFunc("/export/", AuthWrap(api.HandleExport))
-	mux.HandleFunc("/crawl/", AuthWrap(api.HandleCrawl))
+	mux.HandleFunc("/stream/", AuthWrap(apiServer.HandleStream))
+	mux.HandleFunc("/item/", AuthWrap(apiServer.HandleItem))
+	mux.HandleFunc("/feed/", AuthWrap(apiServer.HandleFeed))
+	mux.HandleFunc("/tag/", AuthWrap(apiServer.HandleCategory))
+	mux.HandleFunc("/export/", AuthWrap(apiServer.HandleExport))
+	mux.HandleFunc("/crawl/", AuthWrap(apiServer.HandleCrawl))
 
 	mux.Handle("/image/", http.StripPrefix("/image/", AuthWrap(imageProxyHandler)))
 
@@ -253,9 +261,9 @@ func NewRouter() http.Handler {
 	return mux
 }
 
-func Serve() {
-	router := NewRouter()
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(config.Config.Port), router))
+func Serve(cfg *config.Settings) {
+	router := NewRouter(cfg)
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(cfg.Port), router))
 }
 
 type gzipWriter struct {

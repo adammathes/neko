@@ -35,21 +35,47 @@ import FeedList from './components/FeedList';
 import FeedItems from './components/FeedItems';
 import Settings from './components/Settings';
 
-function Dashboard({ theme, setTheme }: { theme: string, setTheme: (t: string) => void }) {
+function Dashboard({ theme, setTheme }: { theme: string; setTheme: (t: string) => void }) {
   const navigate = useNavigate();
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
   return (
-    <div className={`dashboard ${sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'} theme-${theme}`}>
+    <div
+      className={`dashboard ${sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'} theme-${theme}`}
+    >
       <header className="dashboard-header">
-        <h1 className="logo" onClick={() => setSidebarVisible(!sidebarVisible)} style={{ cursor: 'pointer' }}>🐱</h1>
+        <h1
+          className="logo"
+          onClick={() => setSidebarVisible(!sidebarVisible)}
+          style={{ cursor: 'pointer' }}
+        >
+          🐱
+        </h1>
         <nav>
-          <button onClick={() => navigate('/settings')} className="nav-link" style={{ color: 'white', marginRight: '1rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}>Settings</button>
+          <button
+            onClick={() => navigate('/settings')}
+            className="nav-link"
+            style={{
+              color: 'white',
+              marginRight: '1rem',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 'inherit',
+              fontFamily: 'inherit',
+            }}
+          >
+            Settings
+          </button>
 
-          <button onClick={() => {
-            fetch('/api/logout', { method: 'POST' })
-              .then(() => window.location.href = '/v2/login');
-          }} className="logout-btn">
+          <button
+            onClick={() => {
+              fetch('/api/logout', { method: 'POST' }).then(
+                () => (window.location.href = '/v2/login')
+              );
+            }}
+            className="logout-btn"
+          >
             Logout
           </button>
         </nav>

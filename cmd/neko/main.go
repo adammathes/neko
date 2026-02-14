@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"adammathes.com/neko/config"
-	"adammathes.com/neko/crawler"
-	"adammathes.com/neko/exporter"
+	"adammathes.com/neko/internal/crawler"
+	"adammathes.com/neko/internal/exporter"
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/models/feed"
 
 	"flag"
 
-	"adammathes.com/neko/vlog"
+	"adammathes.com/neko/internal/vlog"
 	"adammathes.com/neko/web"
 )
 
@@ -136,7 +136,7 @@ func Run(args []string) error {
 	go backgroundCrawl(config.Config.CrawlMinutes)
 	vlog.Printf("starting web server at 127.0.0.1:%d\n",
 		config.Config.Port)
-	web.Serve()
+	web.Serve(&config.Config)
 	return nil
 }
 
