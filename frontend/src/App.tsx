@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
 import './App.css';
+import { apiFetch } from './utils';
 
 // Protected Route wrapper
 function RequireAuth({ children }: { children: React.ReactElement }) {
@@ -9,7 +10,7 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
   const location = useLocation();
 
   useEffect(() => {
-    fetch('/api/auth')
+    apiFetch('/api/auth')
       .then((res) => {
         if (res.ok) {
           setAuth(true);
@@ -70,7 +71,7 @@ function Dashboard({ theme, setTheme }: { theme: string; setTheme: (t: string) =
 
           <button
             onClick={() => {
-              fetch('/api/logout', { method: 'POST' }).then(
+              apiFetch('/api/logout', { method: 'POST' }).then(
                 () => (window.location.href = '/v2/login')
               );
             }}

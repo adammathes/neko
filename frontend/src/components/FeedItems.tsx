@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import type { Item } from '../types';
 import FeedItem from './FeedItem';
 import './FeedItems.css';
+import { apiFetch } from '../utils';
 
 export default function FeedItems() {
   const { feedId, tagName } = useParams<{ feedId: string; tagName: string }>();
@@ -61,7 +62,7 @@ export default function FeedItems() {
       url += `?${queryString}`;
     }
 
-    fetch(url)
+    apiFetch(url)
       .then((res) => {
         if (!res.ok) {
           throw new Error('Failed to fetch items');
@@ -103,7 +104,7 @@ export default function FeedItems() {
     // Optimistic update
     setItems((prevItems) => prevItems.map((i) => (i._id === item._id ? updatedItem : i)));
 
-    fetch(`/api/item/${item._id}`, {
+    apiFetch(`/api/item/${item._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ read: true, starred: item.starred }),
@@ -115,7 +116,7 @@ export default function FeedItems() {
     // Optimistic update
     setItems((prevItems) => prevItems.map((i) => (i._id === item._id ? updatedItem : i)));
 
-    fetch(`/api/item/${item._id}`, {
+    apiFetch(`/api/item/${item._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ read: item.read, starred: !item.starred }),

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { Feed } from '../types';
 import './Settings.css';
+import { apiFetch } from '../utils';
 
 export default function Settings() {
   const [feeds, setFeeds] = useState<Feed[]>([]);
@@ -10,7 +11,7 @@ export default function Settings() {
 
   const fetchFeeds = () => {
     setLoading(true);
-    fetch('/api/feed/')
+    apiFetch('/api/feed/')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch feeds');
         return res.json();
@@ -36,7 +37,7 @@ export default function Settings() {
     if (!newFeedUrl) return;
 
     setLoading(true);
-    fetch('/api/feed/', {
+    apiFetch('/api/feed/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: newFeedUrl }),
@@ -59,7 +60,7 @@ export default function Settings() {
     if (!globalThis.confirm('Are you sure you want to delete this feed?')) return;
 
     setLoading(true);
-    fetch(`/api/feed/${id}`, {
+    apiFetch(`/api/feed/${id}`, {
       method: 'DELETE',
     })
       .then((res) => {

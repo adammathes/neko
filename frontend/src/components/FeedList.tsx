@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation, useParams } from 'react-router-dom';
 import type { Feed, Category } from '../types';
 import './FeedList.css';
+import { apiFetch } from '../utils';
 
 export default function FeedList({
   theme,
@@ -38,11 +39,11 @@ export default function FeedList({
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/feed/').then((res) => {
+      apiFetch('/api/feed/').then((res) => {
         if (!res.ok) throw new Error('Failed to fetch feeds');
         return res.json();
       }),
-      fetch('/api/tag').then((res) => {
+      apiFetch('/api/tag').then((res) => {
         if (!res.ok) throw new Error('Failed to fetch tags');
         return res.json();
       }),

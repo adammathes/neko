@@ -21,7 +21,7 @@ describe('FeedItems Component', () => {
   });
 
   it('renders loading state', () => {
-    (global.fetch as any).mockImplementation(() => new Promise(() => {}));
+    (global.fetch as any).mockImplementation(() => new Promise(() => { }));
     render(
       <MemoryRouter initialEntries={['/feed/1']}>
         <Routes>
@@ -70,7 +70,7 @@ describe('FeedItems Component', () => {
     const params = new URLSearchParams();
     params.append('feed_id', '1');
     params.append('read_filter', 'unread');
-    expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`);
+    expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`, expect.anything());
   });
 
   it('handles keyboard shortcuts', async () => {
@@ -138,7 +138,7 @@ describe('FeedItems Component', () => {
     });
 
     // Capture the callback
-    let observerCallback: IntersectionObserverCallback = () => {};
+    let observerCallback: IntersectionObserverCallback = () => { };
 
     // Override the mock to capture callback
     class MockIntersectionObserver {
@@ -199,7 +199,7 @@ describe('FeedItems Component', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => initialItems })
       .mockResolvedValueOnce({ ok: true, json: async () => moreItems });
 
-    let observerCallback: IntersectionObserverCallback = () => {};
+    let observerCallback: IntersectionObserverCallback = () => { };
     class MockIntersectionObserver {
       constructor(callback: IntersectionObserverCallback) {
         observerCallback = callback;
@@ -240,7 +240,7 @@ describe('FeedItems Component', () => {
       const params = new URLSearchParams();
       params.append('max_id', '101');
       params.append('read_filter', 'unread');
-      expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`);
+      expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`, expect.anything());
     });
   });
 });

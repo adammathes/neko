@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
+import { apiFetch } from '../utils';
+
 export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +18,7 @@ export default function Login() {
       const params = new URLSearchParams();
       params.append('password', password);
 
-      const res = await fetch('/api/login', {
+      const res = await apiFetch('/api/login', {
         method: 'POST',
         body: params,
       });

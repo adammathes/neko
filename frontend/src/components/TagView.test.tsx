@@ -35,7 +35,7 @@ describe('Tag View Integration', () => {
 
     render(
       <MemoryRouter>
-        <FeedList />
+        <FeedList theme="light" setTheme={() => { }} />
       </MemoryRouter>
     );
 
@@ -81,6 +81,6 @@ describe('Tag View Integration', () => {
     const params = new URLSearchParams();
     params.append('tag', 'Tech');
     params.append('read_filter', 'unread');
-    expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`);
+    expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`, expect.anything());
   });
 });

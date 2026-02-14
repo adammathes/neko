@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import type { Item } from '../types';
 import './FeedItem.css';
 
+import { apiFetch } from '../utils';
+
 interface FeedItemProps {
   item: Item;
 }
@@ -24,7 +26,7 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
     const previousItem = item;
     setItem(newItem);
 
-    fetch(`/api/item/${newItem._id}`, {
+    apiFetch(`/api/item/${newItem._id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

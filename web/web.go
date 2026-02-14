@@ -1,7 +1,9 @@
 package web
 
 import (
+	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -114,7 +116,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 		if password == config.Config.DigestPassword {
 			v, _ := bcrypt.GenerateFromPassword([]byte(password), 0)
-			c := http.Cookie{Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly: false}
+			c := http.Cookie{Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly: true}
 			http.SetCookie(w, &c)
 			http.Redirect(w, r, "/", 307)
 		} else {
@@ -126,7 +128,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
-	c := http.Cookie{Name: AuthCookie, MaxAge: 0, Path: "/", HttpOnly: false}
+	c := http.Cookie{Name: AuthCookie, MaxAge: 0, Path: "/", HttpOnly: true}
 	http.SetCookie(w, &c)
 	fmt.Fprintf(w, "you are logged out")
 }
@@ -195,7 +197,7 @@ func apiLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if password == config.Config.DigestPassword {
 		v, _ := bcrypt.GenerateFromPassword([]byte(password), 0)
-		c := http.Cookie{Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly: false}
+		c := http.Cookie{Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly: true}
 		http.SetCookie(w, &c)
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, `{"status":"ok"}`)
@@ -258,7 +260,7 @@ func NewRouter(cfg *config.Settings) http.Handler {
 
 	mux.Handle("/", GzipMiddleware(AuthWrap(http.HandlerFunc(indexHandler))))
 
-	return mux
+	return CSRFMiddleware(mux)
 }
 
 func Serve(cfg *config.Settings) {
@@ -341,8 +343,44 @@ func GzipMiddleware(next http.Handler) http.Handler {
 }
 
 func apiLogoutHandler(w http.ResponseWriter, r *http.Request) {
-	c := http.Cookie{Name: AuthCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: false}
+	c := http.Cookie{Name: AuthCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: true}
 	http.SetCookie(w, &c)
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, `{"status":"ok"}`)
+}
+
+func generateRandomToken(n int) string {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+	return hex.EncodeToString(b)
+}
+
+func CSRFMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("csrf_token")
+		var token string
+		if err != nil {
+			token = generateRandomToken(16)
+			http.SetCookie(w, &http.Cookie{
+				Name:     "csrf_token",
+				Value:    token,
+				Path:     "/",
+				HttpOnly: false, // accessible by JS
+				SameSite: http.SameSiteLaxMode,
+			})
+		} else {
+			token = cookie.Value
+		}
+
+		if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete {
+			headerToken := r.Header.Get("X-CSRF-Token")
+			if headerToken == "" || headerToken != token {
+				http.Error(w, "CSRF token mismatch", http.StatusForbidden)
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
 }

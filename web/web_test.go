@@ -730,3 +730,47 @@ func TestGzipMiddlewareNonCompressible(t *testing.T) {
 		t.Error("Expected no gzip for image/png")
 	}
 }
+
+func TestCSRFMiddleware(t *testing.T) {
+	handler := CSRFMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	// Case 1: GET should succeed and set a cookie
+	req := httptest.NewRequest("GET", "/", nil)
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected 200 for GET, got %d", rr.Code)
+	}
+	cookies := rr.Result().Cookies()
+	var csrfCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "csrf_token" {
+			csrfCookie = c
+			break
+		}
+	}
+	if csrfCookie == nil {
+		t.Fatal("Expected csrf_token cookie to be set on first GET")
+	}
+
+	// Case 2: POST without token should fail
+	req = httptest.NewRequest("POST", "/", nil)
+	req.AddCookie(csrfCookie)
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusForbidden {
+		t.Errorf("Expected 403 for POST without token, got %d", rr.Code)
+	}
+
+	// Case 3: POST with valid token should succeed
+	req = httptest.NewRequest("POST", "/", nil)
+	req.AddCookie(csrfCookie)
+	req.Header.Set("X-CSRF-Token", csrfCookie.Value)
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected 200 for POST with valid token, got %d", rr.Code)
+	}
+}
