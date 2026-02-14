@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neko Reader (Vanilla)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Minimal reset for now, proper styles in style.css */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <aside id="sidebar">
+            <header>
+                <h1>🐱 Neko</h1>
+            </header>
+            <nav id="feeds-nav">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search items..." />
+                </div>
+                <div class="loading">Loading feeds...</div>
+            </nav>
+        </aside>
+        <main id="main">
+            <header id="main-header">
+                <h2 id="feed-title">All Items</h2>
+            </header>
+            <div id="entries-list">
+                <div class="loading">Loading items...</div>
+            </div>
+        </main>
+    </div>
+    <script type="module">
+        import { init } from './app.js';
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

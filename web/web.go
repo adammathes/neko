@@ -40,14 +40,14 @@ func init() {
 		log.Printf("Warning: Could not find staticBox at ../static: %v", err)
 	}
 
-	frontendBox, err = rice.FindBox("../frontend/dist")
+	frontendBox, err = rice.FindBox("../dist/v2")
 	if err != nil {
-		log.Printf("Warning: Could not find frontendBox at ../frontend/dist: %v", err)
+		log.Printf("Warning: Could not find frontendBox at ../dist/v2: %v", err)
 	}
 
-	vanillaBox, err = rice.FindBox("../vanilla")
+	vanillaBox, err = rice.FindBox("../dist/vanilla")
 	if err != nil {
-		log.Printf("Warning: Could not find vanillaBox at ../vanilla: %v", err)
+		log.Printf("Warning: Could not find vanillaBox at ../dist/vanilla: %v", err)
 	}
 }
 

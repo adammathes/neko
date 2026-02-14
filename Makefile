@@ -14,7 +14,7 @@ LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
 default: build
 
-all: clean build docs
+all: clean ui vanilla-ui embed build docs
 
 clean:
 	rm -f ${BINARY}
@@ -23,10 +23,20 @@ clean:
 
 ui:
 	cd frontend && ${NPM} install && ${NPM} run build
+	rm -rf dist/v2
+	mkdir -p dist/v2
+	cp -r frontend/dist/* dist/v2/
 
-build: ui
-	${RICE} -i ./web embed-go
+vanilla-ui:
+	rm -rf dist/vanilla
+	mkdir -p dist/vanilla
+	cp vanilla/index.html vanilla/app.js vanilla/style.css dist/vanilla/
+
+build:
 	${GO} build ${LDFLAGS} -o ${BINARY}
+
+embed:
+	${RICE} -i ./web embed-go
 
 install: build
 	cp ${BINARY} ${GOBIN}
