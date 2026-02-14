@@ -1,0 +1,1 @@
+{"name":"vanilla-frontend","version":"1.0.0","type":"module","scripts":{"test":"vitest","coverage":"vitest run --coverage"},"devDependencies":{"vitest":"latest","jsdom":"latest","@vitest/coverage-v8":"latest"}}

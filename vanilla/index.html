@@ -40,7 +40,10 @@
             </div>
         </main>
     </div>
-    <script src="app.js"></script>
+    <script type="module">
+        import { init } from './app.js';
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 
 </html>
