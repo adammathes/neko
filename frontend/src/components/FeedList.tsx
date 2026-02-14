@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { Feed, Category } from '../types';
 import './FeedList.css';
 
@@ -8,6 +8,15 @@ export default function FeedList() {
     const [tags, setTags] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const navigate = useNavigate();
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            navigate(`/?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
 
     useEffect(() => {
         Promise.all([
@@ -36,6 +45,17 @@ export default function FeedList() {
 
     return (
         <div className="feed-list">
+            <div className="search-section">
+                <form onSubmit={handleSearch} className="search-form">
+                    <input
+                        type="search"
+                        placeholder="Search items..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="search-input"
+                    />
+                </form>
+            </div>
             <div className="filter-section">
                 <ul className="filter-list">
                     <li><Link to="/?filter=unread">Unread</Link></li>

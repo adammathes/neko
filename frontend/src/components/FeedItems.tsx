@@ -38,6 +38,11 @@ export default function FeedItems() {
         }
 
         // Apply filters
+        const searchQuery = searchParams.get('q');
+        if (searchQuery) {
+            params.append('q', searchQuery);
+        }
+
         if (filterFn === 'all') {
             params.append('read_filter', 'all');
         } else if (filterFn === 'starred') {
@@ -45,7 +50,9 @@ export default function FeedItems() {
             params.append('read_filter', 'all');
         } else {
             // default to unread
-            params.append('read_filter', 'unread');
+            if (!searchQuery) {
+                params.append('read_filter', 'unread');
+            }
         }
 
         const queryString = params.toString();
@@ -79,7 +86,8 @@ export default function FeedItems() {
 
     useEffect(() => {
         fetchItems();
-    }, [feedId, tagName, filterFn]);
+        setSelectedIndex(-1);
+    }, [feedId, tagName, filterFn, searchParams]);
 
     const [selectedIndex, setSelectedIndex] = useState(-1);
 

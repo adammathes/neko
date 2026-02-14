@@ -4,6 +4,29 @@
     background: transparent;
 }
 
+.search-section {
+    margin-bottom: 1.5rem;
+}
+
+.search-form {
+    display: flex;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #999;
+    background: #eee;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.search-input:focus {
+    outline: none;
+    background: white;
+    border-color: #000;
+}
+
 .feed-list h2 {
     font-size: 1.2rem;
     margin-bottom: 0.5rem;
