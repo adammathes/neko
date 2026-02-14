@@ -5,3 +5,11 @@ neko
 neko.db
 coverage.out
 coverage_cross.out
+*.out
+neko_test.db
+neko_test
+coverage.html
+run_e2e.sh
+.agent/workflows/
+frontend/playwright-report/
+frontend/test-results/
