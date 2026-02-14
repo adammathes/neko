@@ -119,6 +119,39 @@
 
 .feed-title.active,
 .tag-link.active,
-.filter-list li a.active {
+.filter-list li a.active,
+.theme-selector button.active {
     font-weight: bold !important;
+}
+
+.theme-section {
+    margin-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.theme-selector {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.theme-selector button {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.5rem;
+    width: 30%;
+    background: whitesmoke;
+    color: blue;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-variant: small-caps;
+    text-transform: lowercase;
+}
+
+.theme-selector button:hover {
+    background: #eee;
+}
+
+.theme-selector button.active {
+    color: black;
+    border-color: #000;
 }

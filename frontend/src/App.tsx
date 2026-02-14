@@ -35,12 +35,12 @@ import FeedList from './components/FeedList';
 import FeedItems from './components/FeedItems';
 import Settings from './components/Settings';
 
-function Dashboard() {
+function Dashboard({ theme, setTheme }: { theme: string, setTheme: (t: string) => void }) {
   const navigate = useNavigate();
-  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
 
   return (
-    <div className={`dashboard ${sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'}`}>
+    <div className={`dashboard ${sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'} theme-${theme}`}>
       <header className="dashboard-header">
         <h1 className="logo" onClick={() => setSidebarVisible(!sidebarVisible)} style={{ cursor: 'pointer' }}>🐱</h1>
         <nav>
@@ -56,7 +56,7 @@ function Dashboard() {
       </header>
       <div className="dashboard-content">
         <aside className={`dashboard-sidebar ${sidebarVisible ? '' : 'hidden'}`}>
-          <FeedList />
+          <FeedList theme={theme} setTheme={setTheme} />
         </aside>
         <main className="dashboard-main">
           <Routes>
@@ -72,6 +72,13 @@ function Dashboard() {
 }
 
 function App() {
+  const [theme, setTheme] = useState(localStorage.getItem('neko-theme') || 'light');
+
+  const handleSetTheme = (newTheme: string) => {
+    setTheme(newTheme);
+    localStorage.setItem('neko-theme', newTheme);
+  };
+
   return (
     <BrowserRouter basename="/v2">
       <Routes>
@@ -80,7 +87,7 @@ function App() {
           path="/*"
           element={
             <RequireAuth>
-              <Dashboard />
+              <Dashboard theme={theme} setTheme={handleSetTheme} />
             </RequireAuth>
           }
         />

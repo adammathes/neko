@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams, useLocation, useParams } from 'reac
 import type { Feed, Category } from '../types';
 import './FeedList.css';
 
-export default function FeedList() {
+export default function FeedList({ theme, setTheme }: { theme: string, setTheme: (t: string) => void }) {
     const [feeds, setFeeds] = useState<Feed[]>([]);
     const [tags, setTags] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
@@ -100,6 +100,15 @@ export default function FeedList() {
                     </ul>
                 </div>
             )}
+
+            <div className="theme-section">
+                <h2>Themes</h2>
+                <div className="theme-selector">
+                    <button onClick={() => setTheme('light')} className={theme === 'light' ? 'active' : ''}>light</button>
+                    <button onClick={() => setTheme('dark')} className={theme === 'dark' ? 'active' : ''}>dark</button>
+                    <button onClick={() => setTheme('black')} className={theme === 'black' ? 'active' : ''}>black</button>
+                </div>
+            </div>
         </div>
     );
 }
