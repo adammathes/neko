@@ -95,28 +95,27 @@ Data is persisted in a Docker volume named `neko-data` (mapping to `/app/data/ne
 
 ### Build from Source
 
-Neko is designed for easy building. Static assets for the frontends are pre-built and checked into the repository in the `dist/` directory, so a standard Go build is all that's required for most users.
+Neko is designed for easy building. Static assets for the frontends are pre-built and checked into the repository in the `web/dist/` directory, so a standard Go build is all that's required for most users.
 
 1. **Standard Build**:
    ```bash
-   # Uses existing assets in dist/
+   # Uses existing assets in web/dist/ and web/static/ via Go embed
    make build
    ```
    A `neko` binary will be created in the root directory.
 
 2. **Full Rebuild (including UI)**:
-   If you modify the React or Vanilla frontends, you'll need to rebuild them and update the embedded assets. This requires Node.js and the `rice` tool.
+   If you modify the React or Vanilla frontends, you'll need to rebuild them. This requires Node.js.
    ```bash
-   # Rebuilds everything: cleans, builds UIs, updates rice-box.go, and builds binary
+   # Rebuilds everything: cleans, builds UIs, and builds binary
    make all
    ```
 
-3. **Updating Embedded Assets Only**:
-   If you want to update the Go binary's embedded assets without a full clean:
+3. **Updating UI Assets Only**:
+   If you want to update the frontends without a full clean:
    ```bash
    make ui           # Rebuild React frontend
    make vanilla-ui   # Update Vanilla assets
-   make embed        # Update the Go-embedded assets (rice-box.go)
    make build        # Build final binary
    ```
 
