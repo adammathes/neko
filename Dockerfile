@@ -8,19 +8,22 @@ RUN npm run build
 
 # Stage 2: Backend Build
 FROM golang:1.24-bullseye AS backend-builder
-RUN go install github.com/GeertJohan/go.rice/rice@latest
-
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
-
 COPY . .
-# Copy built frontend assets from Stage 1
-COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
-# Embed assets and build the binary
-RUN rice -i ./web embed-go
-RUN go build -o neko .
+# Copy built frontend assets from Stage 1
+# Ensure the target directory structure matches what embed expects in web/web.go
+RUN mkdir -p web/dist/v2
+COPY --from=frontend-builder /app/frontend/dist ./web/dist/v2
+
+# Copy vanilla assets
+RUN mkdir -p web/dist/vanilla
+COPY vanilla/index.html vanilla/app.js vanilla/style.css ./web/dist/vanilla/
+
+# Build the binary
+RUN go build -o neko ./cmd/neko
 
 # Stage 3: Final Image
 FROM debian:bullseye-slim
