@@ -40,4 +40,13 @@ var (
 			Foreground(gray).
 			Italic(true).
 			MarginTop(1)
+
+	// Layout Styles
+	PaneStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(gray).
+			Padding(0, 1)
+
+	ActivePaneStyle = PaneStyle.Copy().
+			BorderForeground(maroon)
 )
