@@ -8,10 +8,12 @@ export default function FeedList({
   theme,
   setTheme,
   setSidebarVisible,
+  isMobile,
 }: {
   theme: string;
   setTheme: (t: string) => void;
   setSidebarVisible: (visible: boolean) => void;
+  isMobile: boolean;
 }) {
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [tags, setTags] = useState<Category[]>([]);
@@ -37,6 +39,12 @@ export default function FeedList({
 
   const toggleFeeds = () => {
     setFeedsExpanded(!feedsExpanded);
+  };
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setSidebarVisible(false);
+    }
   };
 
   useEffect(() => {
@@ -89,17 +97,17 @@ export default function FeedList({
       <div className="filter-section">
         <ul className="filter-list">
           <li className="unread_filter">
-            <Link to="/?filter=unread" className={currentFilter === 'unread' ? 'active' : ''}>
+            <Link to="/?filter=unread" className={currentFilter === 'unread' ? 'active' : ''} onClick={handleLinkClick}>
               unread
             </Link>
           </li>
           <li className="all_filter">
-            <Link to="/?filter=all" className={currentFilter === 'all' ? 'active' : ''}>
+            <Link to="/?filter=all" className={currentFilter === 'all' ? 'active' : ''} onClick={handleLinkClick}>
               all
             </Link>
           </li>
           <li className="starred_filter">
-            <Link to="/?filter=starred" className={currentFilter === 'starred' ? 'active' : ''}>
+            <Link to="/?filter=starred" className={currentFilter === 'starred' ? 'active' : ''} onClick={handleLinkClick}>
               starred
             </Link>
           </li>
@@ -116,6 +124,7 @@ export default function FeedList({
               <Link
                 to={`/tag/${encodeURIComponent(tag.title)}`}
                 className={`tag-link ${tagName === tag.title ? 'active' : ''}`}
+                onClick={handleLinkClick}
               >
                 {tag.title}
               </Link>
@@ -138,6 +147,7 @@ export default function FeedList({
                   <Link
                     to={`/feed/${feed._id}`}
                     className={`feed-title ${feedId === String(feed._id) ? 'active' : ''}`}
+                    onClick={handleLinkClick}
                   >
                     {feed.title || feed.url}
                   </Link>
@@ -150,7 +160,7 @@ export default function FeedList({
       <div className="nav-section">
         <ul className="nav-list">
           <li>
-            <Link to="/settings" className="nav-link">
+            <Link to="/settings" className="nav-link" onClick={handleLinkClick}>
               settings
             </Link>
           </li>

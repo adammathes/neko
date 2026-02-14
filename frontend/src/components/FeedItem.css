@@ -124,3 +124,25 @@
 .scrape-btn:hover {
   background: var(--sidebar-bg);
 }
+
+@media (max-width: 768px) {
+  .feed-item {
+    margin-top: 2rem;
+    padding: 0.5rem;
+  }
+
+  .item-title {
+    font-size: 1.4rem;
+    word-break: break-word;
+  }
+
+  .item-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .item-actions {
+    margin-left: 0;
+    margin-bottom: 0.5rem;
+  }
+}

@@ -44,24 +44,47 @@ interface DashboardProps {
 }
 
 function Dashboard({ theme, setTheme, fontTheme, setFontTheme }: DashboardProps) {
-  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(window.innerWidth > 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setSidebarVisible(true);
+      } else {
+        setSidebarVisible(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div
       className={`dashboard ${sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'} theme-${theme} font-${fontTheme}`}
     >
       <div className="dashboard-content">
-        {!sidebarVisible && (
+        {(!sidebarVisible || window.innerWidth <= 768) && (
           <button
             className="sidebar-toggle fixed-toggle"
-            onClick={() => setSidebarVisible(true)}
-            title="Show Sidebar"
+            onClick={() => setSidebarVisible(!sidebarVisible)}
+            title={sidebarVisible ? "Hide Sidebar" : "Show Sidebar"}
           >
             🐱
           </button>
         )}
+        {sidebarVisible && (
+          <div
+            className="sidebar-backdrop"
+            onClick={() => setSidebarVisible(false)}
+          />
+        )}
         <aside className={`dashboard-sidebar ${sidebarVisible ? '' : 'hidden'}`}>
-          <FeedList theme={theme} setTheme={setTheme} setSidebarVisible={setSidebarVisible} />
+          <FeedList
+            theme={theme}
+            setTheme={setTheme}
+            setSidebarVisible={setSidebarVisible}
+            isMobile={window.innerWidth <= 768}
+          />
         </aside>
         <main className="dashboard-main">
           <Routes>

@@ -58,16 +58,75 @@ body {
   top: 1rem;
   left: 1rem;
   z-index: 1000;
-  background: transparent;
+  background: var(--bg-color);
+  /* Added bg to be visible over content if needed */
   border: none;
   font-size: 2rem;
   line-height: 1;
   cursor: pointer;
-  padding: 0;
+  padding: 0.2rem;
   color: var(--text-color);
-  /* Inherit didn't work well if parent is transparent */
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fixed-toggle:hover {
   transform: scale(1.1);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .dashboard-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1100;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    width: 14rem;
+    /* Slightly wider on mobile for better target area */
+  }
+
+  .dashboard-sidebar.hidden {
+    margin-left: -14rem;
+  }
+
+  .dashboard-main {
+    padding: 1rem;
+    padding-top: 4rem;
+    /* Space for the toggle button */
+  }
+
+  .dashboard-main>* {
+    max-width: 100%;
+  }
+
+  /* When sidebar is visible on mobile, we show a backdrop */
+  .sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1050;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .dashboard.sidebar-visible::after {
+    display: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
