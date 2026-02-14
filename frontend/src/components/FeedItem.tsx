@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Item } from '../types';
 import './FeedItem.css';
 
@@ -9,6 +9,10 @@ interface FeedItemProps {
 export default function FeedItem({ item: initialItem }: FeedItemProps) {
     const [item, setItem] = useState(initialItem);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setItem(initialItem);
+    }, [initialItem]);
 
 
     const toggleStar = () => {

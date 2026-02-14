@@ -51,4 +51,21 @@ describe('FeedItem Component', () => {
             })
         }));
     });
+
+    it('updates styling when read state changes', () => {
+        const { rerender } = render(<FeedItem item={{ ...mockItem, read: false }} />);
+        const link = screen.getByText('Test Item');
+        // Initial state: unread (bold)
+        // Note: checking computed style might be flaky in jsdom, but we can check the class on the parent
+        const listItem = link.closest('li');
+        expect(listItem).toHaveClass('unread');
+        expect(listItem).not.toHaveClass('read');
+
+        // Update prop to read
+        rerender(<FeedItem item={{ ...mockItem, read: true }} />);
+
+        // Should now be read
+        expect(listItem).toHaveClass('read');
+        expect(listItem).not.toHaveClass('unread');
+    });
 });
