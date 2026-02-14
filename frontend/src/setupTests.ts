@@ -6,15 +6,15 @@ class IntersectionObserver {
     readonly rootMargin: string = '';
     readonly thresholds: ReadonlyArray<number> = [];
 
-    constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+    constructor(_callback: IntersectionObserverCallback, _options?: IntersectionObserverInit) {
         // nothing
     }
 
-    observe(target: Element): void {
+    observe(_target: Element): void {
         // nothing
     }
 
-    unobserve(target: Element): void {
+    unobserve(_target: Element): void {
         // nothing
     }
 
@@ -33,7 +33,7 @@ Object.defineProperty(window, 'IntersectionObserver', {
     value: IntersectionObserver,
 });
 
-Object.defineProperty(global, 'IntersectionObserver', {
+Object.defineProperty(globalThis, 'IntersectionObserver', {
     writable: true,
     configurable: true,
     value: IntersectionObserver,

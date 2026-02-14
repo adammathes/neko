@@ -27,6 +27,24 @@ var gzPool = sync.Pool{
 	},
 }
 
+var (
+	staticBox   *rice.Box
+	frontendBox *rice.Box
+)
+
+func init() {
+	var err error
+	staticBox, err = rice.FindBox("../static")
+	if err != nil {
+		log.Printf("Warning: Could not find staticBox at ../static: %v", err)
+	}
+
+	frontendBox, err = rice.FindBox("../frontend/dist")
+	if err != nil {
+		log.Printf("Warning: Could not find frontendBox at ../frontend/dist: %v", err)
+	}
+}
+
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	serveBoxedFile(w, r, "ui.html")
 }
@@ -145,16 +163,24 @@ func AuthWrapHandler(wrapped http.Handler) http.Handler {
 }
 
 func serveBoxedFile(w http.ResponseWriter, r *http.Request, filename string) {
-	box := rice.MustFindBox("../static")
-	ui, err := box.Open(filename)
+	if staticBox == nil {
+		http.Error(w, "static assets not found", http.StatusInternalServerError)
+		return
+	}
+	ui, err := staticBox.Open(filename)
 	if err != nil {
-		panic(err)
+		http.Error(w, "file not found", http.StatusNotFound)
+		return
 	}
 	fi, _ := ui.Stat()
 	http.ServeContent(w, r, filename, fi.ModTime(), ui)
 }
 
 func apiLoginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
@@ -191,37 +217,49 @@ func apiAuthStatusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Serve() {
-	box := rice.MustFindBox("../static")
-	staticFileServer := http.StripPrefix("/static/", http.FileServer(box.HTTPBox()))
-	http.Handle("/static/", GzipMiddleware(staticFileServer))
+func NewRouter() http.Handler {
+	mux := http.NewServeMux()
+
+	var staticHandler http.Handler
+	if staticBox != nil {
+		staticHandler = http.FileServer(staticBox.HTTPBox())
+	} else {
+		staticHandler = http.NotFoundHandler()
+	}
+
+	mux.Handle("/static/", GzipMiddleware(http.StripPrefix("/static/", staticHandler)))
 
 	// New Frontend
-	http.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))))
+	mux.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))))
 
 	// New REST API
 	apiRouter := api.NewRouter()
-	http.Handle("/api/", GzipMiddleware(http.StripPrefix("/api", AuthWrapHandler(apiRouter))))
+	mux.Handle("/api/", GzipMiddleware(http.StripPrefix("/api", AuthWrapHandler(apiRouter))))
 
 	// Legacy routes for backward compatibility
-	http.HandleFunc("/stream/", AuthWrap(api.HandleStream))
-	http.HandleFunc("/item/", AuthWrap(api.HandleItem))
-	http.HandleFunc("/feed/", AuthWrap(api.HandleFeed))
-	http.HandleFunc("/tag/", AuthWrap(api.HandleCategory))
-	http.HandleFunc("/export/", AuthWrap(api.HandleExport))
-	http.HandleFunc("/crawl/", AuthWrap(api.HandleCrawl))
+	mux.HandleFunc("/stream/", AuthWrap(api.HandleStream))
+	mux.HandleFunc("/item/", AuthWrap(api.HandleItem))
+	mux.HandleFunc("/feed/", AuthWrap(api.HandleFeed))
+	mux.HandleFunc("/tag/", AuthWrap(api.HandleCategory))
+	mux.HandleFunc("/export/", AuthWrap(api.HandleExport))
+	mux.HandleFunc("/crawl/", AuthWrap(api.HandleCrawl))
 
-	http.Handle("/image/", http.StripPrefix("/image/", AuthWrap(imageProxyHandler)))
+	mux.Handle("/image/", http.StripPrefix("/image/", AuthWrap(imageProxyHandler)))
 
-	http.HandleFunc("/login/", loginHandler)
-	http.HandleFunc("/logout/", logoutHandler)
-	http.HandleFunc("/api/login", apiLoginHandler)
-	http.HandleFunc("/api/logout", apiLogoutHandler)
-	http.HandleFunc("/api/auth", apiAuthStatusHandler)
+	mux.HandleFunc("/login/", loginHandler)
+	mux.HandleFunc("/logout/", logoutHandler)
+	mux.HandleFunc("/api/login", apiLoginHandler)
+	mux.HandleFunc("/api/logout", apiLogoutHandler)
+	mux.HandleFunc("/api/auth", apiAuthStatusHandler)
 
-	http.Handle("/", GzipMiddleware(AuthWrap(http.HandlerFunc(indexHandler))))
+	mux.Handle("/", GzipMiddleware(AuthWrap(http.HandlerFunc(indexHandler))))
 
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(config.Config.Port), nil))
+	return mux
+}
+
+func Serve() {
+	router := NewRouter()
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(config.Config.Port), router))
 }
 
 type gzipWriter struct {
