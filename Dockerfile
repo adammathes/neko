@@ -24,17 +24,24 @@ RUN go build -o neko .
 
 # Stage 3: Final Image
 FROM debian:bullseye-slim
+
+# Create a non-root user
+RUN groupadd -r neko && useradd -r -g neko neko
+
 WORKDIR /app
 COPY --from=backend-builder /app/neko .
 COPY --from=backend-builder /app/static ./static
 
-# Ensure data directory exists
-RUN mkdir -p /app/data
+# Ensure data directory exists and set permissions
+RUN mkdir -p /app/data && chown -R neko:neko /app/data
 
 # Default environment variables
 ENV NEKO_PORT=8080
 ENV NEKO_DB=/app/data/neko.db
 
 EXPOSE 8080
+
+# Switch to non-root user
+USER neko
 
 CMD ["./neko", "-s", "8080", "-d", "/app/data/neko.db"]
