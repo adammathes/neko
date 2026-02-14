@@ -96,6 +96,34 @@ body {
 
 .entry-header {
     margin-bottom: 0.5rem;
+    position: relative;
+    padding-left: 0;
+}
+
+.entry-controls {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+.btn-star,
+.btn-read {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 4px;
+    margin-right: 4px;
+    color: #ccc;
+}
+
+.btn-star.active {
+    color: orange;
+}
+
+.btn-star:hover,
+.btn-read:hover {
+    color: #888;
 }
 
 .entry-title {
@@ -103,13 +131,22 @@ body {
     font-weight: bold;
     color: var(--link-color);
     text-decoration: none;
-    display: block;
+    display: inline-block;
+    /* Changed to inline-block for alignment */
+    vertical-align: middle;
     margin-bottom: 0.25rem;
+}
+
+.entry-title.read {
+    font-weight: normal;
+    color: #555;
+    text-decoration: none;
 }
 
 .entry-meta {
     font-size: 0.85rem;
     color: #666;
+    margin-top: 4px;
 }
 
 .entry-content {
