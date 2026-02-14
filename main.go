@@ -10,7 +10,7 @@ import (
 	"adammathes.com/neko/exporter"
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/models/feed"
-	"adammathes.com/neko/tui"
+
 	"adammathes.com/neko/vlog"
 	"adammathes.com/neko/web"
 	flag "github.com/ogier/pflag"
@@ -26,7 +26,7 @@ func main() {
 }
 
 func Run(args []string) error {
-	var help, update, verbose, proxyImages, tuiMode bool
+	var help, update, verbose, proxyImages bool
 	var configFile, dbfile, newFeed, export, password string
 	var port, minutes int
 
@@ -46,7 +46,7 @@ func Run(args []string) error {
 	f.IntVarP(&port, "http", "s", 0, "HTTP port to serve on")
 	f.IntVarP(&minutes, "minutes", "m", 0, "minutes between crawling feeds")
 	f.BoolVarP(&proxyImages, "imageproxy", "i", false, "rewrite and proxy all image requests for privacy (experimental)")
-	f.BoolVarP(&tuiMode, "tui", "t", false, "launch terminal UI")
+
 	f.BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 
 	// passwords on command line are bad, you should use the config file
@@ -109,10 +109,6 @@ func Run(args []string) error {
 		vlog.Printf("exporting feeds in format %s\n", export)
 		fmt.Printf("%s", exporter.ExportFeeds(export))
 		return nil
-	}
-
-	if tuiMode {
-		return tui.Run()
 	}
 
 	// For testing, we might want to avoid starting a web server
