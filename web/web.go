@@ -223,7 +223,13 @@ func NewRouter(cfg *config.Settings) http.Handler {
 	mux.Handle("/static/", GzipMiddleware(http.StripPrefix("/static/", http.FileServer(http.FS(staticSub)))))
 
 	// New Frontend (React/Vite) from web/dist/v2
+	// Default route
+	mux.Handle("/", GzipMiddleware(http.HandlerFunc(ServeFrontend)))
+	// Also keep /v2/ for explicit access
 	mux.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))))
+
+	// Legacy UI at /v1/
+	mux.Handle("/v1/", GzipMiddleware(http.StripPrefix("/v1/", AuthWrap(http.HandlerFunc(indexHandler)))))
 
 	// New REST API
 	apiServer := api.NewServer(cfg)
@@ -257,7 +263,7 @@ func NewRouter(cfg *config.Settings) http.Handler {
 	mux.HandleFunc("/api/logout", apiLogoutHandler)
 	mux.HandleFunc("/api/auth", apiAuthStatusHandler)
 
-	mux.Handle("/", GzipMiddleware(AuthWrap(http.HandlerFunc(indexHandler))))
+	// Removed default root handler for legacy UI
 
 	return SecurityHeadersMiddleware(CSRFMiddleware(mux))
 }

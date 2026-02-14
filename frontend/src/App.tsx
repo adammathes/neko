@@ -106,8 +106,10 @@ function App() {
     localStorage.setItem('neko-theme', newTheme);
   };
 
+  const basename = window.location.pathname.startsWith('/v2') ? '/v2' : '/';
+
   return (
-    <BrowserRouter basename="/v2">
+    <BrowserRouter basename={basename}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
