@@ -7,7 +7,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Backend Build
-FROM golang:1.23-bullseye AS backend-builder
+FROM golang:1.24-bullseye AS backend-builder
 RUN go install github.com/GeertJohan/go.rice/rice@latest
 
 WORKDIR /app
