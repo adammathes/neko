@@ -401,7 +401,7 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 		// style-src 'self' 'unsafe-inline' (for React/styled-components if used)
 		// img-src 'self' data: * (RSS images can be from anywhere)
 		// connect-src 'self' (API calls)
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: *; connect-src 'self'; frame-ancestors 'none';")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: *; connect-src 'self'; frame-ancestors 'none';")
 		next.ServeHTTP(w, r)
 	})
 }
