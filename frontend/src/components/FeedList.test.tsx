@@ -13,11 +13,11 @@ describe('FeedList Component', () => {
   });
 
   it('renders loading state initially', () => {
-    (global.fetch as any).mockImplementation(() => new Promise(() => {}));
+    (global.fetch as any).mockImplementation(() => new Promise(() => { }));
     render(
       <BrowserRouter>
         {/* @ts-ignore */}
-        <FeedList theme="light" setTheme={() => {}} />
+        <FeedList theme="light" setTheme={() => { }} />
       </BrowserRouter>
     );
     expect(screen.getByText(/loading feeds/i)).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe('FeedList Component', () => {
     render(
       <BrowserRouter>
         {/* @ts-ignore */}
-        <FeedList theme="light" setTheme={() => {}} />
+        <FeedList theme="light" setTheme={() => { }} />
       </BrowserRouter>
     );
 
@@ -69,7 +69,7 @@ describe('FeedList Component', () => {
     });
 
     // Expand feeds
-    fireEvent.click(screen.getByText(/feeds/i, { selector: 'h2' }));
+    fireEvent.click(screen.getByText(/feeds/i, { selector: 'h4' }));
 
     await waitFor(() => {
       expect(screen.getByText('Feed One')).toBeInTheDocument();
@@ -85,7 +85,7 @@ describe('FeedList Component', () => {
     render(
       <BrowserRouter>
         {/* @ts-ignore */}
-        <FeedList theme="light" setTheme={() => {}} />
+        <FeedList theme="light" setTheme={() => { }} setSidebarVisible={() => { }} />
       </BrowserRouter>
     );
 
@@ -114,7 +114,7 @@ describe('FeedList Component', () => {
     render(
       <BrowserRouter>
         {/* @ts-ignore */}
-        <FeedList theme="light" setTheme={() => {}} />
+        <FeedList theme="light" setTheme={() => { }} setSidebarVisible={() => { }} />
       </BrowserRouter>
     );
 
@@ -123,7 +123,7 @@ describe('FeedList Component', () => {
     });
 
     // Expand feeds
-    fireEvent.click(screen.getByText(/feeds/i, { selector: 'h2' }));
+    fireEvent.click(screen.getByText(/feeds/i, { selector: 'h4' }));
 
     await waitFor(() => {
       expect(screen.getByText(/no feeds found/i)).toBeInTheDocument();

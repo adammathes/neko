@@ -1,169 +1,134 @@
 .feed-list {
-  /* Removed card styling */
-  padding: 0;
-  background: transparent;
+  padding: 1rem;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--text-color);
+}
+
+.feed-list h1.logo {
+  font-size: 3rem;
+  margin: 0 0 1rem 0;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .search-section {
   margin-bottom: 1.5rem;
 }
 
-.search-form {
-  display: flex;
-}
-
 .search-input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.25rem;
   border: 1px solid var(--border-color, #999);
   background: var(--bg-color);
   color: var(--text-color);
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-family: inherit;
 }
 
-.search-input:focus {
-  outline: none;
-  background: var(--bg-color);
-  border-color: var(--link-color);
-}
-
-.feed-list h2,
-.feed-section-header {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-color, #999);
-  padding-bottom: 0.25rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.section-header {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 1.5rem 0 0.5rem 0;
   cursor: pointer;
   user-select: none;
-  display: flex;
-  align-items: center;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--text-color);
 }
 
-.toggle-indicator {
-  font-size: 0.8rem;
-  margin-right: 0.5rem;
-  display: inline-block;
-  width: 1rem;
-  text-align: center;
-}
-
-.feed-list-items,
+.filter-list,
 .tag-list-items,
-.filter-list {
+.feed-list-items,
+.nav-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.sidebar-feed-item {
-  padding: 0.25rem 0;
-  border-bottom: none;
-  /* Clean look */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.filter-list li,
+.nav-list li {
+  margin-bottom: 0.25rem;
 }
 
-.feed-title {
-  color: var(--link-color);
+.filter-list a,
+.nav-list a,
+.tag-link,
+.feed-title,
+.logout-link {
   text-decoration: none;
+  color: var(--link-color, blue);
   font-size: 0.9rem;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  display: block;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-variant: small-caps;
+  text-transform: lowercase;
 }
 
-.feed-title:hover {
+.filter-list a:hover,
+.nav-list a:hover,
+.tag-link:hover,
+.feed-title:hover,
+.logout-link:hover {
   text-decoration: underline;
-  color: var(--link-color);
+}
+
+.filter-list a.active,
+.tag-link.active,
+.feed-title.active {
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.tag-item,
+.sidebar-feed-item {
+  margin-bottom: 0.1rem;
 }
 
 .feed-category {
   display: none;
-  /* Hide category in sidebar list to save space */
 }
 
-.tag-section {
+.nav-section {
   margin-top: 2rem;
+  border-top: 1px solid var(--border-color, #ccc);
+  padding-top: 1rem;
 }
 
-.tag-link {
-  color: var(--link-color);
-  text-decoration: none;
-  font-size: 0.9rem;
-  display: block;
-  padding: 0.1rem 0;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-.tag-link:hover {
-  text-decoration: underline;
-  background: transparent;
-  color: var(--link-color);
-}
-
-.filter-section {
-  margin-bottom: 2rem;
-}
-
-.filter-list {
-  display: block;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.filter-list li a {
-  text-decoration: none;
-  color: var(--text-color);
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-variant: small-caps;
-  text-transform: lowercase;
-  font-size: 1.1rem;
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.filter-list li a:hover {
-  color: blue;
-  background-color: transparent;
-  text-decoration: underline;
-}
-
-.feed-title.active,
-.tag-link.active,
-.filter-list li a.active,
-.theme-selector button.active {
-  font-weight: bold !important;
+.logout-link {
+  text-align: left;
+  width: 100%;
 }
 
 .theme-section {
-  margin-top: 2rem;
-  padding-bottom: 2rem;
+  margin-top: 1rem;
 }
 
 .theme-selector {
   display: flex;
-  justify-content: space-between;
-  gap: 5px;
+  gap: 0.5rem;
 }
 
 .theme-selector button {
-  font-size: 1.2rem;
-  padding: 0.5rem;
-  width: 48%;
-  background: var(--sidebar-bg);
+  background: transparent;
   border: 1px solid var(--border-color, #ccc);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  font-size: 1rem;
   border-radius: 4px;
 }
 
-.theme-selector button:hover {
-  background: var(--bg-color);
+.theme-selector button.active {
+  background: var(--border-color, #ccc);
 }
 
-.theme-selector button.active {
-  background: var(--bg-color);
-  border-color: var(--link-color);
-  box-shadow: 0 0 5px var(--link-color);
+/* Scrollbar styling for webkit */
+.dashboard-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-sidebar::-webkit-scrollbar-thumb {
+  background-color: var(--border-color, #ccc);
 }

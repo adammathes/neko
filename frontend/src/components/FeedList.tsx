@@ -7,9 +7,11 @@ import { apiFetch } from '../utils';
 export default function FeedList({
   theme,
   setTheme,
+  setSidebarVisible,
 }: {
   theme: string;
   setTheme: (t: string) => void;
+  setSidebarVisible: (visible: boolean) => void;
 }) {
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [tags, setTags] = useState<Category[]>([]);
@@ -62,42 +64,70 @@ export default function FeedList({
   if (loading) return <div className="feed-list-loading">Loading feeds...</div>;
   if (error) return <div className="feed-list-error">Error: {error}</div>;
 
+  const handleLogout = () => {
+    apiFetch('/api/logout', { method: 'POST' }).then(() => (window.location.href = '/v2/login'));
+  };
+
   return (
     <div className="feed-list">
+      <h1 className="logo" onClick={() => setSidebarVisible(false)}>
+        🐱
+      </h1>
+
       <div className="search-section">
         <form onSubmit={handleSearch} className="search-form">
           <input
             type="search"
-            placeholder="Search items..."
+            placeholder="search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
           />
         </form>
       </div>
+
       <div className="filter-section">
         <ul className="filter-list">
-          <li>
+          <li className="unread_filter">
             <Link to="/?filter=unread" className={currentFilter === 'unread' ? 'active' : ''}>
-              Unread
+              unread
             </Link>
           </li>
-          <li>
+          <li className="all_filter">
             <Link to="/?filter=all" className={currentFilter === 'all' ? 'active' : ''}>
-              All
+              all
             </Link>
           </li>
-          <li>
+          <li className="starred_filter">
             <Link to="/?filter=starred" className={currentFilter === 'starred' ? 'active' : ''}>
-              Starred
+              starred
             </Link>
           </li>
         </ul>
       </div>
+
+      <div className="tag-section">
+        <h4 onClick={() => { }} className="section-header">
+          Tags
+        </h4>
+        <ul className="tag-list-items">
+          {tags.map((tag) => (
+            <li key={tag.title} className="tag-item">
+              <Link
+                to={`/tag/${encodeURIComponent(tag.title)}`}
+                className={`tag-link ${tagName === tag.title ? 'active' : ''}`}
+              >
+                {tag.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <div className="feed-section">
-        <h2 onClick={toggleFeeds} className="feed-section-header">
-          <span className="toggle-indicator">{feedsExpanded ? '▼' : '▶'}</span> Feeds
-        </h2>
+        <h4 onClick={toggleFeeds} className="section-header">
+          Feeds
+        </h4>
         {feedsExpanded &&
           (feeds.length === 0 ? (
             <p>No feeds found.</p>
@@ -111,30 +141,26 @@ export default function FeedList({
                   >
                     {feed.title || feed.url}
                   </Link>
-                  {feed.category && <span className="feed-category">{feed.category}</span>}
                 </li>
               ))}
             </ul>
           ))}
       </div>
 
-      {tags && tags.length > 0 && (
-        <div className="tag-section">
-          <h2>Tags</h2>
-          <ul className="tag-list-items">
-            {tags.map((tag) => (
-              <li key={tag.title} className="tag-item">
-                <Link
-                  to={`/tag/${encodeURIComponent(tag.title)}`}
-                  className={`tag-link ${tagName === tag.title ? 'active' : ''}`}
-                >
-                  {tag.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className="nav-section">
+        <ul className="nav-list">
+          <li>
+            <Link to="/settings" className="nav-link">
+              settings
+            </Link>
+          </li>
+          <li>
+            <button onClick={handleLogout} className="logout-link">
+              logout
+            </button>
+          </li>
+        </ul>
+      </div>
 
       <div className="theme-section">
         <div className="theme-selector">
