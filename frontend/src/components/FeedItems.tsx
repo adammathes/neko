@@ -132,7 +132,7 @@ export default function FeedItems() {
     const scrollToItem = (index: number) => {
         const element = document.getElementById(`item-${index}`);
         if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            element.scrollIntoView({ behavior: 'auto', block: 'start' });
         }
     };
 
