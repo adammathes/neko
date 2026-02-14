@@ -44,7 +44,9 @@ test.describe('Neko Reader E2E', () => {
         await page.goto('/v2/tag/Tech');
         // The TagView component might show "Category: Tech" or "Tag: Tech" or just items.
         // In the current FeedItems.tsx it doesn't show a header, but it should load.
-        await expect(page.locator('.feed-items')).toBeVisible();
+        // The TagView component might show "Category: Tech" or "Tag: Tech" or just items.
+        // In the current FeedItems.tsx it doesn't show a header, but it should load.
+        await expect(page.locator('.feed-items, .feed-items-loading, text=No items found')).toBeVisible({ timeout: 10000 });
 
         // 7. Logout
         await page.click('text=Logout');

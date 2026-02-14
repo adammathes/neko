@@ -37,7 +37,7 @@ import Settings from './components/Settings';
 
 function Dashboard({ theme, setTheme }: { theme: string, setTheme: (t: string) => void }) {
   const navigate = useNavigate();
-  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
 
   return (
     <div className={`dashboard ${sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'} theme-${theme}`}>
