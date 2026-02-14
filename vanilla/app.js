@@ -1,6 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
     fetchFeeds();
     fetchItems(); // Default to fetching recent items
+
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const query = searchInput.value.trim();
+            if (query) {
+                document.getElementById('feed-title').textContent = `Search: ${query}`;
+                document.querySelectorAll('.feed-item').forEach(el => el.classList.remove('active'));
+                fetchItems(null, null, query);
+            }
+        }
+    });
 });
 
 async function fetchFeeds() {
@@ -15,7 +27,7 @@ async function fetchFeeds() {
     }
 }
 
-async function fetchItems(feedId = null, filter = null) {
+async function fetchItems(feedId = null, filter = null, query = null) {
     const listEl = document.getElementById('entries-list');
     listEl.innerHTML = '<div class="loading">Loading items...</div>';
 
@@ -24,6 +36,7 @@ async function fetchItems(feedId = null, filter = null) {
     if (feedId) params.append('feed_id', feedId);
     if (filter === 'unread') params.append('read_filter', 'unread');
     if (filter === 'starred') params.append('starred', 'true');
+    if (query) params.append('q', query);
 
     if ([...params].length > 0) {
         url += '?' + params.toString();

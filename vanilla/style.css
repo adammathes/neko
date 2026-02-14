@@ -39,6 +39,19 @@ body {
     font-size: 1.2rem;
 }
 
+.search-container {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#search-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
 #feeds-nav {
     flex: 1;
     overflow-y: auto;
