@@ -250,7 +250,7 @@ password: VeryLongRandomStringBecauseSecurityIsFun
 
 I decided I didn't like the [original version of this that was python and mongo](https://github.com/adammathes/neko_v1) so rewrote it. I wanted to learn some Go. So assume the code is not great since I don't know what I'm doing even more so than normal.
 
-The Javascript frontend is still the same, I keep saying I will rewrite that too since it's old backbone.js code but it still seems to mostly work. It's not very pretty though.
+The Javascript frontend stayed still the same, I kept saying I will rewrite that too since it's old backbone.js code but it still seems to mostly work. It's not very pretty though.
 
 ## July 2018 -- v0.2
 
@@ -263,9 +263,11 @@ Significant changes to simplify setup, configuration, usage. The goal was typing
    * `neko` runs web server by default
    * `neko` server crawls feeds regularly rather than requiring cron
 
-## February 2026 -- Vibe-code Modernization
+## February 2026 -- v.03 -- Vibe-code Modernization
 
-The project underwent a significant modernization phase:
+*WELCOME TO THE GEMINI ERA*
+
+The project underwent a significant modernization phase with the help of Google Antigravity, Gemini, and Claude:
 
    * **Architecture**: Refactored backend into a clean REST API.
    * **Frontend**: Completely rewrote the legacy Backbone.js frontend in React/Vite as a modern Single Page Application (SPA).
