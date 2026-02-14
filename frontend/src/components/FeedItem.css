@@ -6,7 +6,6 @@
 }
 
 .feed-item.read .item-title {
-    color: #888;
     font-weight: normal;
 }
 
@@ -32,7 +31,7 @@
 }
 
 .item-title:hover {
-    text-decoration: underline;
+    text-decoration: none;
     color: var(--link-color);
 }
 
