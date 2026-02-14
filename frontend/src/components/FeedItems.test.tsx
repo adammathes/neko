@@ -137,13 +137,13 @@ describe('FeedItems Component', () => {
       json: async () => mockItems,
     });
 
-    // Capture the callback
-    let observerCallback: IntersectionObserverCallback = () => { };
+    // Capture both callbacks
+    const observerCallbacks: IntersectionObserverCallback[] = [];
 
-    // Override the mock to capture callback
+    // Override the mock to capture both callbacks
     class MockIntersectionObserver {
       constructor(callback: IntersectionObserverCallback) {
-        observerCallback = callback;
+        observerCallbacks.push(callback);
       }
       observe = vi.fn();
       unobserve = vi.fn();
@@ -161,6 +161,11 @@ describe('FeedItems Component', () => {
       expect(screen.getByText('Item 1')).toBeVisible();
     });
 
+    // Wait for observers to be created
+    await waitFor(() => {
+      expect(observerCallbacks.length).toBeGreaterThan(0);
+    });
+
     // Simulate item leaving viewport at the top
     // Element index is 0
     const entry = {
@@ -173,11 +178,10 @@ describe('FeedItems Component', () => {
       intersectionRect: {} as DOMRectReadOnly,
     } as IntersectionObserverEntry;
 
-    // Use vi.waitUntil to wait for callback to be assigned if needed,
-    // though strictly synchronous render + effect should do it.
-    // Direct call:
+    // Call the last itemObserver (second-to-last in the array, since sentinelObserver is last)
     act(() => {
-      observerCallback([entry], {} as IntersectionObserver);
+      const lastItemObserver = observerCallbacks[observerCallbacks.length - 2];
+      lastItemObserver([entry], {} as IntersectionObserver);
     });
 
     await waitFor(() => {
@@ -199,10 +203,10 @@ describe('FeedItems Component', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => initialItems })
       .mockResolvedValueOnce({ ok: true, json: async () => moreItems });
 
-    let observerCallback: IntersectionObserverCallback = () => { };
+    const observerCallbacks: IntersectionObserverCallback[] = [];
     class MockIntersectionObserver {
       constructor(callback: IntersectionObserverCallback) {
-        observerCallback = callback;
+        observerCallbacks.push(callback);
       }
       observe = vi.fn();
       unobserve = vi.fn();
@@ -220,6 +224,11 @@ describe('FeedItems Component', () => {
       expect(screen.getByText('Item 1')).toBeInTheDocument();
     });
 
+    // Wait for observers to be created (effect runs multiple times)
+    await waitFor(() => {
+      expect(observerCallbacks.length).toBeGreaterThan(0);
+    });
+
     // Simulate sentinel becoming visible
     const entry = {
       isIntersecting: true,
@@ -231,8 +240,10 @@ describe('FeedItems Component', () => {
       intersectionRect: {} as DOMRectReadOnly,
     } as IntersectionObserverEntry;
 
+    // Call the last sentinelObserver (second of the last pair created)
     act(() => {
-      observerCallback([entry], {} as IntersectionObserver);
+      const lastSentinelObserver = observerCallbacks[observerCallbacks.length - 1];
+      lastSentinelObserver([entry], {} as IntersectionObserver);
     });
 
     await waitFor(() => {

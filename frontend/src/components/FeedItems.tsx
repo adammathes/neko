@@ -164,17 +164,10 @@ export default function FeedItems() {
 
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    // Observer for marking items as read
+    const itemObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Infinity scroll sentinel
-          if (entry.target.id === 'load-more-sentinel') {
-            if (entry.isIntersecting && !loadingMore && hasMore && items.length > 0) {
-              fetchItems(String(items[items.length - 1]._id));
-            }
-            return;
-          }
-
           // If item is not intersecting and is above the viewport, it's been scrolled past
           if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
             const index = Number(entry.target.getAttribute('data-index'));
@@ -190,15 +183,30 @@ export default function FeedItems() {
       { root: null, threshold: 0 }
     );
 
+    // Observer for infinite scroll (less aggressive, must be fully visible)
+    const sentinelObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !loadingMore && hasMore && items.length > 0) {
+            fetchItems(String(items[items.length - 1]._id));
+          }
+        });
+      },
+      { root: null, threshold: 1.0 }
+    );
+
     items.forEach((_, index) => {
       const el = document.getElementById(`item-${index}`);
-      if (el) observer.observe(el);
+      if (el) itemObserver.observe(el);
     });
 
     const sentinel = document.getElementById('load-more-sentinel');
-    if (sentinel) observer.observe(sentinel);
+    if (sentinel) sentinelObserver.observe(sentinel);
 
-    return () => observer.disconnect();
+    return () => {
+      itemObserver.disconnect();
+      sentinelObserver.disconnect();
+    };
   }, [items, loadingMore, hasMore]);
 
   if (loading) return <div className="feed-items-loading">Loading items...</div>;
