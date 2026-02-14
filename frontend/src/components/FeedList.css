@@ -54,14 +54,15 @@
 }
 
 .feed-title {
-    color: #333;
+    color: var(--link-color);
     text-decoration: none;
     font-size: 0.9rem;
+    font-weight: bold;
 }
 
 .feed-title:hover {
     text-decoration: underline;
-    color: #000;
+    color: var(--link-color);
 }
 
 .feed-category {
@@ -75,19 +76,19 @@
 
 .tag-link,
 .filter-list li a {
-    color: #333;
+    color: var(--link-color);
     text-decoration: none;
     font-size: 0.9rem;
     display: block;
     padding: 0.1rem 0;
+    font-weight: bold;
 }
 
 .tag-link:hover,
 .filter-list li a:hover {
     text-decoration: underline;
     background: transparent;
-    /* No hover bg */
-    color: #000;
+    color: var(--link-color);
 }
 
 .filter-section {

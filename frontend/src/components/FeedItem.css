@@ -24,17 +24,15 @@
 .item-title {
     font-size: 1.25rem;
     font-weight: bold;
-    /* Legacy headers were bold */
     text-decoration: none;
-    color: #333;
+    color: var(--link-color);
     display: block;
     flex: 1;
 }
 
 .item-title:hover {
-    text-decoration: none;
-    color: blue;
-    /* Legacy link color */
+    text-decoration: underline;
+    color: var(--link-color);
 }
 
 .item-actions {
