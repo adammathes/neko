@@ -8,6 +8,7 @@ export default function FeedList({ theme, setTheme }: { theme: string, setTheme:
     const [tags, setTags] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [feedsExpanded, setFeedsExpanded] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -21,6 +22,10 @@ export default function FeedList({ theme, setTheme }: { theme: string, setTheme:
         if (searchQuery.trim()) {
             navigate(`/?q=${encodeURIComponent(searchQuery.trim())}`);
         }
+    };
+
+    const toggleFeeds = () => {
+        setFeedsExpanded(!feedsExpanded);
     };
 
     useEffect(() => {
@@ -69,20 +74,24 @@ export default function FeedList({ theme, setTheme }: { theme: string, setTheme:
                 </ul>
             </div>
             <div className="feed-section">
-                <h2>Feeds</h2>
-                {feeds.length === 0 ? (
-                    <p>No feeds found.</p>
-                ) : (
-                    <ul className="feed-list-items">
-                        {feeds.map((feed) => (
-                            <li key={feed._id} className="sidebar-feed-item">
-                                <Link to={`/feed/${feed._id}`} className={`feed-title ${feedId === String(feed._id) ? 'active' : ''}`}>
-                                    {feed.title || feed.url}
-                                </Link>
-                                {feed.category && <span className="feed-category">{feed.category}</span>}
-                            </li>
-                        ))}
-                    </ul>
+                <h2 onClick={toggleFeeds} className="feed-section-header">
+                    <span className="toggle-indicator">{feedsExpanded ? '▼' : '▶'}</span> Feeds
+                </h2>
+                {feedsExpanded && (
+                    feeds.length === 0 ? (
+                        <p>No feeds found.</p>
+                    ) : (
+                        <ul className="feed-list-items">
+                            {feeds.map((feed) => (
+                                <li key={feed._id} className="sidebar-feed-item">
+                                    <Link to={`/feed/${feed._id}`} className={`feed-title ${feedId === String(feed._id) ? 'active' : ''}`}>
+                                        {feed.title || feed.url}
+                                    </Link>
+                                    {feed.category && <span className="feed-category">{feed.category}</span>}
+                                </li>
+                            ))}
+                        </ul>
+                    )
                 )}
             </div>
 

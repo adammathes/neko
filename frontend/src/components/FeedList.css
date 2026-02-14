@@ -27,13 +27,26 @@
     border-color: #000;
 }
 
-.feed-list h2 {
+.feed-list h2,
+.feed-section-header {
     font-size: 1.2rem;
     margin-bottom: 0.5rem;
     border-bottom: 1px solid #999;
     padding-bottom: 0.25rem;
     text-transform: uppercase;
     letter-spacing: 1px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-indicator {
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    width: 1rem;
+    text-align: center;
 }
 
 .feed-list-items,
