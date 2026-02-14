@@ -147,8 +147,9 @@ func HandleFeed(w http.ResponseWriter, r *http.Request) {
 			crawler.CrawlFeed(&f, ch)
 			log.Println(<-ch)
 		}()
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		jsonResponse(w, f)
+		json.NewEncoder(w).Encode(f)
 
 	case http.MethodPut:
 		var f feed.Feed

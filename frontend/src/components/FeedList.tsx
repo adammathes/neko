@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation, useParams } from 'react-router-dom';
 import type { Feed, Category } from '../types';
 import './FeedList.css';
 
@@ -10,6 +10,11 @@ export default function FeedList() {
     const [error, setError] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const location = useLocation();
+    const { feedId, tagName } = useParams();
+
+    const currentFilter = searchParams.get('filter') || (location.pathname === '/' && !feedId && !tagName ? 'unread' : '');
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,9 +63,9 @@ export default function FeedList() {
             </div>
             <div className="filter-section">
                 <ul className="filter-list">
-                    <li><Link to="/?filter=unread">Unread</Link></li>
-                    <li><Link to="/?filter=all">All</Link></li>
-                    <li><Link to="/?filter=starred">Starred</Link></li>
+                    <li><Link to="/?filter=unread" className={currentFilter === 'unread' ? 'active' : ''}>Unread</Link></li>
+                    <li><Link to="/?filter=all" className={currentFilter === 'all' ? 'active' : ''}>All</Link></li>
+                    <li><Link to="/?filter=starred" className={currentFilter === 'starred' ? 'active' : ''}>Starred</Link></li>
                 </ul>
             </div>
             <div className="feed-section">
@@ -71,7 +76,7 @@ export default function FeedList() {
                     <ul className="feed-list-items">
                         {feeds.map((feed) => (
                             <li key={feed._id} className="sidebar-feed-item">
-                                <Link to={`/feed/${feed._id}`} className="feed-title">
+                                <Link to={`/feed/${feed._id}`} className={`feed-title ${feedId === String(feed._id) ? 'active' : ''}`}>
                                     {feed.title || feed.url}
                                 </Link>
                                 {feed.category && <span className="feed-category">{feed.category}</span>}
@@ -87,7 +92,7 @@ export default function FeedList() {
                     <ul className="tag-list-items">
                         {tags.map((tag) => (
                             <li key={tag.title} className="tag-item">
-                                <Link to={`/tag/${encodeURIComponent(tag.title)}`} className="tag-link">
+                                <Link to={`/tag/${encodeURIComponent(tag.title)}`} className={`tag-link ${tagName === tag.title ? 'active' : ''}`}>
                                     {tag.title}
                                 </Link>
                             </li>

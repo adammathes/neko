@@ -57,7 +57,7 @@
     color: var(--link-color);
     text-decoration: none;
     font-size: 0.9rem;
-    font-weight: bold;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .feed-title:hover {
@@ -67,25 +67,23 @@
 
 .feed-category {
     display: none;
-    /* Hide category in sidebar list to save space/match legacy simplicity if needed */
+    /* Hide category in sidebar list to save space */
 }
 
 .tag-section {
     margin-top: 2rem;
 }
 
-.tag-link,
-.filter-list li a {
+.tag-link {
     color: var(--link-color);
     text-decoration: none;
     font-size: 0.9rem;
     display: block;
     padding: 0.1rem 0;
-    font-weight: bold;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-.tag-link:hover,
-.filter-list li a:hover {
+.tag-link:hover {
     text-decoration: underline;
     background: transparent;
     color: var(--link-color);
@@ -97,18 +95,15 @@
 
 .filter-list {
     display: block;
-    /* Stack vertically */
-}
-
-.filter-list {
-    display: block;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .filter-list li a {
     text-decoration: none;
     color: #333;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-weight: bold;
     font-variant: small-caps;
     text-transform: lowercase;
     font-size: 1.1rem;
@@ -119,4 +114,11 @@
 .filter-list li a:hover {
     color: blue;
     background-color: transparent;
+    text-decoration: underline;
+}
+
+.feed-title.active,
+.tag-link.active,
+.filter-list li a.active {
+    font-weight: bold !important;
 }

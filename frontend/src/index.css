@@ -1,8 +1,17 @@
-:root,
-body,
-* {
-  font-family: 'Courier New', Courier, monospace !important;
-  /* Strongly force fixed width as requested */
+body {
+  font-family: Palatino, 'Palatino Linotype', 'Palatino LT STD', 'Book Antiqua', Georgia, serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+.logo,
+.nav-link,
+.logout-btn {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: bold;
 }
 
 :root {
