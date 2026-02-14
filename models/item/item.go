@@ -14,6 +14,19 @@ import (
 	"github.com/russross/blackfriday"
 )
 
+type ContentExtractor interface {
+	Extract(url string) (*goose.Article, error)
+}
+
+type GooseExtractor struct{}
+
+func (ge GooseExtractor) Extract(url string) (*goose.Article, error) {
+	g := goose.New()
+	return g.ExtractFromURL(url)
+}
+
+var Extractor ContentExtractor = GooseExtractor{}
+
 type Item struct {
 	Id int64 `json:"_id,string,omitempty"`
 
@@ -92,35 +105,29 @@ func ItemById(id int64) *Item {
 
 func (i *Item) GetFullContent() {
 	fmt.Printf("fetching from %s\n", i.Url)
-	g := goose.New()
-	article, err := g.ExtractFromURL(i.Url)
+	article, err := Extractor.Extract(i.Url)
 	if err != nil {
 		vlog.Println(err)
 		return
 	}
 
-	if article.TopNode == nil {
-		return
+	// i.FullContent and i.HeaderImage will be updated during extraction
+	if article.CleanedText != "" {
+		i.FullContent = string(blackfriday.Run([]byte(article.CleanedText)))
 	}
 
-	var md, img string
-	md = ""
-	img = ""
-	md = string(blackfriday.Run([]byte(article.CleanedText)))
-
-	ht, err := article.TopNode.Html()
-	if err != nil {
-		vlog.Println(err)
-		return
+	if article.TopNode != nil {
+		ht, err := article.TopNode.Html()
+		if err == nil {
+			p := filterPolicy()
+			i.FullContent = p.Sanitize(ht)
+		}
 	}
-
-	p := filterPolicy()
-	i.FullContent = p.Sanitize(ht)
 	i.HeaderImage = article.TopImage
 
 	_, err = models.DB.Exec(`UPDATE item
                               SET full_content=?, header_image=?
-                              WHERE id=?`, md, img, i.Id)
+                              WHERE id=?`, i.FullContent, i.HeaderImage, i.Id)
 	if err != nil {
 		vlog.Println(err)
 	}
@@ -240,6 +247,19 @@ func rewriteImages(s string) string {
 	doc.Find("img").Each(func(i int, img *goquery.Selection) {
 		if src, ok := img.Attr("src"); ok {
 			img.SetAttr("src", proxyURL(src))
+		}
+		if srcset, ok := img.Attr("srcset"); ok {
+			// srcset is a comma-separated list of "url descriptor"
+			parts := strings.Split(srcset, ",")
+			for i, part := range parts {
+				part = strings.TrimSpace(part)
+				subparts := strings.Fields(part)
+				if len(subparts) > 0 {
+					subparts[0] = proxyURL(subparts[0])
+				}
+				parts[i] = strings.Join(subparts, " ")
+			}
+			img.SetAttr("srcset", strings.Join(parts, ", "))
 		}
 	})
 
