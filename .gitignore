@@ -4,7 +4,6 @@ go.sum
 /neko
 /neko_server
 /backend.log
-/run_e2e_safe.sh
 /.data
 neko.db
 coverage.out
@@ -13,7 +12,6 @@ coverage_cross.out
 neko_test.db
 neko_test
 coverage.html
-run_e2e.sh
 frontend/playwright-report/
 frontend/test-results/
 frontend/coverage/

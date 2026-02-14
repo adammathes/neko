@@ -6,7 +6,7 @@ Use this workflow to run tests with extra precautions, especially Playwright/E2E
 1. **Pre-flight checks:**
    ```bash
    # Ensure clean environment
-   ./clean_test_env.sh
+   scripts/clean_test_env.sh
    # Check for stray processes
    ps aux | grep -E 'neko|playwright|chrome'
    ```
@@ -23,7 +23,7 @@ Use this workflow to run tests with extra precautions, especially Playwright/E2E
 4. **E2E tests (Safe Wrapper):**
    Use the safe wrapper script which handles timeouts and automatic cleanup.
    ```bash
-   ./run_e2e_safe.sh
+   scripts/run_e2e_safe.sh
    ```
    
    If E2E tests fail or hang:

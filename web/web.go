@@ -382,14 +382,14 @@ func CSRFMiddleware(cfg *config.Settings, next http.Handler) http.Handler {
 				Value:    token,
 				Path:     "/",
 				HttpOnly: false, // accessible by JS
-				SameSite: http.SameSiteNoneMode,
+				SameSite: http.SameSiteLaxMode,
 				Secure:   cfg.SecureCookies,
 			})
 		} else {
 			token = cookie.Value
 		}
 
-		if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete {
+		if (r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete) && r.URL.Path != "/api/login" {
 			headerToken := r.Header.Get("X-CSRF-Token")
 			if headerToken == "" || headerToken != token {
 				http.Error(w, "CSRF token mismatch", http.StatusForbidden)
