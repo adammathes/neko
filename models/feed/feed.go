@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"adammathes.com/neko/internal/safehttp"
 	"adammathes.com/neko/models"
 	"github.com/PuerkitoBio/goquery"
 )
@@ -120,12 +121,7 @@ func (f *Feed) Create() error {
 
 // Given a string `url`, return to the best guess of the feed
 func ResolveFeedURL(url string) string {
-	c := &http.Client{
-		Timeout: 10 * http.DefaultClient.Timeout,
-	}
-	if c.Timeout == 0 {
-		c.Timeout = 10 * time.Second
-	}
+	c := safehttp.NewSafeClient(10 * time.Second)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

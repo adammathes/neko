@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"adammathes.com/neko/internal/safehttp"
 	"adammathes.com/neko/internal/vlog"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
@@ -58,10 +59,7 @@ func GetFeedContent(feedURL string) string {
 	//	n := time.Duration(rand.Int63n(3))
 	//	time.Sleep(n * time.Second)
 
-	c := &http.Client{
-		// give up after 5 seconds
-		Timeout: 5 * time.Second,
-	}
+	c := safehttp.NewSafeClient(5 * time.Second)
 
 	request, err := http.NewRequest("GET", feedURL, nil)
 	if err != nil {
@@ -100,10 +98,7 @@ func GetFeedContent(feedURL string) string {
 TODO: sanitize input on crawl
 */
 func CrawlFeed(f *feed.Feed, ch chan<- string) {
-	c := &http.Client{
-		// give up after 5 seconds
-		Timeout: 5 * time.Second,
-	}
+	c := safehttp.NewSafeClient(5 * time.Second)
 
 	fp := gofeed.NewParser()
 	fp.Client = c

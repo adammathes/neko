@@ -20,6 +20,7 @@ import (
 
 	"adammathes.com/neko/api"
 	"adammathes.com/neko/config"
+	"adammathes.com/neko/internal/safehttp"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -74,9 +75,7 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// grab the img
-	c := &http.Client{
-		Timeout: 5 * time.Second,
-	}
+	c := safehttp.NewSafeClient(5 * time.Second)
 
 	request, err := http.NewRequest("GET", string(decodedURL), nil)
 	if err != nil {
