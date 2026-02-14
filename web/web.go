@@ -373,7 +373,8 @@ func CSRFMiddleware(next http.Handler) http.Handler {
 				Value:    token,
 				Path:     "/",
 				HttpOnly: false, // accessible by JS
-				SameSite: http.SameSiteLaxMode,
+				SameSite: http.SameSiteNoneMode,
+				Secure:   false, // Set to true in production with HTTPS
 			})
 		} else {
 			token = cookie.Value

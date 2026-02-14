@@ -106,6 +106,7 @@ describe('FeedItems Component', () => {
         expect.objectContaining({
           method: 'PUT',
           body: JSON.stringify({ read: true, starred: false }),
+          credentials: 'include',
         })
       );
     });
@@ -124,7 +125,8 @@ describe('FeedItems Component', () => {
         '/api/item/102',
         expect.objectContaining({
           method: 'PUT',
-          body: JSON.stringify({ read: true, starred: true }), // toggled to true
+          body: JSON.stringify({ read: true, starred: true }),
+          credentials: 'include', // toggled to true
         })
       );
     });

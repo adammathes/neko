@@ -27,5 +27,6 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
     return fetch(input, {
         ...init,
         headers,
+        credentials: 'include', // Ensure cookies are sent
     });
 }
