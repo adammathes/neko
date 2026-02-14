@@ -3,14 +3,21 @@ import type { Feed } from '../types';
 import './Settings.css';
 import { apiFetch } from '../utils';
 
-export default function Settings() {
+interface SettingsProps {
+  fontTheme?: string;
+  setFontTheme?: (t: string) => void;
+}
+
+export default function Settings({ fontTheme, setFontTheme }: SettingsProps) {
   const [feeds, setFeeds] = useState<Feed[]>([]);
+  /* ... existing state ... */
   const [newFeedUrl, setNewFeedUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [importFile, setImportFile] = useState<File | null>(null);
 
+  /* ... existing fetchFeeds ... */
   const fetchFeeds = () => {
     setLoading(true);
     apiFetch('/api/feed/')
@@ -32,6 +39,7 @@ export default function Settings() {
     fetchFeeds();
   }, []);
 
+  /* ... existing handlers ... */
   const handleAddFeed = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFeedUrl) return;
@@ -105,6 +113,25 @@ export default function Settings() {
   return (
     <div className="settings-page">
       <h2>Settings</h2>
+
+      {setFontTheme && (
+        <div className="appearance-section">
+          <h3>Appearance</h3>
+          <div className="font-selector">
+            <label>Font Theme:</label>
+            <select
+              value={fontTheme || 'default'}
+              onChange={(e) => setFontTheme(e.target.value)}
+              className="font-select"
+            >
+              <option value="default">Default</option>
+              <option value="serif">Serif</option>
+              <option value="sans">Sans-Serif</option>
+              <option value="mono">Monospace</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       <div className="add-feed-section">
         <h3>Add New Feed</h3>

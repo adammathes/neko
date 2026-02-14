@@ -4,12 +4,29 @@
   margin: 0 auto;
 }
 
-.add-feed-section {
+.add-feed-section,
+.appearance-section {
   background: var(--sidebar-bg);
   padding: 1.5rem;
   border-radius: 8px;
   margin-bottom: 2rem;
   border: 1px solid var(--border-color);
+}
+
+.font-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.font-select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  min-width: 200px;
 }
 
 .add-feed-form {
@@ -57,7 +74,7 @@
 }
 
 .feed-title {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--font-heading);
   font-weight: bold;
   font-size: 1.1rem;
 }

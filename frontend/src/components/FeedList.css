@@ -1,6 +1,6 @@
 .feed-list {
   padding: 1rem;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--font-heading);
   color: #777;
   /* specific v1 color */
   font-size: 0.8rem;
@@ -18,9 +18,6 @@
   z-index: 10;
   padding-bottom: 0.5rem;
   color: var(--text-color);
-  /* Usually dark/white depending on theme, v1 was white on blue? No, white on fixed header? No, v1 logo class says color: white. But sidebar is #ccc. */
-  /* In v1 logo was fixed top left (blue header bar?). In v2 sidebar is #ccc. 
-     Let's use theme text color but maybe bolder? */
 }
 
 /* Override logo color if necessary for themes */
@@ -55,7 +52,7 @@
   margin: 1rem 0 0.25rem 0;
   cursor: pointer;
   user-select: none;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--font-heading);
   color: #333;
   /* Darker than list items */
   text-transform: lowercase;

@@ -36,12 +36,19 @@ import FeedList from './components/FeedList';
 import FeedItems from './components/FeedItems';
 import Settings from './components/Settings';
 
-function Dashboard({ theme, setTheme }: { theme: string; setTheme: (t: string) => void }) {
+interface DashboardProps {
+  theme: string;
+  setTheme: (t: string) => void;
+  fontTheme: string;
+  setFontTheme: (t: string) => void;
+}
+
+function Dashboard({ theme, setTheme, fontTheme, setFontTheme }: DashboardProps) {
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
   return (
     <div
-      className={`dashboard ${sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'} theme-${theme}`}
+      className={`dashboard ${sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'} theme-${theme} font-${fontTheme}`}
     >
       <div className="dashboard-content">
         {!sidebarVisible && (
@@ -60,7 +67,7 @@ function Dashboard({ theme, setTheme }: { theme: string; setTheme: (t: string) =
           <Routes>
             <Route path="/feed/:feedId" element={<FeedItems />} />
             <Route path="/tag/:tagName" element={<FeedItems />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings" element={<Settings fontTheme={fontTheme} setFontTheme={setFontTheme} />} />
             <Route path="/" element={<FeedItems />} />
           </Routes>
         </main>
@@ -71,10 +78,16 @@ function Dashboard({ theme, setTheme }: { theme: string; setTheme: (t: string) =
 
 function App() {
   const [theme, setTheme] = useState(localStorage.getItem('neko-theme') || 'light');
+  const [fontTheme, setFontTheme] = useState(localStorage.getItem('neko-font-theme') || 'default');
 
   const handleSetTheme = (newTheme: string) => {
     setTheme(newTheme);
     localStorage.setItem('neko-theme', newTheme);
+  };
+
+  const handleSetFontTheme = (newFontTheme: string) => {
+    setFontTheme(newFontTheme);
+    localStorage.setItem('neko-font-theme', newFontTheme);
   };
 
   const basename = window.location.pathname.startsWith('/v2') ? '/v2' : '/';
@@ -87,7 +100,12 @@ function App() {
           path="/*"
           element={
             <RequireAuth>
-              <Dashboard theme={theme} setTheme={handleSetTheme} />
+              <Dashboard
+                theme={theme}
+                setTheme={handleSetTheme}
+                fontTheme={fontTheme}
+                setFontTheme={handleSetFontTheme}
+              />
             </RequireAuth>
           }
         />
