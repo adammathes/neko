@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/internal/crawler"
 	"adammathes.com/neko/internal/exporter"
+	"adammathes.com/neko/internal/importer"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
 )
@@ -36,6 +38,7 @@ func (s *Server) routes() {
 	s.HandleFunc("/feed/", s.HandleFeed)
 	s.HandleFunc("/tag", s.HandleCategory)
 	s.HandleFunc("/export/", s.HandleExport)
+	s.HandleFunc("/import", s.HandleImport)
 	s.HandleFunc("/crawl", s.HandleCrawl)
 }
 
@@ -217,8 +220,55 @@ func (s *Server) HandleExport(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, "format required", http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("Content-Type", "text/plain") // exporter handles formats internally
+
+	contentType := "text/plain"
+	extension := "txt"
+	switch format {
+	case "opml":
+		contentType = "application/xml"
+		extension = "opml"
+	case "json":
+		contentType = "application/json"
+		extension = "json"
+	case "html":
+		contentType = "text/html"
+		extension = "html"
+	}
+
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=neko_export.%s", extension))
 	w.Write([]byte(exporter.ExportFeeds(format)))
+}
+
+func (s *Server) HandleImport(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		jsonError(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	format := r.FormValue("format")
+	if format == "" {
+		format = "opml" // default to opml
+	}
+
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		jsonError(w, "file required", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	err = importer.ImportFeeds(format, file)
+	if err != nil {
+		log.Println(err)
+		jsonError(w, "import failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Trigger crawl after import
+	go crawler.Crawl()
+
+	jsonResponse(w, map[string]string{"status": "ok"})
 }
 
 func (s *Server) HandleCrawl(w http.ResponseWriter, r *http.Request) {

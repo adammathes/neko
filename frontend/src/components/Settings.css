@@ -85,3 +85,77 @@
   background: #ffcdd2;
   cursor: not-allowed;
 }
+
+.import-export-section {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 600px) {
+  .import-export-section {
+    flex-direction: column;
+  }
+}
+
+.import-section,
+.export-section {
+  flex: 1;
+  background: var(--sidebar-bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.import-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.file-input {
+  font-size: 0.9rem;
+  max-width: 100%;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: var(--bg-color);
+  color: var(--link-color);
+  text-decoration: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-weight: bold;
+  text-align: center;
+  min-width: 70px;
+}
+
+.export-btn:hover {
+  background: var(--sidebar-bg);
+}
+
+button {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+button:hover:not(:disabled) {
+  background: var(--sidebar-bg);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

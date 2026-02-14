@@ -1,39 +1,99 @@
 package exporter
 
 import (
-	"adammathes.com/neko/models/feed"
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"html/template"
+
+	"adammathes.com/neko/models/feed"
 )
+
+type OPML struct {
+	XMLName xml.Name `xml:"opml"`
+	Version string   `xml:"version,attr"`
+	Head    struct {
+		Title string `xml:"title"`
+	} `xml:"head"`
+	Body struct {
+		Outlines []Outline `xml:"outline"`
+	} `xml:"body"`
+}
+
+type Outline struct {
+	XMLName  xml.Name  `xml:"outline"`
+	Text     string    `xml:"text,attr"`
+	Title    string    `xml:"title,attr,omitempty"`
+	Type     string    `xml:"type,attr,omitempty"`
+	XMLURL   string    `xml:"xmlUrl,attr,omitempty"`
+	HTMLURL  string    `xml:"htmlUrl,attr,omitempty"`
+	Outlines []Outline `xml:"outline,omitempty"`
+}
 
 func ExportFeeds(format string) string {
 	feeds, err := feed.All()
 	if err != nil {
-		panic(err)
+		return ""
 	}
 
-	s := ""
 	switch format {
 	case "text":
+		var b bytes.Buffer
 		for _, f := range feeds {
-			s = s + fmt.Sprintf("%s\n", f.Url)
+			fmt.Fprintf(&b, "%s\n", f.Url)
 		}
+		return b.String()
 
 	case "opml":
-		s = s + fmt.Sprintf(`<opml version="2.0"><head><title>neko feeds</title></head><body>`)
-		s = s + fmt.Sprintf("\n")
+		var o OPML
+		o.Version = "2.0"
+		o.Head.Title = "neko feeds"
+
+		// Group by category
+		cats := make(map[string][]*feed.Feed)
+		var noCat []*feed.Feed
 		for _, f := range feeds {
-			b, _ := xml.Marshal(f)
-			s = s + fmt.Sprintf("%s\n", string(b))
+			if f.Category != "" {
+				cats[f.Category] = append(cats[f.Category], f)
+			} else {
+				noCat = append(noCat, f)
+			}
 		}
-		s = s + fmt.Sprintf(`</body></opml>`)
+
+		for cat, fds := range cats {
+			out := Outline{Text: cat}
+			for _, f := range fds {
+				out.Outlines = append(out.Outlines, Outline{
+					Text:    f.Title,
+					Title:   f.Title,
+					Type:    "rss",
+					XMLURL:  f.Url,
+					HTMLURL: f.WebUrl,
+				})
+			}
+			o.Body.Outlines = append(o.Body.Outlines, out)
+		}
+
+		for _, f := range noCat {
+			o.Body.Outlines = append(o.Body.Outlines, Outline{
+				Text:    f.Title,
+				Title:   f.Title,
+				Type:    "rss",
+				XMLURL:  f.Url,
+				HTMLURL: f.WebUrl,
+			})
+		}
+
+		b, err := xml.MarshalIndent(o, "", "  ")
+		if err != nil {
+			return ""
+		}
+		return xml.Header + string(b)
 
 	case "json":
-		js, _ := json.Marshal(feeds)
-		s = fmt.Sprintf("%s\n", js)
+		js, _ := json.MarshalIndent(feeds, "", "  ")
+		return string(js)
 
 	case "html":
 		htmlTemplateString := `<html>
@@ -50,12 +110,15 @@ func ExportFeeds(format string) string {
 </html>`
 		var bts bytes.Buffer
 		htmlTemplate, err := template.New("feeds").Parse(htmlTemplateString)
+		if err != nil {
+			return ""
+		}
 		err = htmlTemplate.Execute(&bts, feeds)
 		if err != nil {
-			panic(err)
+			return ""
 		}
-		s = bts.String()
+		return bts.String()
 	}
 
-	return s
+	return ""
 }
