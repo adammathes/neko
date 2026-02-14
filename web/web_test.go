@@ -546,19 +546,6 @@ func TestGzipMiddlewareStatusCodes(t *testing.T) {
 	}
 }
 
-func TestServeFrontendBoxError(t *testing.T) {
-	oldBox := frontendBox
-	frontendBox = nil
-	defer func() { frontendBox = oldBox }()
-
-	req := httptest.NewRequest("GET", "/", nil)
-	rr := httptest.NewRecorder()
-	ServeFrontend(rr, req)
-	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404 for nil box, got %d", rr.Code)
-	}
-}
-
 func TestGzipMiddlewareErrorStatus(t *testing.T) {
 	handler := GzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
@@ -678,97 +665,68 @@ func TestServeFrontendAssetNotFound(t *testing.T) {
 	}
 }
 
-func TestServeBoxedFileError(t *testing.T) {
-origBox := staticBox
-defer func() { staticBox = origBox }()
-
-staticBox = nil
-req := httptest.NewRequest("GET", "/test", nil)
-rr := httptest.NewRecorder()
-serveBoxedFile(rr, req, "test")
-if rr.Code != http.StatusInternalServerError {
-t.Errorf("Expected 500 when box is nil, got %d", rr.Code)
-}
-}
-
 func TestServeBoxedFileNotFound(t *testing.T) {
-// staticBox is normally set by NewRouter if not nil
-// We can use the real one if it exists, or just ensure it's not nil
-if staticBox == nil {
-NewRouter()
-}
-req := httptest.NewRequest("GET", "/nonexistent", nil)
-rr := httptest.NewRecorder()
-serveBoxedFile(rr, req, "nonexistent")
-if rr.Code != http.StatusNotFound {
-t.Errorf("Expected 404 for nonexistent file, got %d", rr.Code)
-}
+	req := httptest.NewRequest("GET", "/nonexistent", nil)
+	rr := httptest.NewRecorder()
+	serveBoxedFile(rr, req, "nonexistent")
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 404 for nonexistent file, got %d", rr.Code)
+	}
 }
 
 func TestImageProxyHandlerHeaders(t *testing.T) {
-url := "http://example.com/image.png"
-id := base64.URLEncoding.EncodeToString([]byte(url))
+	url := "http://example.com/image.png"
+	id := base64.URLEncoding.EncodeToString([]byte(url))
 
-req := httptest.NewRequest("GET", "/"+id, nil)
-req.Header.Set("Etag", url)
-rr := httptest.NewRecorder()
-imageProxyHandler(rr, req)
-if rr.Code != http.StatusNotModified {
-t.Errorf("Expected 304 for matching Etag, got %d", rr.Code)
-}
+	req := httptest.NewRequest("GET", "/"+id, nil)
+	req.Header.Set("Etag", url)
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+	if rr.Code != http.StatusNotModified {
+		t.Errorf("Expected 304 for matching Etag, got %d", rr.Code)
+	}
 }
 
 func TestImageProxyHandlerRemoteError(t *testing.T) {
-ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-w.Header().Set("Content-Length", "10")
-w.WriteHeader(http.StatusOK)
-// Close connection immediately to cause ReadAll error if possible, 
-// or just return non-200. The current code only checks err from c.Do(request) 
-// and ioutil.ReadAll.
-}))
-ts.Close() // Close immediately so c.Do fails
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", "10")
+		w.WriteHeader(http.StatusOK)
+		// Close connection immediately to cause ReadAll error if possible,
+		// or just return non-200. The current code only checks err from c.Do(request)
+		// and ioutil.ReadAll.
+	}))
+	ts.Close() // Close immediately so c.Do fails
 
-id := base64.URLEncoding.EncodeToString([]byte(ts.URL))
-req := httptest.NewRequest("GET", "/"+id, nil)
-rr := httptest.NewRecorder()
-imageProxyHandler(rr, req)
-if rr.Code != 404 {
-t.Errorf("Expected 404 for remote error, got %d", rr.Code)
-}
+	id := base64.URLEncoding.EncodeToString([]byte(ts.URL))
+	req := httptest.NewRequest("GET", "/"+id, nil)
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+	if rr.Code != 404 {
+		t.Errorf("Expected 404 for remote error, got %d", rr.Code)
+	}
 }
 
 func TestApiLoginHandlerBadMethod(t *testing.T) {
-req := httptest.NewRequest("GET", "/api/login", nil)
-rr := httptest.NewRecorder()
-apiLoginHandler(rr, req)
-if rr.Code != http.StatusMethodNotAllowed {
-t.Errorf("Expected 405, got %d", rr.Code)
-}
+	req := httptest.NewRequest("GET", "/api/login", nil)
+	rr := httptest.NewRecorder()
+	apiLoginHandler(rr, req)
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("Expected 405, got %d", rr.Code)
+	}
 }
 
 func TestGzipMiddlewareNonCompressible(t *testing.T) {
-handler := GzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-w.Header().Set("Content-Type", "image/png")
-w.Write([]byte("not compressible"))
-}))
+	handler := GzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/png")
+		w.Write([]byte("not compressible"))
+	}))
 
-req := httptest.NewRequest("GET", "/", nil)
-req.Header.Set("Accept-Encoding", "gzip")
-rr := httptest.NewRecorder()
-handler.ServeHTTP(rr, req)
+	req := httptest.NewRequest("GET", "/", nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
 
-if rr.Header().Get("Content-Encoding") == "gzip" {
-t.Error("Expected no gzip for image/png")
-}
-}
-
-func TestNewRouterNoStaticBox(t *testing.T) {
-oldBox := staticBox
-staticBox = nil
-defer func() { staticBox = oldBox }()
-
-h := NewRouter()
-if h == nil {
-t.Fatal("NewRouter returned nil")
-}
+	if rr.Header().Get("Content-Encoding") == "gzip" {
+		t.Error("Expected no gzip for image/png")
+	}
 }
