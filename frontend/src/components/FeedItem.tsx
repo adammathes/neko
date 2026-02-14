@@ -56,6 +56,24 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
       });
   };
 
+  const loadFullContent = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLoading(true);
+    apiFetch(`/api/item/${item._id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch full content');
+        return res.json();
+      })
+      .then((data) => {
+        setItem({ ...item, ...data });
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error fetching full content:', err);
+        setLoading(false);
+      });
+  };
+
   return (
     <li className={`feed-item ${item.read ? 'read' : 'unread'} ${loading ? 'loading' : ''}`}>
       <div className="item-header">
@@ -78,10 +96,19 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
           {new Date(item.publish_date).toLocaleDateString()}
           {item.feed_title && ` - ${item.feed_title}`}
         </a>
-        <div className="item-actions" style={{ display: 'inline-block', float: 'right' }}></div>
+        <div className="item-actions" style={{ display: 'inline-block', float: 'right' }}>
+          {!item.full_content && (
+            <button onClick={loadFullContent} className="scrape-btn" title="Load Full Content">
+              text
+            </button>
+          )}
+        </div>
       </div>
-      {item.description && (
-        <div className="item-description" dangerouslySetInnerHTML={{ __html: item.description }} />
+      {(item.full_content || item.description) && (
+        <div
+          className="item-description"
+          dangerouslySetInnerHTML={{ __html: item.full_content || item.description }}
+        />
       )}
     </li>
   );

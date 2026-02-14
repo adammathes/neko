@@ -71,4 +71,22 @@ describe('FeedItem Component', () => {
     expect(listItem).toHaveClass('read');
     expect(listItem).not.toHaveClass('unread');
   });
+
+  it('loads full content', async () => {
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ...mockItem, full_content: '<p>Full Content Loaded</p>' }),
+    });
+
+    render(<FeedItem item={mockItem} />);
+
+    const scrapeBtn = screen.getByTitle('Load Full Content');
+    fireEvent.click(scrapeBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Full Content Loaded')).toBeInTheDocument();
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/item/1', expect.anything());
+  });
 });
