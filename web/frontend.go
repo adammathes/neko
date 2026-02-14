@@ -1,21 +1,23 @@
 package web
 
 import (
+	"io"
+	"io/fs"
 	"net/http"
 	"path/filepath"
 	"strings"
 )
 
 func ServeFrontend(w http.ResponseWriter, r *http.Request) {
-	if frontendBox == nil {
+	// Use fs.Sub to treat dist/v2 as the root
+	box, err := fs.Sub(frontendFiles, "dist/v2")
+	if err != nil {
 		http.Error(w, "frontend not found", http.StatusNotFound)
 		return
 	}
-	box := frontendBox
 
 	// Get the file path from the URL
 	path := r.URL.Path
-	// rice box paths shouldn't start with /
 	path = strings.TrimPrefix(path, "/")
 
 	// If path is empty, it's index.html
@@ -27,18 +29,14 @@ func ServeFrontend(w http.ResponseWriter, r *http.Request) {
 	f, err := box.Open(path)
 	if err != nil {
 		// If file not found, serve index.html for client-side routing
-		// But only if it's not looking for a specific static asset (like .js, .css)
-		// Simple heuristic: if it has an extension, it's probably an asset
 		if !strings.Contains(filepath.Base(path), ".") {
 			f, err = box.Open("index.html")
 			if err != nil {
 				http.Error(w, "frontend not found", http.StatusNotFound)
 				return
 			}
-			// Important: update path so ServeContent sets correct Content-Type
 			path = "index.html"
 		} else {
-			// It might be a real 404 for an asset
 			http.Error(w, "not found", http.StatusNotFound)
 			return
 		}
@@ -51,5 +49,5 @@ func ServeFrontend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeContent(w, r, path, d.ModTime(), f)
+	http.ServeContent(w, r, path, d.ModTime(), f.(io.ReadSeeker))
 }

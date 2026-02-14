@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,12 +12,12 @@ import (
 	"time"
 
 	"compress/gzip"
+	"embed"
 	"io"
 	"sync"
 
 	"adammathes.com/neko/api"
 	"adammathes.com/neko/config"
-	rice "github.com/GeertJohan/go.rice"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,28 +29,19 @@ var gzPool = sync.Pool{
 }
 
 var (
-	staticBox   *rice.Box
-	frontendBox *rice.Box
-	vanillaBox  *rice.Box
+	//go:embed static/*
+	staticFiles embed.FS
+
+	//go:embed dist/v2/*
+	frontendFiles embed.FS
+
+	//go:embed dist/vanilla/*
+	vanillaFiles embed.FS
 )
 
-func init() {
-	var err error
-	staticBox, err = rice.FindBox("../static")
-	if err != nil {
-		log.Printf("Warning: Could not find staticBox at ../static: %v", err)
-	}
-
-	frontendBox, err = rice.FindBox("../dist/v2")
-	if err != nil {
-		log.Printf("Warning: Could not find frontendBox at ../dist/v2: %v", err)
-	}
-
-	vanillaBox, err = rice.FindBox("../dist/vanilla")
-	if err != nil {
-		log.Printf("Warning: Could not find vanillaBox at ../dist/vanilla: %v", err)
-	}
-}
+// init is no longer strictly needed for finding boxes with embed,
+// but we'll keep it if any other initialization is needed later.
+func init() {}
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	serveBoxedFile(w, r, "ui.html")
@@ -169,17 +161,16 @@ func AuthWrapHandler(wrapped http.Handler) http.Handler {
 }
 
 func serveBoxedFile(w http.ResponseWriter, r *http.Request, filename string) {
-	if staticBox == nil {
-		http.Error(w, "static assets not found", http.StatusInternalServerError)
-		return
-	}
-	ui, err := staticBox.Open(filename)
+	// The files are in the 'static' subdirectory of the embedded FS
+	f, err := staticFiles.Open("static/" + filename)
 	if err != nil {
 		http.Error(w, "file not found", http.StatusNotFound)
 		return
 	}
-	fi, _ := ui.Stat()
-	http.ServeContent(w, r, filename, fi.ModTime(), ui)
+	defer f.Close()
+
+	fi, _ := f.Stat()
+	http.ServeContent(w, r, filename, fi.ModTime(), f.(io.ReadSeeker))
 }
 
 func apiLoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -226,26 +217,20 @@ func apiAuthStatusHandler(w http.ResponseWriter, r *http.Request) {
 func NewRouter() http.Handler {
 	mux := http.NewServeMux()
 
-	var staticHandler http.Handler
-	if staticBox != nil {
-		staticHandler = http.FileServer(staticBox.HTTPBox())
-	} else {
-		staticHandler = http.NotFoundHandler()
-	}
+	// Static files from web/static
+	staticSub, _ := fs.Sub(staticFiles, "static")
+	mux.Handle("/static/", GzipMiddleware(http.StripPrefix("/static/", http.FileServer(http.FS(staticSub)))))
 
-	mux.Handle("/static/", GzipMiddleware(http.StripPrefix("/static/", staticHandler)))
-
-	// New Frontend
+	// New Frontend (React/Vite) from web/dist/v2
 	mux.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))))
 
 	// New REST API
 	apiRouter := api.NewRouter()
 	mux.Handle("/api/", GzipMiddleware(http.StripPrefix("/api", AuthWrapHandler(apiRouter))))
 
-	// Vanilla JS Prototype
-	if vanillaBox != nil {
-		mux.Handle("/vanilla/", GzipMiddleware(http.StripPrefix("/vanilla/", http.FileServer(vanillaBox.HTTPBox()))))
-	}
+	// Vanilla JS Prototype from web/dist/vanilla
+	vanillaSub, _ := fs.Sub(vanillaFiles, "dist/vanilla")
+	mux.Handle("/vanilla/", GzipMiddleware(http.StripPrefix("/vanilla/", http.FileServer(http.FS(vanillaSub)))))
 
 	// Legacy routes for backward compatibility
 	mux.HandleFunc("/stream/", AuthWrap(api.HandleStream))

@@ -11,9 +11,10 @@ import (
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/models/feed"
 
+	"flag"
+
 	"adammathes.com/neko/vlog"
 	"adammathes.com/neko/web"
-	flag "github.com/ogier/pflag"
 )
 
 var Version, Build string
@@ -33,24 +34,40 @@ func Run(args []string) error {
 	f := flag.NewFlagSet("neko", flag.ContinueOnError)
 
 	// config file
-	f.StringVarP(&configFile, "config", "c", "", "read configuration from file")
+	f.StringVar(&configFile, "config", "", "read configuration from file")
+	f.StringVar(&configFile, "c", "", "read configuration from file (short)")
 
-	// commands -- no command runs the web server
-	f.BoolVarP(&help, "help", "h", false, "print usage information")
-	f.BoolVarP(&update, "update", "u", false, "fetch feeds and store new items")
-	f.StringVarP(&newFeed, "add", "a", "", "add the feed at URL `http://example.com/rss.xml`")
-	f.StringVarP(&export, "export", "x", "", "export feed. format required: text, opml, html, or json")
+	// commands
+	f.BoolVar(&help, "help", false, "display help")
+	f.BoolVar(&help, "h", false, "display help (short)")
 
-	// options -- defaults are set in config/main.go and overridden by cmd line
-	f.StringVarP(&dbfile, "database", "d", "", "sqlite database file")
-	f.IntVarP(&port, "http", "s", 0, "HTTP port to serve on")
-	f.IntVarP(&minutes, "minutes", "m", 0, "minutes between crawling feeds")
-	f.BoolVarP(&proxyImages, "imageproxy", "i", false, "rewrite and proxy all image requests for privacy (experimental)")
+	f.BoolVar(&update, "update", false, "fetch feeds and store new items")
+	f.BoolVar(&update, "u", false, "fetch feeds and store new items (short)")
 
-	f.BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+	f.StringVar(&newFeed, "add", "", "add the feed at URL")
+	f.StringVar(&newFeed, "a", "", "add the feed at URL (short)")
 
-	// passwords on command line are bad, you should use the config file
-	f.StringVarP(&password, "password", "p", "", "password to access web interface")
+	f.StringVar(&export, "export", "", "export feed: text, opml, html, json")
+	f.StringVar(&export, "x", "", "export feed (short)")
+
+	// options
+	f.StringVar(&dbfile, "database", "", "sqlite database file")
+	f.StringVar(&dbfile, "d", "", "sqlite database file (short)")
+
+	f.IntVar(&port, "http", 0, "HTTP port to serve on")
+	f.IntVar(&port, "s", 0, "HTTP port to serve on (short)")
+
+	f.IntVar(&minutes, "minutes", 0, "minutes between crawling feeds")
+	f.IntVar(&minutes, "m", 0, "minutes between crawling feeds (short)")
+
+	f.BoolVar(&proxyImages, "imageproxy", false, "rewrite and proxy all image requests")
+	f.BoolVar(&proxyImages, "i", false, "rewrite and proxy all image requests (short)")
+
+	f.BoolVar(&verbose, "verbose", false, "verbose output")
+	f.BoolVar(&verbose, "v", false, "verbose output (short)")
+
+	f.StringVar(&password, "password", "", "password for web interface")
+	f.StringVar(&password, "p", "", "password for web interface (short)")
 
 	f.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])

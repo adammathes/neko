@@ -2,7 +2,6 @@ SH=/bin/sh
 
 GO=go
 NPM=npm
-RICE=rice
 PANDOC=pandoc
 
 BINARY=neko
@@ -14,29 +13,25 @@ LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
 default: build
 
-all: clean ui vanilla-ui embed build docs
+all: clean ui vanilla-ui build docs
 
 clean:
 	rm -f ${BINARY}
-	rm -f web/rice-box.go
 	rm -f readme.html
 
 ui:
 	cd frontend && ${NPM} install && ${NPM} run build
-	rm -rf dist/v2
-	mkdir -p dist/v2
-	cp -r frontend/dist/* dist/v2/
+	rm -rf web/dist/v2
+	mkdir -p web/dist/v2
+	cp -r frontend/dist/* web/dist/v2/
 
 vanilla-ui:
-	rm -rf dist/vanilla
-	mkdir -p dist/vanilla
-	cp vanilla/index.html vanilla/app.js vanilla/style.css dist/vanilla/
+	rm -rf web/dist/vanilla
+	mkdir -p web/dist/vanilla
+	cp vanilla/index.html vanilla/app.js vanilla/style.css web/dist/vanilla/
 
 build:
 	${GO} build ${LDFLAGS} -o ${BINARY}
-
-embed:
-	${RICE} -i ./web embed-go
 
 install: build
 	cp ${BINARY} ${GOBIN}
