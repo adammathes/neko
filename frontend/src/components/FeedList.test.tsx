@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import FeedList from './FeedList';
 
@@ -16,7 +16,8 @@ describe('FeedList Component', () => {
         (global.fetch as any).mockImplementation(() => new Promise(() => { }));
         render(
             <BrowserRouter>
-                <FeedList />
+                {/* @ts-ignore */}
+                <FeedList theme="light" setTheme={() => { }} />
             </BrowserRouter>
         );
         expect(screen.getByText(/loading feeds/i)).toBeInTheDocument();
@@ -46,9 +47,17 @@ describe('FeedList Component', () => {
 
         render(
             <BrowserRouter>
-                <FeedList />
+                {/* @ts-ignore */}
+                <FeedList theme="light" setTheme={() => { }} />
             </BrowserRouter>
         );
+
+        await waitFor(() => {
+            expect(screen.queryByText(/loading feeds/i)).not.toBeInTheDocument();
+        });
+
+        // Expand feeds
+        fireEvent.click(screen.getByText(/feeds/i, { selector: 'h2' }));
 
         await waitFor(() => {
             expect(screen.getByText('Feed One')).toBeInTheDocument();
@@ -63,7 +72,8 @@ describe('FeedList Component', () => {
 
         render(
             <BrowserRouter>
-                <FeedList />
+                {/* @ts-ignore */}
+                <FeedList theme="light" setTheme={() => { }} />
             </BrowserRouter>
         );
 
@@ -91,9 +101,17 @@ describe('FeedList Component', () => {
 
         render(
             <BrowserRouter>
-                <FeedList />
+                {/* @ts-ignore */}
+                <FeedList theme="light" setTheme={() => { }} />
             </BrowserRouter>
         );
+
+        await waitFor(() => {
+            expect(screen.queryByText(/loading feeds/i)).not.toBeInTheDocument();
+        });
+
+        // Expand feeds
+        fireEvent.click(screen.getByText(/feeds/i, { selector: 'h2' }));
 
         await waitFor(() => {
             expect(screen.getByText(/no feeds found/i)).toBeInTheDocument();
