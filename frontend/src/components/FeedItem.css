@@ -22,7 +22,8 @@
 }
 
 .item-title {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
+    /* approx 24px */
     font-weight: bold;
     text-decoration: none;
     color: var(--link-color);
