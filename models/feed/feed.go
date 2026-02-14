@@ -3,6 +3,8 @@ package feed
 import (
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
 	"adammathes.com/neko/models"
 	"github.com/PuerkitoBio/goquery"
@@ -118,24 +120,38 @@ func (f *Feed) Create() error {
 
 // Given a string `url`, return to the best guess of the feed
 func ResolveFeedURL(url string) string {
-	resp, err := http.Get(url)
+	c := &http.Client{
+		Timeout: 10 * http.DefaultClient.Timeout,
+	}
+	if c.Timeout == 0 {
+		c.Timeout = 10 * time.Second
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		// handle errors better
+		return url
+	}
+	req.Header.Set("User-Agent", "neko RSS Crawler +https://github.com/adammathes/neko")
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return url
+	}
+	defer resp.Body.Close()
+
+	contentType := resp.Header.Get("Content-Type")
+	if contentType == "" {
 		return url
 	}
 
-	// Check content-type header first
-	// if it's feed-ish, just use it
-	contentType := resp.Header["Content-Type"][0]
-	switch contentType {
-
-	case "text/xml":
+	switch {
+	case strings.HasPrefix(contentType, "text/xml"):
 		return url
-	case "text/rss+xml":
+	case strings.HasPrefix(contentType, "text/rss+xml"):
 		return url
-	case "application/rss+xml":
+	case strings.HasPrefix(contentType, "application/rss+xml"):
 		return url
-	case "application/atom+xml":
+	case strings.HasPrefix(contentType, "application/atom+xml"):
 		return url
 	}
 
