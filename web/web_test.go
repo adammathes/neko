@@ -474,3 +474,301 @@ func TestGzipCompression(t *testing.T) {
 		t.Error("Expected no Content-Encoding for 304 response")
 	}
 }
+
+func TestNewRouter(t *testing.T) {
+	router := NewRouter()
+	if router == nil {
+		t.Fatal("NewRouter should not return nil")
+	}
+
+	// Test a route that we know exists
+	req := httptest.NewRequest("GET", "/api/auth", nil)
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	// Should be unauthorized but the route should be found
+	if rr.Code != http.StatusUnauthorized {
+		t.Errorf("Expected 401 for unauthorized /api/auth, got %d", rr.Code)
+	}
+}
+
+func TestIndexHandlerRedirect(t *testing.T) {
+	config.Config.DigestPassword = "secret"
+	req := httptest.NewRequest("GET", "/", nil)
+	rr := httptest.NewRecorder()
+
+	// Use the wrapped handler
+	handler := AuthWrap(indexHandler)
+	handler.ServeHTTP(rr, req)
+
+	// Should redirect to login since not authenticated
+	if rr.Code != http.StatusTemporaryRedirect {
+		t.Errorf("Expected 307 redirect for unauthenticated root, got %d", rr.Code)
+	}
+}
+
+func TestServeFrontendEdgeCases(t *testing.T) {
+	// 1. Missing file with extension should 404
+	req := httptest.NewRequest("GET", "/v2/missing.js", nil)
+	rr := httptest.NewRecorder()
+	handler := http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 404 for missing asset, got %d", rr.Code)
+	}
+
+	// 2. Missing file without extension should serve index.html (or 404 if index.html missing)
+	req = httptest.NewRequest("GET", "/v2/someroute", nil)
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	// We check for 200 or 404 depending on if index.html is in the box
+	if rr.Code != http.StatusOK && rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 200 or 404 for client route, got %d", rr.Code)
+	}
+}
+
+func TestGzipMiddlewareStatusCodes(t *testing.T) {
+	handler := GzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("created"))
+	}))
+
+	req := httptest.NewRequest("GET", "/", nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusCreated {
+		t.Errorf("Expected 201, got %d", rr.Code)
+	}
+	if rr.Header().Get("Content-Encoding") != "gzip" {
+		t.Error("Expected gzip encoding even for 201 Created")
+	}
+}
+
+func TestServeFrontendBoxError(t *testing.T) {
+	oldBox := frontendBox
+	frontendBox = nil
+	defer func() { frontendBox = oldBox }()
+
+	req := httptest.NewRequest("GET", "/", nil)
+	rr := httptest.NewRecorder()
+	ServeFrontend(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 404 for nil box, got %d", rr.Code)
+	}
+}
+
+func TestGzipMiddlewareErrorStatus(t *testing.T) {
+	handler := GzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("not found"))
+	}))
+
+	req := httptest.NewRequest("GET", "/", nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 404, got %d", rr.Code)
+	}
+	// Currently we gzip anything compressible regardless of status
+	if rr.Header().Get("Content-Encoding") != "gzip" {
+		t.Error("Expected gzip encoding even for 404 (current behavior)")
+	}
+}
+
+func TestGzipMiddlewareFlush(t *testing.T) {
+	handler := GzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("hello"))
+		if f, ok := w.(http.Flusher); ok {
+			f.Flush()
+		}
+	}))
+
+	req := httptest.NewRequest("GET", "/", nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Body.Len() == 0 {
+		t.Error("Expected non-empty body after flush")
+	}
+}
+
+func TestIsCompressible(t *testing.T) {
+	testCases := []struct {
+		ct       string
+		expected bool
+	}{
+		{"text/html", true},
+		{"application/json", true},
+		{"application/javascript", true},
+		{"application/rss+xml", true},
+		{"image/png", false},
+		{"", false},
+	}
+	for _, tc := range testCases {
+		if res := isCompressible(tc.ct); res != tc.expected {
+			t.Errorf("isCompressible(%q) = %v, expected %v", tc.ct, res, tc.expected)
+		}
+	}
+}
+
+func TestImageProxyHandlerMissingURL(t *testing.T) {
+	req := httptest.NewRequest("GET", "/image/", nil)
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 404, got %d", rr.Code)
+	}
+}
+
+func TestImageProxyHandlerInvalidBase64(t *testing.T) {
+	req := httptest.NewRequest("GET", "/image/invalid-base64", nil)
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 404, got %d", rr.Code)
+	}
+}
+
+func TestServeFrontendNotFound(t *testing.T) {
+	req := httptest.NewRequest("GET", "/not-actually-a-file", nil)
+	rr := httptest.NewRecorder()
+	ServeFrontend(rr, req)
+	// Should fallback to index.html if it's not a dot-extension file
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected 200 (fallback to index.html), got %d", rr.Code)
+	}
+}
+
+func TestImageProxyHeaders(t *testing.T) {
+	url := "http://example.com/image.png"
+	encoded := base64.URLEncoding.EncodeToString([]byte(url))
+
+	// Test If-None-Match
+	req := httptest.NewRequest("GET", "/"+encoded, nil)
+	req.Header.Set("If-None-Match", url)
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+	if rr.Code != http.StatusNotModified {
+		t.Errorf("Expected 304 for If-None-Match, got %d", rr.Code)
+	}
+
+	// Test Etag
+	req = httptest.NewRequest("GET", "/"+encoded, nil)
+	req.Header.Set("Etag", url)
+	rr = httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+	if rr.Code != http.StatusNotModified {
+		t.Errorf("Expected 304 for Etag, got %d", rr.Code)
+	}
+}
+
+func TestServeFrontendAssetNotFound(t *testing.T) {
+	req := httptest.NewRequest("GET", "/static/missing.js", nil)
+	rr := httptest.NewRecorder()
+	ServeFrontend(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("Expected 404 for missing asset, got %d", rr.Code)
+	}
+}
+
+func TestServeBoxedFileError(t *testing.T) {
+origBox := staticBox
+defer func() { staticBox = origBox }()
+
+staticBox = nil
+req := httptest.NewRequest("GET", "/test", nil)
+rr := httptest.NewRecorder()
+serveBoxedFile(rr, req, "test")
+if rr.Code != http.StatusInternalServerError {
+t.Errorf("Expected 500 when box is nil, got %d", rr.Code)
+}
+}
+
+func TestServeBoxedFileNotFound(t *testing.T) {
+// staticBox is normally set by NewRouter if not nil
+// We can use the real one if it exists, or just ensure it's not nil
+if staticBox == nil {
+NewRouter()
+}
+req := httptest.NewRequest("GET", "/nonexistent", nil)
+rr := httptest.NewRecorder()
+serveBoxedFile(rr, req, "nonexistent")
+if rr.Code != http.StatusNotFound {
+t.Errorf("Expected 404 for nonexistent file, got %d", rr.Code)
+}
+}
+
+func TestImageProxyHandlerHeaders(t *testing.T) {
+url := "http://example.com/image.png"
+id := base64.URLEncoding.EncodeToString([]byte(url))
+
+req := httptest.NewRequest("GET", "/"+id, nil)
+req.Header.Set("Etag", url)
+rr := httptest.NewRecorder()
+imageProxyHandler(rr, req)
+if rr.Code != http.StatusNotModified {
+t.Errorf("Expected 304 for matching Etag, got %d", rr.Code)
+}
+}
+
+func TestImageProxyHandlerRemoteError(t *testing.T) {
+ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+w.Header().Set("Content-Length", "10")
+w.WriteHeader(http.StatusOK)
+// Close connection immediately to cause ReadAll error if possible, 
+// or just return non-200. The current code only checks err from c.Do(request) 
+// and ioutil.ReadAll.
+}))
+ts.Close() // Close immediately so c.Do fails
+
+id := base64.URLEncoding.EncodeToString([]byte(ts.URL))
+req := httptest.NewRequest("GET", "/"+id, nil)
+rr := httptest.NewRecorder()
+imageProxyHandler(rr, req)
+if rr.Code != 404 {
+t.Errorf("Expected 404 for remote error, got %d", rr.Code)
+}
+}
+
+func TestApiLoginHandlerBadMethod(t *testing.T) {
+req := httptest.NewRequest("GET", "/api/login", nil)
+rr := httptest.NewRecorder()
+apiLoginHandler(rr, req)
+if rr.Code != http.StatusMethodNotAllowed {
+t.Errorf("Expected 405, got %d", rr.Code)
+}
+}
+
+func TestGzipMiddlewareNonCompressible(t *testing.T) {
+handler := GzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+w.Header().Set("Content-Type", "image/png")
+w.Write([]byte("not compressible"))
+}))
+
+req := httptest.NewRequest("GET", "/", nil)
+req.Header.Set("Accept-Encoding", "gzip")
+rr := httptest.NewRecorder()
+handler.ServeHTTP(rr, req)
+
+if rr.Header().Get("Content-Encoding") == "gzip" {
+t.Error("Expected no gzip for image/png")
+}
+}
+
+func TestNewRouterNoStaticBox(t *testing.T) {
+oldBox := staticBox
+staticBox = nil
+defer func() { staticBox = oldBox }()
+
+h := NewRouter()
+if h == nil {
+t.Fatal("NewRouter returned nil")
+}
+}

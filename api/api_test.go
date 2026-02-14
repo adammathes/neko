@@ -385,3 +385,69 @@ func TestHandleItemIdMismatch(t *testing.T) {
 		t.Errorf("Expected 400 for ID mismatch, got %d", rr.Code)
 	}
 }
+func TestHandleCategoryError(t *testing.T) {
+	setupTestDB(t)
+	// Close DB to force error
+	models.DB.Close()
+
+	req := httptest.NewRequest("GET", "/tag", nil)
+	rr := httptest.NewRecorder()
+	HandleCategory(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("Expected 500, got %d", rr.Code)
+	}
+}
+
+func TestHandleItemAlreadyHasContent(t *testing.T) {
+	setupTestDB(t)
+	seedData(t)
+	var id int64
+	models.DB.QueryRow("SELECT id FROM item LIMIT 1").Scan(&id)
+
+	// Pre-set content
+	models.DB.Exec("UPDATE item SET full_content = 'existing' WHERE id = ?", id)
+
+	req := httptest.NewRequest("GET", "/item/"+strconv.FormatInt(id, 10), nil)
+	rr := httptest.NewRecorder()
+	HandleItem(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected 200, got %d", rr.Code)
+	}
+}
+
+func TestHandleCrawlMethodNotAllowed(t *testing.T) {
+	req := httptest.NewRequest("GET", "/crawl", nil)
+	rr := httptest.NewRecorder()
+	HandleCrawl(rr, req)
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("Expected 405, got %d", rr.Code)
+	}
+}
+
+func TestHandleStreamComplexFilters(t *testing.T) {
+	setupTestDB(t)
+	seedData(t)
+
+	// Test max_id, feed_id combo
+	req := httptest.NewRequest("GET", "/stream?max_id=999&feed_id=1", nil)
+	rr := httptest.NewRecorder()
+	HandleStream(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected 200, got %d", rr.Code)
+	}
+}
+
+func TestHandleCategorySuccess(t *testing.T) {
+	setupTestDB(t)
+	f := &feed.Feed{Url: "http://example.com/cat", Category: "News"}
+	f.Create()
+
+	req := httptest.NewRequest("GET", "/api/categories", nil)
+	rr := httptest.NewRecorder()
+	HandleCategory(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected 200, got %d", rr.Code)
+	}
+}

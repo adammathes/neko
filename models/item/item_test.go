@@ -12,6 +12,7 @@ import (
 
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/models"
+	goose "github.com/advancedlogic/GoOse"
 )
 
 func setupTestDB(t *testing.T) {
@@ -581,4 +582,75 @@ func TestRewriteImagesEmpty(t *testing.T) {
 	if result == "" {
 		// Empty input may produce empty output — that's fine
 	}
+}
+
+type mockExtractor struct {
+	Article *goose.Article
+	Err     error
+}
+
+func (m *mockExtractor) Extract(url string) (*goose.Article, error) {
+	return m.Article, m.Err
+}
+
+func TestGetFullContentWithMock(t *testing.T) {
+	setupTestDB(t)
+	feedId := createTestFeed(t)
+
+	oldExtractor := Extractor
+	defer func() { Extractor = oldExtractor }()
+
+	mock := &mockExtractor{
+		Article: &goose.Article{
+			CleanedText: "Mocked content",
+			TopNode:     nil, // goose.TopNode is complex, simpler to mock article itself
+		},
+	}
+	Extractor = mock
+
+	i := &Item{Url: "http://mock", FeedId: feedId}
+	i.Create()
+	i.GetFullContent()
+
+	// Since TopNode is nil, FullContent (sanitized HTML) won't be set,
+	// but md (CleanedText) should be saved in DB.
+	var md string
+	err := models.DB.QueryRow("SELECT full_content FROM item WHERE id=?", i.Id).Scan(&md)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(md, "Mocked content") {
+		t.Errorf("Expected mocked content in DB, got %q", md)
+	}
+}
+
+func TestRewriteImagesNoSrc(t *testing.T) {
+	input := `<html><body><img alt="no src"/></body></html>`
+	result := rewriteImages(input)
+	if !strings.Contains(result, "alt=\"no src\"") {
+		t.Errorf("Expected alt attribute to be preserved, got %q", result)
+	}
+}
+
+func TestRewriteImagesSrcset(t *testing.T) {
+	input := `<html><body><img srcset="img1.jpg 1x, img2.jpg 2x" src="img1.jpg"/></body></html>`
+	result := rewriteImages(input)
+	if !strings.Contains(result, "/image/") {
+		t.Errorf("Expected srcset to be proxied, got %q", result)
+	}
+}
+
+func TestItemSaveError(t *testing.T) {
+	setupTestDB(t)
+	i := &Item{Id: 1}
+	// Close DB to force error
+	models.DB.Close()
+	i.Save() // Should not panic, just log error
+}
+
+func TestItemFullSaveError(t *testing.T) {
+	setupTestDB(t)
+	i := &Item{Id: 1}
+	models.DB.Close()
+	i.FullSave() // Should not panic
 }

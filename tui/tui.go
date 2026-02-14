@@ -130,6 +130,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = viewItems
 			}
 
+		case "r":
+			if m.state == viewFeeds {
+				return m, loadFeeds
+			}
+
 		case "enter":
 			if m.state == viewFeeds {
 				idx := m.feedList.Index()

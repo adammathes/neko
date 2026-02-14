@@ -4,14 +4,14 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-
-	rice "github.com/GeertJohan/go.rice"
 )
 
 func ServeFrontend(w http.ResponseWriter, r *http.Request) {
-	// The box is at "web", so we look for "../frontend/dist" relative to it
-	// rice will find this box by the string literal
-	box := rice.MustFindBox("../frontend/dist")
+	if frontendBox == nil {
+		http.Error(w, "frontend not found", http.StatusNotFound)
+		return
+	}
+	box := frontendBox
 
 	// Get the file path from the URL
 	path := r.URL.Path

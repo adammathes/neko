@@ -1,8 +1,10 @@
 package crawler
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"adammathes.com/neko/config"
@@ -229,5 +231,48 @@ func TestCrawl(t *testing.T) {
 	models.DB.QueryRow("SELECT COUNT(*) FROM item").Scan(&count)
 	if count != 1 {
 		t.Errorf("Expected 1 item after crawl, got %d", count)
+	}
+}
+
+func TestCrawlFeedWithExtensions(t *testing.T) {
+	setupTestDB(t)
+
+	rssContent := `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Extension Feed</title>
+    <item>
+      <title>Extension Article</title>
+      <link>https://example.com/ext</link>
+      <description>Short description</description>
+      <content:encoded><![CDATA[Much longer content that should be used as description]]></content:encoded>
+    </item>
+  </channel>
+</rss>`
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte(rssContent))
+	}))
+	defer ts.Close()
+
+	f := &feed.Feed{Url: ts.URL, Title: "Extension Test"}
+	f.Create()
+
+	ch := make(chan string, 1)
+	CrawlFeed(f, ch)
+	<-ch
+
+	var itemTitle, itemDesc string
+	err := models.DB.QueryRow("SELECT title, description FROM item WHERE feed_id = ?", f.Id).Scan(&itemTitle, &itemDesc)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if itemTitle != "Extension Article" {
+		t.Errorf("Expected title 'Extension Article', got %q", itemTitle)
+	}
+	if !strings.Contains(itemDesc, "Much longer content") {
+		t.Errorf("Expected description to contain encoded content, got %q", itemDesc)
 	}
 }

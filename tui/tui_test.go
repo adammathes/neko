@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -9,6 +10,7 @@ import (
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
+	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -156,5 +158,111 @@ func TestItemString(t *testing.T) {
 	is := itemString("hello")
 	if is.FilterValue() != "hello" {
 		t.Errorf("Expected 'hello', got %s", is.FilterValue())
+	}
+}
+func TestUpdateError(t *testing.T) {
+	m := NewModel()
+	msg := errMsg(fmt.Errorf("test error"))
+	newModel, cmd := m.Update(msg)
+	tm := newModel.(Model)
+	if tm.err == nil {
+		t.Error("Expected error to be set in model")
+	}
+	if cmd == nil {
+		t.Error("Expected tea.Quit command (non-nil)")
+	}
+}
+
+func TestUpdateCtrlC(t *testing.T) {
+	m := NewModel()
+	msg := tea.KeyMsg{Type: tea.KeyCtrlC}
+	_, cmd := m.Update(msg)
+	if cmd == nil {
+		t.Error("Expected tea.Quit command")
+	}
+}
+
+func TestViewError(t *testing.T) {
+	m := NewModel()
+	m.err = fmt.Errorf("fatal error")
+	v := m.View()
+	if !strings.Contains(v, "Error: fatal error") {
+		t.Errorf("Expected view to show error, got %q", v)
+	}
+}
+
+func TestUpdateEscNotFeeds(t *testing.T) {
+	m := NewModel()
+	m.state = viewItems
+	m1, _ := m.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	if m1.(Model).state != viewFeeds {
+		t.Error("Esc in viewItems should go to viewFeeds")
+	}
+}
+
+func TestLoadFeedsError(t *testing.T) {
+	setupTestDB(t)
+	models.DB.Close()
+	msg := loadFeeds()
+	if _, ok := msg.(errMsg); !ok {
+		t.Errorf("Expected errMsg on DB close, got %T", msg)
+	}
+}
+
+func TestLoadItemsError(t *testing.T) {
+	setupTestDB(t)
+	models.DB.Close()
+	msg := loadItems(1)()
+	if _, ok := msg.(errMsg); !ok {
+		t.Errorf("Expected errMsg on DB close, got %T", msg)
+	}
+}
+
+func TestUpdateItemsMsg(t *testing.T) {
+	m := NewModel()
+	msg := itemsMsg([]*item.Item{{Title: "Test Item"}})
+	m1, _ := m.Update(msg)
+	tm := m1.(Model)
+	if tm.state != viewItems {
+		t.Errorf("Expected state viewItems, got %v", tm.state)
+	}
+	if len(tm.items) != 1 {
+		t.Errorf("Expected 1 item, got %d", len(tm.items))
+	}
+}
+
+func TestUpdateEnterItems(t *testing.T) {
+	m := NewModel()
+	m.state = viewItems
+	m.items = []*item.Item{{Title: "Test Item", Description: "Content"}}
+	m.itemList = list.New([]list.Item{itemString("Test Item")}, list.NewDefaultDelegate(), 0, 0)
+
+	m1, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	tm := m1.(Model)
+	if tm.state != viewContent {
+		t.Errorf("Expected state viewContent, got %v", tm.state)
+	}
+}
+
+func TestUpdateTuiMoreKeys(t *testing.T) {
+	m := NewModel()
+
+	// Test 'q'
+	_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("q")})
+	if cmd == nil {
+		t.Error("Expected Quit command for 'q'")
+	}
+
+	// Test 'r'
+	_, cmd = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("r")})
+	if cmd == nil {
+		t.Error("Expected loadFeeds command for 'r'")
+	}
+
+	// Test 'esc' when already at viewFeeds
+	m.state = viewFeeds
+	m3, _ := m.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	if m3.(Model).state != viewFeeds {
+		t.Error("Esc at viewFeeds should keep viewFeeds")
 	}
 }

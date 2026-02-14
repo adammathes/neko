@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 	"time"
 
 	"adammathes.com/neko/config"
@@ -19,40 +19,56 @@ import (
 var Version, Build string
 
 func main() {
+	if err := Run(os.Args[1:]); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+}
+
+func Run(args []string) error {
 	var help, update, verbose, proxyImages, tuiMode bool
 	var configFile, dbfile, newFeed, export, password string
 	var port, minutes int
 
+	f := flag.NewFlagSet("neko", flag.ContinueOnError)
+
 	// config file
-	flag.StringVarP(&configFile, "config", "c", "", "read configuration from file")
+	f.StringVarP(&configFile, "config", "c", "", "read configuration from file")
 
 	// commands -- no command runs the web server
-	flag.BoolVarP(&help, "help", "h", false, "print usage information")
-	flag.BoolVarP(&update, "update", "u", false, "fetch feeds and store new items")
-	flag.StringVarP(&newFeed, "add", "a", "", "add the feed at URL `http://example.com/rss.xml`")
-	flag.StringVarP(&export, "export", "x", "", "export feed. format required: text, opml, html, or json")
+	f.BoolVarP(&help, "help", "h", false, "print usage information")
+	f.BoolVarP(&update, "update", "u", false, "fetch feeds and store new items")
+	f.StringVarP(&newFeed, "add", "a", "", "add the feed at URL `http://example.com/rss.xml`")
+	f.StringVarP(&export, "export", "x", "", "export feed. format required: text, opml, html, or json")
 
 	// options -- defaults are set in config/main.go and overridden by cmd line
-	flag.StringVarP(&dbfile, "database", "d", "", "sqlite database file")
-	flag.IntVarP(&port, "http", "s", 0, "HTTP port to serve on")
-	flag.IntVarP(&minutes, "minutes", "m", 0, "minutes between crawling feeds")
-	flag.BoolVarP(&proxyImages, "imageproxy", "i", false, "rewrite and proxy all image requests for privacy (experimental)")
-	flag.BoolVarP(&tuiMode, "tui", "t", false, "launch terminal UI")
-	flag.BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+	f.StringVarP(&dbfile, "database", "d", "", "sqlite database file")
+	f.IntVarP(&port, "http", "s", 0, "HTTP port to serve on")
+	f.IntVarP(&minutes, "minutes", "m", 0, "minutes between crawling feeds")
+	f.BoolVarP(&proxyImages, "imageproxy", "i", false, "rewrite and proxy all image requests for privacy (experimental)")
+	f.BoolVarP(&tuiMode, "tui", "t", false, "launch terminal UI")
+	f.BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 
 	// passwords on command line are bad, you should use the config file
-	flag.StringVarP(&password, "password", "p", "", "password to access web interface")
-	flag.Parse()
+	f.StringVarP(&password, "password", "p", "", "password to access web interface")
+
+	f.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		f.PrintDefaults()
+	}
+
+	if err := f.Parse(args); err != nil {
+		return err
+	}
 
 	if help {
 		fmt.Printf("neko v%s | build %s\n", Version, Build)
-		flag.Usage()
-		return
+		f.Usage()
+		return nil
 	}
 	// reads config if present and sets defaults
 	if err := config.Init(configFile); err != nil {
-		fmt.Printf("config error: %v\n", err)
-		return
+		return fmt.Errorf("config error: %v", err)
 	}
 
 	// override config file with flags if present
@@ -82,30 +98,33 @@ func main() {
 	if update {
 		vlog.Printf("starting crawl\n")
 		crawler.Crawl()
-		return
+		return nil
 	}
 	if newFeed != "" {
 		vlog.Printf("creating new feed\n")
 		feed.NewFeed(newFeed)
-		return
+		return nil
 	}
 	if export != "" {
 		vlog.Printf("exporting feeds in format %s\n", export)
 		fmt.Printf("%s", exporter.ExportFeeds(export))
-		return
+		return nil
 	}
 
 	if tuiMode {
-		if err := tui.Run(); err != nil {
-			log.Fatal(err)
-		}
-		return
+		return tui.Run()
+	}
+
+	// For testing, we might want to avoid starting a web server
+	if config.Config.Port == -1 {
+		return nil
 	}
 
 	go backgroundCrawl(config.Config.CrawlMinutes)
 	vlog.Printf("starting web server at 127.0.0.1:%d\n",
 		config.Config.Port)
 	web.Serve()
+	return nil
 }
 
 func backgroundCrawl(minutes int) {
