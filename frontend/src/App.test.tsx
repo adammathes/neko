@@ -31,7 +31,7 @@ describe('App', () => {
         render(<App />);
 
         await waitFor(() => {
-            expect(screen.getByText(/neko reader/i)).toBeInTheDocument();
+            expect(screen.getByText('🐱')).toBeInTheDocument();
         });
 
         // Test Logout

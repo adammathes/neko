@@ -37,10 +37,12 @@ import Settings from './components/Settings';
 
 function Dashboard() {
   const navigate = useNavigate();
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+
   return (
-    <div className="dashboard">
+    <div className={`dashboard ${sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'}`}>
       <header className="dashboard-header">
-        <h1>Neko Reader</h1>
+        <h1 className="logo" onClick={() => setSidebarVisible(!sidebarVisible)} style={{ cursor: 'pointer' }}>🐱</h1>
         <nav>
           <button onClick={() => navigate('/settings')} className="nav-link" style={{ color: 'white', marginRight: '1rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}>Settings</button>
 
@@ -53,7 +55,7 @@ function Dashboard() {
         </nav>
       </header>
       <div className="dashboard-content">
-        <aside className="dashboard-sidebar">
+        <aside className={`dashboard-sidebar ${sidebarVisible ? '' : 'hidden'}`}>
           <FeedList />
         </aside>
         <main className="dashboard-main">
