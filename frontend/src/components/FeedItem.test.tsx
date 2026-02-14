@@ -36,7 +36,7 @@ describe('FeedItem Component', () => {
         render(<FeedItem item={mockItem} />);
 
         const starBtn = screen.getByTitle('Star');
-        expect(starBtn).toHaveTextContent('☆');
+        expect(starBtn).toHaveTextContent('★');
         fireEvent.click(starBtn);
 
         // Optimistic update

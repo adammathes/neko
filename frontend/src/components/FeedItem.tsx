@@ -54,6 +54,9 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
     return (
         <li className={`feed-item ${item.read ? 'read' : 'unread'} ${loading ? 'loading' : ''}`}>
             <div className="item-header">
+                <a href={item.url} target="_blank" rel="noopener noreferrer" className="item-title">
+                    {item.title || '(No Title)'}
+                </a>
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
@@ -62,11 +65,8 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
                     className={`star-btn ${item.starred ? 'is-starred' : 'is-unstarred'}`}
                     title={item.starred ? "Unstar" : "Star"}
                 >
-                    {item.starred ? '★' : '☆'}
+                    ★
                 </button>
-                <a href={item.url} target="_blank" rel="noopener noreferrer" className="item-title">
-                    {item.title || '(No Title)'}
-                </a>
             </div>
             <div className="dateline">
                 <a href={item.url} target="_blank" rel="noopener noreferrer">
