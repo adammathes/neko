@@ -137,6 +137,13 @@ export default function FeedItems() {
             }
             scrollToItem(nextIndex);
           }
+
+          // If we're now on the last item and there are more items to load,
+          // trigger loading them so the next 'j' press will work
+          if (nextIndex === items.length - 1 && hasMore && !loadingMore) {
+            fetchItems(String(items[items.length - 1]._id));
+          }
+
           return nextIndex;
         });
       } else if (e.key === 'k') {
@@ -159,7 +166,7 @@ export default function FeedItems() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [items]);
+  }, [items, hasMore, loadingMore]);
 
 
 

@@ -256,4 +256,43 @@ describe('FeedItems Component', () => {
       expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`, expect.anything());
     });
   });
+
+  it('loads more items when pressing j on last item', async () => {
+    const initialItems = [
+      { _id: 103, title: 'Item 3', url: 'u3', read: true, starred: false },
+      { _id: 102, title: 'Item 2', url: 'u2', read: true, starred: false },
+      { _id: 101, title: 'Item 1', url: 'u1', read: true, starred: false },
+    ];
+    const moreItems = [
+      { _id: 100, title: 'Item 0', url: 'u0', read: true, starred: false },
+    ];
+
+    (global.fetch as any)
+      .mockResolvedValueOnce({ ok: true, json: async () => initialItems })
+      .mockResolvedValueOnce({ ok: true, json: async () => moreItems });
+
+    render(
+      <MemoryRouter>
+        <FeedItems />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+    });
+
+    // Navigate to the last item by pressing 'j' multiple times
+    fireEvent.keyDown(window, { key: 'j' }); // index 0
+    fireEvent.keyDown(window, { key: 'j' }); // index 1
+    fireEvent.keyDown(window, { key: 'j' }); // index 2 (last item)
+
+    // Pressing 'j' on the last item should trigger loading more
+    await waitFor(() => {
+      expect(screen.getByText('Item 0')).toBeInTheDocument();
+      const params = new URLSearchParams();
+      params.append('max_id', '101');
+      params.append('read_filter', 'unread');
+      expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`, expect.anything());
+    });
+  });
 });
