@@ -138,14 +138,19 @@ export default function FeedList({
 
       <div className="theme-section">
         <div className="theme-selector">
-          <button onClick={() => setTheme('light')} className={theme === 'light' ? 'active' : ''}>
-            light
+          <button
+            onClick={() => setTheme('light')}
+            className={theme === 'light' ? 'active' : ''}
+            title="Light Theme"
+          >
+            ☀️
           </button>
-          <button onClick={() => setTheme('dark')} className={theme === 'dark' ? 'active' : ''}>
-            dark
-          </button>
-          <button onClick={() => setTheme('black')} className={theme === 'black' ? 'active' : ''}>
-            black
+          <button
+            onClick={() => setTheme('dark')}
+            className={theme === 'dark' ? 'active' : ''}
+            title="Dark Theme"
+          >
+            🌙
           </button>
         </div>
       </div>

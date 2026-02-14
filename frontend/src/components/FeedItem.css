@@ -52,7 +52,8 @@
 }
 
 .star-btn.is-unstarred {
-  color: black;
+  color: var(--text-color);
+  opacity: 0.3;
 }
 
 .star-btn:hover {
@@ -60,8 +61,8 @@
 }
 
 .action-btn {
-  background: whitesmoke;
-  border: none;
+  background: var(--sidebar-bg);
+  border: 1px solid var(--border-color, #ccc);
   cursor: pointer;
   padding: 2px 6px;
   font-size: 1rem;
@@ -102,7 +103,8 @@
 
 .item-description blockquote {
   padding: 1rem 1rem 0 1rem;
-  border-left: 4px solid #ddd;
-  color: #666;
+  border-left: 4px solid var(--sidebar-bg);
+  color: var(--text-color);
+  opacity: 0.8;
   margin-left: 0;
 }
