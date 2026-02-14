@@ -13,7 +13,7 @@ LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
 default: build
 
-all: clean ui vanilla-ui build docs
+all: clean ui build docs
 
 clean:
 	rm -f ${BINARY}
@@ -24,11 +24,6 @@ ui:
 	rm -rf web/dist/v2
 	mkdir -p web/dist/v2
 	cp -r frontend/dist/* web/dist/v2/
-
-vanilla-ui:
-	rm -rf web/dist/vanilla
-	mkdir -p web/dist/vanilla
-	cp vanilla/index.html vanilla/app.js vanilla/style.css web/dist/vanilla/
 
 build:
 	${GO} build ${LDFLAGS} -o ${BINARY} ./cmd/neko

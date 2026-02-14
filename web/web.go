@@ -37,9 +37,6 @@ var (
 
 	//go:embed dist/v2/*
 	frontendFiles embed.FS
-
-	//go:embed dist/vanilla/*
-	vanillaFiles embed.FS
 )
 
 // init is no longer strictly needed for finding boxes with embed,
@@ -258,10 +255,6 @@ func NewRouter(cfg *config.Settings) http.Handler {
 	// mux.Handle("/api/", ... http.StripPrefix("/api", ...)) works if apiServer handles /stream.
 	// Wait, /api/stream -> StripPrefix -> /stream. apiServer handles /stream. Correct.
 	mux.Handle("/api/", GzipMiddleware(http.StripPrefix("/api", AuthWrapHandler(apiServer))))
-
-	// Vanilla JS Prototype from web/dist/vanilla
-	vanillaSub, _ := fs.Sub(vanillaFiles, "dist/vanilla")
-	mux.Handle("/vanilla/", GzipMiddleware(http.StripPrefix("/vanilla/", http.FileServer(http.FS(vanillaSub)))))
 
 	// Legacy routes for backward compatibility
 	mux.HandleFunc("/stream/", AuthWrap(apiServer.HandleStream))

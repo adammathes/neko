@@ -22,8 +22,6 @@ jobs:
       run: |
         mkdir -p web/dist/v2
         touch web/dist/v2/dummy
-        mkdir -p web/dist/vanilla
-        touch web/dist/vanilla/dummy
 
     - name: Vet
       run: go vet ./...

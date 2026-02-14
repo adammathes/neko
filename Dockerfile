@@ -18,10 +18,6 @@ COPY . .
 RUN mkdir -p web/dist/v2
 COPY --from=frontend-builder /app/frontend/dist ./web/dist/v2
 
-# Copy vanilla assets
-RUN mkdir -p web/dist/vanilla
-COPY vanilla/index.html vanilla/app.js vanilla/style.css ./web/dist/vanilla/
-
 # Build the binary
 RUN go build -o neko ./cmd/neko
 
