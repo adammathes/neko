@@ -131,6 +131,7 @@ export default function Settings() {
             <input
               type="file"
               accept=".opml,.xml,.txt"
+              aria-label="Import Feeds"
               onChange={(e) => setImportFile(e.target.files?.[0] || null)}
               className="file-input"
               disabled={loading}

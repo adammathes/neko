@@ -98,4 +98,42 @@ describe('Settings Component', () => {
       expect(screen.queryByText('Tech News')).not.toBeInTheDocument();
     });
   });
+
+  it('imports an OPML file', async () => {
+    (global.fetch as any)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // Initial load
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ status: 'ok' }) }) // Import
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ _id: 1, title: 'Imported Feed', url: 'http://imported.com/rss' }],
+      }); // Refresh load
+
+    render(<Settings />);
+
+    const file = new File(['<opml>...</opml>'], 'feeds.opml', { type: 'text/xml' });
+    const fileInput = screen.getByLabelText(/import feeds/i, { selector: 'input[type="file"]' });
+    const importButton = screen.getByText('Import');
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    await waitFor(() => {
+      expect(importButton).not.toBeDisabled();
+    });
+
+    fireEvent.click(importButton);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/import',
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.any(FormData),
+        })
+      );
+    });
+
+    // Check if refresh happens
+    await waitFor(() => {
+      expect(screen.getByText('Imported Feed')).toBeInTheDocument();
+    });
+  });
 });
