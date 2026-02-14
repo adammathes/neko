@@ -1,0 +1,11 @@
+services:
+  neko:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - neko-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  neko-data:

@@ -19,25 +19,26 @@
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
 
 - [Neko](#neko)
-    - [Features](#features)
-    - [Screenshots](#screenshots)
+  - [Features](#features)
+  - [Screenshots](#screenshots)
 - [Installation](#installation)
-    - [Requirements](#requirements)
-    - [Building](#building)
-        - [Dependencies](#dependencies)
+  - [Requirements](#requirements)
+  - [Building](#building)
+    - [Build with React Frontend](#build-with-react-frontend)
 - [Configuration](#configuration)
-    - [Storage](#storage)
+  - [Storage](#storage)
 - [Usage](#usage)
-    - [Web Interface](#web-interface)
-    - [Add Feed](#add-feed)
-    - [Crawl Feeds](#crawl-feeds)
-    - [Export](#export)
+  - [Web Interface](#web-interface)
+  - [Add Feed](#add-feed)
+  - [Crawl Feeds](#crawl-feeds)
+  - [Export](#export)
 - [All Command Line Options](#all-command-line-options)
 - [Configuration File](#configuration-file)
 - [TODO](#todo)
 - [History](#history)
-    - [Early 2017](#early-2017)
-    - [July 2018 -- v0.2](#july-2018----v02)
+  - [Early 2017](#early-2017)
+  - [July 2018 -- v0.2](#july-2018----v02)
+  - [February 2026 -- v.03 -- Vibe-code Modernization](#february-2026----v03----vibe-code-modernization)
 - [Feedback](#feedback)
 
 <!-- markdown-toc end -->
@@ -77,6 +78,20 @@ If you are using a binary, no dependencies!
 Binaries are not yet officially provided, but the project is designed for easy self-hosting.
  
 ## Building
+
+### Docker
+
+The easiest way to run Neko is using Docker and Docker Compose.
+
+1. **Build and Start**:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Access**:
+   The web interface will be available at `http://localhost:8080`.
+
+Data is persisted in a Docker volume named `neko-data` (mapping to `/app/data/neko.db` inside the container).
 
 ### Build with React Frontend
 
