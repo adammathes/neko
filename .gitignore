@@ -1,7 +1,11 @@
 .DS_Store
 config.json
 go.sum
-neko
+/neko
+/neko_server
+/backend.log
+/run_e2e_safe.sh
+/.data
 neko.db
 coverage.out
 coverage_cross.out

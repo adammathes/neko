@@ -7,7 +7,8 @@ test.describe('Neko Reader E2E', () => {
         await expect(page).toHaveTitle(/Neko/);
 
         // 2. Login
-        await page.fill('#password', '');
+        // 2. Login
+        // Password is empty by default in test env
         await page.click('button[type="submit"]');
 
         // Check for error message if login failed (optional, for debugging)
@@ -46,7 +47,7 @@ test.describe('Neko Reader E2E', () => {
         // In the current FeedItems.tsx it doesn't show a header, but it should load.
         // The TagView component might show "Category: Tech" or "Tag: Tech" or just items.
         // In the current FeedItems.tsx it doesn't show a header, but it should load.
-        await expect(page.locator('.feed-items, .feed-items-loading, text=No items found')).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('.feed-items').or(page.locator('.feed-items-loading')).or(page.getByText('No items found'))).toBeVisible({ timeout: 10000 });
 
         // 7. Logout
         await page.click('text=Logout');
