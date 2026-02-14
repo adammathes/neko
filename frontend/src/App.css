@@ -26,7 +26,7 @@ body {
 }
 
 .dashboard-sidebar {
-  width: 15rem;
+  width: 11rem;
   background: var(--sidebar-bg);
   border-right: 1px solid var(--border-color);
   display: flex;
@@ -37,7 +37,7 @@ body {
 }
 
 .dashboard-sidebar.hidden {
-  margin-left: -15rem;
+  margin-left: -11rem;
 }
 
 .dashboard-main {

@@ -1,11 +1,14 @@
 .feed-list {
   padding: 1rem;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: var(--text-color);
+  color: #777;
+  /* specific v1 color */
+  font-size: 0.8rem;
 }
 
 .feed-list h1.logo {
-  font-size: 3rem;
+  font-size: 2rem;
+  /* match v1 */
   margin: 0 0 1rem 0;
   line-height: 1;
   cursor: pointer;
@@ -14,10 +17,23 @@
   background: var(--sidebar-bg);
   z-index: 10;
   padding-bottom: 0.5rem;
+  color: var(--text-color);
+  /* Usually dark/white depending on theme, v1 was white on blue? No, white on fixed header? No, v1 logo class says color: white. But sidebar is #ccc. */
+  /* In v1 logo was fixed top left (blue header bar?). In v2 sidebar is #ccc. 
+     Let's use theme text color but maybe bolder? */
+}
+
+/* Override logo color if necessary for themes */
+.theme-light .feed-list h1.logo {
+  color: #333;
+}
+
+.theme-dark .feed-list h1.logo {
+  color: #eee;
 }
 
 .search-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .search-input {
@@ -26,18 +42,24 @@
   border: 1px solid var(--border-color, #999);
   background: var(--bg-color);
   color: var(--text-color);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-family: inherit;
+  border-radius: 0;
+  /* v1 didn't have rounded inputs usually */
 }
 
 .section-header {
   font-size: 1rem;
+  /* v1 h4 size? */
   font-weight: bold;
-  margin: 1.5rem 0 0.5rem 0;
+  margin: 1rem 0 0.25rem 0;
   cursor: pointer;
   user-select: none;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: var(--text-color);
+  color: #333;
+  /* Darker than list items */
+  text-transform: lowercase;
+  font-variant: small-caps;
 }
 
 .filter-list,
@@ -51,7 +73,7 @@
 
 .filter-list li,
 .nav-list li {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.1rem;
 }
 
 .filter-list a,
@@ -61,7 +83,8 @@
 .logout-link {
   text-decoration: none;
   color: var(--link-color, blue);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  /* Matches v1 .75em approx */
   display: block;
   cursor: pointer;
   background: none;
@@ -70,6 +93,9 @@
   font-family: inherit;
   font-variant: small-caps;
   text-transform: lowercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .filter-list a:hover,
@@ -78,18 +104,20 @@
 .feed-title:hover,
 .logout-link:hover {
   text-decoration: underline;
+  color: var(--link-color, blue);
 }
 
 .filter-list a.active,
 .tag-link.active,
 .feed-title.active {
   font-weight: bold;
-  color: var(--text-color);
+  color: #000;
+  /* Active state black */
 }
 
 .tag-item,
 .sidebar-feed-item {
-  margin-bottom: 0.1rem;
+  margin-bottom: 0;
 }
 
 .feed-category {
@@ -98,13 +126,19 @@
 
 .nav-section {
   margin-top: 2rem;
-  border-top: 1px solid var(--border-color, #ccc);
-  padding-top: 1rem;
+  border-top: 1px solid var(--border-color, #999);
+  padding-top: 0.5rem;
 }
 
 .logout-link {
   text-align: left;
   width: 100%;
+  color: #777;
+  /* Make logout less prominent */
+}
+
+.logout-link:hover {
+  color: var(--link-color, blue);
 }
 
 .theme-section {
@@ -118,22 +152,23 @@
 
 .theme-selector button {
   background: transparent;
-  border: 1px solid var(--border-color, #ccc);
+  border: 1px solid var(--border-color, #999);
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  font-size: 1rem;
-  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.9rem;
+  border-radius: 0;
 }
 
 .theme-selector button.active {
-  background: var(--border-color, #ccc);
+  background: var(--border-color, #999);
+  color: white;
 }
 
 /* Scrollbar styling for webkit */
 .dashboard-sidebar::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .dashboard-sidebar::-webkit-scrollbar-thumb {
-  background-color: var(--border-color, #ccc);
+  background-color: var(--border-color, #999);
 }
