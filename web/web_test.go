@@ -10,9 +10,14 @@ import (
 
 	"adammathes.com/neko/api"
 	"adammathes.com/neko/config"
+	"adammathes.com/neko/internal/safehttp"
 	"adammathes.com/neko/models"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func init() {
+	safehttp.AllowLocal = true
+}
 
 func setupTestDB(t *testing.T) {
 	t.Helper()
@@ -772,5 +777,25 @@ func TestCSRFMiddleware(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 	if rr.Code != http.StatusOK {
 		t.Errorf("Expected 200 for POST with valid token, got %d", rr.Code)
+	}
+}
+
+func TestSecurityHeadersMiddleware(t *testing.T) {
+	handler := SecurityHeadersMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest("GET", "/", nil)
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Header().Get("X-Content-Type-Options") != "nosniff" {
+		t.Error("Missing X-Content-Type-Options: nosniff")
+	}
+	if rr.Header().Get("X-Frame-Options") != "DENY" {
+		t.Error("Missing X-Frame-Options: DENY")
+	}
+	if rr.Header().Get("Content-Security-Policy") == "" {
+		t.Error("Missing Content-Security-Policy")
 	}
 }

@@ -8,9 +8,14 @@ import (
 	"testing"
 
 	"adammathes.com/neko/config"
+	"adammathes.com/neko/internal/safehttp"
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/models/feed"
 )
+
+func init() {
+	safehttp.AllowLocal = true
+}
 
 func setupTestDB(t *testing.T) {
 	t.Helper()

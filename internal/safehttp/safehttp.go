@@ -8,7 +8,10 @@ import (
 	"time"
 )
 
-var privateIPBlocks []*net.IPNet
+var (
+	privateIPBlocks []*net.IPNet
+	AllowLocal      bool // For testing
+)
 
 func init() {
 	for _, cidr := range []string{
@@ -27,6 +30,9 @@ func init() {
 }
 
 func isPrivateIP(ip net.IP) bool {
+	if AllowLocal {
+		return false
+	}
 	if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
 		return true
 	}
