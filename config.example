@@ -3,3 +3,4 @@ http: 9001
 imageproxy: true
 minutes: 90
 password: VeryLongRandomStringBecauseSecurityIsFun
+# secure_cookies: true  # Set to true when using HTTPS in production

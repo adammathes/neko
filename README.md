@@ -216,6 +216,8 @@ Usage of neko:
     	minutes between crawling feeds
   -p, --password string
     	password to access web interface
+      --secure-cookies
+    	set Secure flag on cookies (requires HTTPS)
   -u, --update
     	fetch feeds and store new items
   -v, --verbose
@@ -242,6 +244,7 @@ A subset of the command line options are supported in the configuration file, wi
    * imageproxy
    * minutes
    * password
+   * secure_cookies
 
 For example --
 
@@ -251,6 +254,7 @@ http: 9001
 imageproxy: true
 minutes: 90
 password: VeryLongRandomStringBecauseSecurityIsFun
+# secure_cookies: true  # Set to true when using HTTPS in production
 
 ```
 

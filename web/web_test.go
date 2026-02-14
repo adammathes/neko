@@ -737,7 +737,8 @@ func TestGzipMiddlewareNonCompressible(t *testing.T) {
 }
 
 func TestCSRFMiddleware(t *testing.T) {
-	handler := CSRFMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	cfg := &config.Settings{SecureCookies: false}
+	handler := CSRFMiddleware(cfg, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 

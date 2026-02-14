@@ -27,7 +27,7 @@ func main() {
 }
 
 func Run(args []string) error {
-	var help, update, verbose, proxyImages bool
+	var help, update, verbose, proxyImages, secureCookies bool
 	var configFile, dbfile, newFeed, export, password string
 	var port, minutes int
 
@@ -62,6 +62,8 @@ func Run(args []string) error {
 
 	f.BoolVar(&proxyImages, "imageproxy", false, "rewrite and proxy all image requests")
 	f.BoolVar(&proxyImages, "i", false, "rewrite and proxy all image requests (short)")
+
+	f.BoolVar(&secureCookies, "secure-cookies", false, "set Secure flag on cookies (requires HTTPS)")
 
 	f.BoolVar(&verbose, "verbose", false, "verbose output")
 	f.BoolVar(&verbose, "v", false, "verbose output (short)")
@@ -108,6 +110,10 @@ func Run(args []string) error {
 
 	if proxyImages != false {
 		config.Config.ProxyImages = proxyImages
+	}
+
+	if secureCookies != false {
+		config.Config.SecureCookies = secureCookies
 	}
 
 	models.InitDB()

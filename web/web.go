@@ -265,7 +265,7 @@ func NewRouter(cfg *config.Settings) http.Handler {
 
 	// Removed default root handler for legacy UI
 
-	return SecurityHeadersMiddleware(CSRFMiddleware(mux))
+	return SecurityHeadersMiddleware(CSRFMiddleware(cfg, mux))
 }
 
 func Serve(cfg *config.Settings) {
@@ -362,7 +362,7 @@ func generateRandomToken(n int) string {
 	return hex.EncodeToString(b)
 }
 
-func CSRFMiddleware(next http.Handler) http.Handler {
+func CSRFMiddleware(cfg *config.Settings, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("csrf_token")
 		var token string
@@ -374,7 +374,7 @@ func CSRFMiddleware(next http.Handler) http.Handler {
 				Path:     "/",
 				HttpOnly: false, // accessible by JS
 				SameSite: http.SameSiteNoneMode,
-				Secure:   false, // Set to true in production with HTTPS
+				Secure:   cfg.SecureCookies,
 			})
 		} else {
 			token = cookie.Value

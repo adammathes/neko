@@ -12,6 +12,7 @@ type Settings struct {
 	DigestPassword string `yaml:"password"`
 	CrawlMinutes   int    `yaml:"minutes"`
 	ProxyImages    bool   `yaml:"imageproxy"`
+	SecureCookies  bool   `yaml:"secure_cookies"`
 }
 
 var Config Settings
