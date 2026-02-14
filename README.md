@@ -24,7 +24,8 @@
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Building](#building)
-    - [Build with React Frontend](#build-with-react-frontend)
+    - [Docker](#docker)
+    - [Build from Source](#build-from-source)
 - [Configuration](#configuration)
   - [Storage](#storage)
 - [Usage](#usage)
@@ -52,6 +53,8 @@ Backend is written in `Go` and there is a modern `React/Vite` SPA frontend.
 
 *note: the cat ears are in your mind*
 
+*note: as of Feb 2026, this project is now mostly rewritten by AI as an experiment, so if you want the old original version git checkout back to 39ed5fcfe9327ab4eb81c4863d9e6353f08f6c07 from a few years ago*
+
 ## Features
 
    * limited features (#1 feature)
@@ -75,7 +78,8 @@ Backend is written in `Go` and there is a modern `React/Vite` SPA frontend.
 
 If you are using a binary, no dependencies!
 
-Binaries are not yet officially provided, but the project is designed for easy self-hosting.
+(I don't actually provide the binaries though.)
+
  
 ## Building
 
