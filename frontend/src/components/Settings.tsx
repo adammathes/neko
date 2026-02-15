@@ -111,6 +111,25 @@ export default function Settings({ fontTheme, setFontTheme }: SettingsProps) {
       });
   };
 
+  const handleCrawl = () => {
+    setLoading(true);
+    apiFetch('/api/crawl', {
+      method: 'POST',
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to start crawl');
+        return res.json();
+      })
+      .then(() => {
+        setLoading(false);
+        alert('Crawl started!');
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  };
+
   return (
     <div className="settings-page variant-glass">
       <h2>Settings</h2>
@@ -177,6 +196,13 @@ export default function Settings({ fontTheme, setFontTheme }: SettingsProps) {
             <a href="/api/export/text" className="export-btn">Text</a>
             <a href="/api/export/json" className="export-btn">JSON</a>
           </div>
+        </div>
+
+        <div className="crawl-section">
+          <h3>Actions</h3>
+          <button onClick={handleCrawl} disabled={loading} className="crawl-btn">
+            Crawl All Feeds Now
+          </button>
         </div>
       </div>
 
