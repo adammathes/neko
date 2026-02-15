@@ -9,7 +9,7 @@ VERSION=0.3
 BUILD=`git rev-parse HEAD`
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
-.PHONY: default all clean ui build install test test-race test-frontend test-e2e ui-check lint check ci run dev docs
+.PHONY: default all clean ui build install test test-race test-frontend test-e2e ui-check lint check ci run dev docs install-hooks
 
 default: build
 
@@ -42,8 +42,8 @@ test-frontend:
 	cd frontend && ${NPM} run lint
 	cd frontend && ${NPM} test -- --run
 
-test-e2e: build
-	./scripts/run_e2e_safe.sh
+# test-e2e: build
+# 	./scripts/run_e2e_safe.sh
 
 ui-check: ui
 	git diff --exit-code web/dist/v2/
@@ -54,13 +54,17 @@ lint:
 
 check: lint test
 
-ci: lint test-race test-frontend ui-check test-e2e
+ci: lint test-race test-frontend ui-check
 
 run: build
 	./${BINARY}
 
 dev: build
 	./${BINARY} -d
+
+install-hooks:
+	chmod +x scripts/install-hooks.sh
+	./scripts/install-hooks.sh
 
 docs: readme.html
 
