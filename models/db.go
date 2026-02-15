@@ -7,9 +7,10 @@ import (
 	"database/sql"
 	"log"
 
+	_ "github.com/mattn/go-sqlite3"
+
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/internal/vlog"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sql.DB

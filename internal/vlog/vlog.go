@@ -8,7 +8,7 @@ import (
 var VERBOSE bool
 
 func init() {
-	VERBOSE=false
+	VERBOSE = false
 }
 
 func Printf(format string, v ...interface{}) {
@@ -22,4 +22,3 @@ func Println(v ...interface{}) {
 		fmt.Println(v...)
 	}
 }
-	

@@ -8,11 +8,12 @@ import (
 	"path/filepath"
 	"testing"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"adammathes.com/neko/api"
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/internal/safehttp"
 	"adammathes.com/neko/models"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func init() {
