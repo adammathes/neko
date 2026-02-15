@@ -27,7 +27,7 @@ body {
 
 .dashboard-sidebar {
   width: 11rem;
-  background: var(--sidebar-bg);
+  background: transparent;
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;

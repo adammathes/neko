@@ -111,7 +111,7 @@ export default function Settings({ fontTheme, setFontTheme }: SettingsProps) {
   };
 
   return (
-    <div className="settings-page">
+    <div className="settings-page variant-glass">
       <h2>Settings</h2>
 
       {setFontTheme && (
