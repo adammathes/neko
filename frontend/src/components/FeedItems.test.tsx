@@ -17,11 +17,12 @@ describe('FeedItems Component', () => {
       unobserve = vi.fn();
       disconnect = vi.fn();
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     window.IntersectionObserver = MockIntersectionObserver as any;
   });
 
   it('renders loading state', () => {
-    (global.fetch as any).mockImplementation(() => new Promise(() => { }));
+    vi.mocked(global.fetch).mockImplementation(() => new Promise(() => { }));
     render(
       <MemoryRouter initialEntries={['/feed/1']}>
         <Routes>
@@ -50,10 +51,10 @@ describe('FeedItems Component', () => {
       },
     ];
 
-    (global.fetch as any).mockResolvedValueOnce({
+    vi.mocked(global.fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => mockItems,
-    });
+    } as Response);
 
     render(
       <MemoryRouter initialEntries={['/feed/1']}>
@@ -79,10 +80,10 @@ describe('FeedItems Component', () => {
       { _id: 102, title: 'Item 2', url: 'u2', read: true, starred: false },
     ];
 
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: true,
       json: async () => mockItems,
-    });
+    } as Response);
 
     render(
       <MemoryRouter>
@@ -134,10 +135,10 @@ describe('FeedItems Component', () => {
 
   it('marks items as read when scrolled past', async () => {
     const mockItems = [{ _id: 101, title: 'Item 1', url: 'u1', read: false, starred: false }];
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: true,
       json: async () => mockItems,
-    });
+    } as Response);
 
     // Capture both callbacks
     const observerCallbacks: IntersectionObserverCallback[] = [];
@@ -151,7 +152,9 @@ describe('FeedItems Component', () => {
       unobserve = vi.fn();
       disconnect = vi.fn();
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     window.IntersectionObserver = MockIntersectionObserver as any;
+
 
     render(
       <MemoryRouter>
@@ -201,9 +204,9 @@ describe('FeedItems Component', () => {
     const initialItems = [{ _id: 101, title: 'Item 1', url: 'u1', read: true, starred: false }];
     const moreItems = [{ _id: 100, title: 'Item 0', url: 'u0', read: true, starred: false }];
 
-    (global.fetch as any)
-      .mockResolvedValueOnce({ ok: true, json: async () => initialItems })
-      .mockResolvedValueOnce({ ok: true, json: async () => moreItems });
+    vi.mocked(global.fetch)
+      .mockResolvedValueOnce({ ok: true, json: async () => initialItems } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => moreItems } as Response);
 
     const observerCallbacks: IntersectionObserverCallback[] = [];
     class MockIntersectionObserver {
@@ -214,7 +217,9 @@ describe('FeedItems Component', () => {
       unobserve = vi.fn();
       disconnect = vi.fn();
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     window.IntersectionObserver = MockIntersectionObserver as any;
+
 
     render(
       <MemoryRouter>
@@ -267,9 +272,9 @@ describe('FeedItems Component', () => {
       { _id: 100, title: 'Item 0', url: 'u0', read: true, starred: false },
     ];
 
-    (global.fetch as any)
-      .mockResolvedValueOnce({ ok: true, json: async () => initialItems })
-      .mockResolvedValueOnce({ ok: true, json: async () => moreItems });
+    vi.mocked(global.fetch)
+      .mockResolvedValueOnce({ ok: true, json: async () => initialItems } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => moreItems } as Response);
 
     render(
       <MemoryRouter>

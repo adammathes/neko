@@ -18,7 +18,7 @@ export default function Settings({ fontTheme, setFontTheme }: SettingsProps) {
   const [importFile, setImportFile] = useState<File | null>(null);
 
   /* ... existing fetchFeeds ... */
-  const fetchFeeds = () => {
+  const fetchFeeds = React.useCallback(() => {
     setLoading(true);
     apiFetch('/api/feed/')
       .then((res) => {
@@ -33,11 +33,12 @@ export default function Settings({ fontTheme, setFontTheme }: SettingsProps) {
         setError(err.message);
         setLoading(false);
       });
-  };
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line
     fetchFeeds();
-  }, []);
+  }, [fetchFeeds]);
 
   /* ... existing handlers ... */
   const handleAddFeed = (e: React.FormEvent) => {

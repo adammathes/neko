@@ -89,6 +89,7 @@ export default function FeedItems() {
   useEffect(() => {
     fetchItems();
     setSelectedIndex(-1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedId, tagName, filterFn, searchParams]);
 
 
@@ -166,6 +167,7 @@ export default function FeedItems() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, hasMore, loadingMore]);
 
 
@@ -214,6 +216,7 @@ export default function FeedItems() {
       itemObserver.disconnect();
       sentinelObserver.disconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, loadingMore, hasMore]);
 
   if (loading) return <div className="feed-items-loading">Loading items...</div>;

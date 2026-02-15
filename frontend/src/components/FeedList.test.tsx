@@ -13,11 +13,15 @@ describe('FeedList Component', () => {
   });
 
   it('renders loading state initially', () => {
-    (global.fetch as any).mockImplementation(() => new Promise(() => { }));
+    vi.mocked(global.fetch).mockImplementation(() => new Promise(() => { }));
     render(
       <BrowserRouter>
-        {/* @ts-ignore */}
-        <FeedList theme="light" setTheme={() => { }} />
+        <FeedList
+          theme="light"
+          setTheme={() => { }}
+          setSidebarVisible={() => { }}
+          isMobile={false}
+        />
       </BrowserRouter>
     );
     expect(screen.getByText(/loading feeds/i)).toBeInTheDocument();
@@ -41,26 +45,31 @@ describe('FeedList Component', () => {
       },
     ];
 
-    (global.fetch as any).mockImplementation((url: string) => {
-      if (url.includes('/api/feed/')) {
+    vi.mocked(global.fetch).mockImplementation((url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('/api/feed/')) {
         return Promise.resolve({
           ok: true,
           json: async () => mockFeeds,
-        });
+        } as Response);
       }
-      if (url.includes('/api/tag')) {
+      if (urlStr.includes('/api/tag')) {
         return Promise.resolve({
           ok: true,
           json: async () => [{ title: 'Tech' }],
-        });
+        } as Response);
       }
       return Promise.reject(new Error(`Unknown URL: ${url}`));
     });
 
     render(
       <BrowserRouter>
-        {/* @ts-ignore */}
-        <FeedList theme="light" setTheme={() => { }} />
+        <FeedList
+          theme="light"
+          setTheme={() => { }}
+          setSidebarVisible={() => { }}
+          isMobile={false}
+        />
       </BrowserRouter>
     );
 
@@ -80,12 +89,16 @@ describe('FeedList Component', () => {
   });
 
   it('handles fetch error', async () => {
-    (global.fetch as any).mockImplementation(() => Promise.reject(new Error('API Error')));
+    vi.mocked(global.fetch).mockImplementation(() => Promise.reject(new Error('API Error')));
 
     render(
       <BrowserRouter>
-        {/* @ts-ignore */}
-        <FeedList theme="light" setTheme={() => { }} setSidebarVisible={() => { }} />
+        <FeedList
+          theme="light"
+          setTheme={() => { }}
+          setSidebarVisible={() => { }}
+          isMobile={false}
+        />
       </BrowserRouter>
     );
 
@@ -95,26 +108,31 @@ describe('FeedList Component', () => {
   });
 
   it('handles empty feed list', async () => {
-    (global.fetch as any).mockImplementation((url: string) => {
-      if (url.includes('/api/feed/')) {
+    vi.mocked(global.fetch).mockImplementation((url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('/api/feed/')) {
         return Promise.resolve({
           ok: true,
           json: async () => [],
-        });
+        } as Response);
       }
-      if (url.includes('/api/tag')) {
+      if (urlStr.includes('/api/tag')) {
         return Promise.resolve({
           ok: true,
           json: async () => [],
-        });
+        } as Response);
       }
       return Promise.reject(new Error(`Unknown URL: ${url}`));
     });
 
     render(
       <BrowserRouter>
-        {/* @ts-ignore */}
-        <FeedList theme="light" setTheme={() => { }} setSidebarVisible={() => { }} />
+        <FeedList
+          theme="light"
+          setTheme={() => { }}
+          setSidebarVisible={() => { }}
+          isMobile={false}
+        />
       </BrowserRouter>
     );
 

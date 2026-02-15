@@ -28,9 +28,9 @@ describe('Login Component', () => {
   });
 
   it('handles successful login', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    vi.mocked(global.fetch).mockResolvedValueOnce({
       ok: true,
-    });
+    } as Response);
 
     renderLogin();
 
@@ -51,10 +51,10 @@ describe('Login Component', () => {
   });
 
   it('handles failed login', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    vi.mocked(global.fetch).mockResolvedValueOnce({
       ok: false,
       json: async () => ({ message: 'Bad credentials' }),
-    });
+    } as Response);
 
     renderLogin();
 
@@ -67,7 +67,7 @@ describe('Login Component', () => {
   });
 
   it('handles network error', async () => {
-    (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+    vi.mocked(global.fetch).mockRejectedValueOnce(new Error('Network error'));
 
     renderLogin();
 

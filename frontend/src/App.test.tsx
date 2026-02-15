@@ -11,20 +11,21 @@ describe('App', () => {
   });
 
   it('renders login on initial load (unauthenticated)', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    vi.mocked(global.fetch).mockResolvedValueOnce({
       ok: false,
-    });
+    } as Response);
     window.history.pushState({}, 'Test page', '/v2/login');
     render(<App />);
     expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
   });
 
   it('renders dashboard when authenticated', async () => {
-    (global.fetch as any).mockImplementation((url: string) => {
-      if (url.includes('/api/auth')) return Promise.resolve({ ok: true });
-      if (url.includes('/api/feed/')) return Promise.resolve({ ok: true, json: async () => [] });
-      if (url.includes('/api/tag')) return Promise.resolve({ ok: true, json: async () => [] });
-      return Promise.resolve({ ok: true }); // Fallback
+    vi.mocked(global.fetch).mockImplementation((url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('/api/auth')) return Promise.resolve({ ok: true } as Response);
+      if (urlStr.includes('/api/feed/')) return Promise.resolve({ ok: true, json: async () => [] } as Response);
+      if (urlStr.includes('/api/tag')) return Promise.resolve({ ok: true, json: async () => [] } as Response);
+      return Promise.resolve({ ok: true } as Response); // Fallback
     });
 
     window.history.pushState({}, 'Test page', '/v2/');
@@ -44,7 +45,7 @@ describe('App', () => {
       value: { href: '' },
     });
 
-    (global.fetch as any).mockResolvedValueOnce({ ok: true });
+    vi.mocked(global.fetch).mockResolvedValueOnce({ ok: true } as Response);
 
     fireEvent.click(logoutBtn);
 

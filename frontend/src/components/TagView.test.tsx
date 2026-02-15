@@ -17,25 +17,31 @@ describe('Tag View Integration', () => {
     ];
     const mockTags = [{ title: 'Tech' }, { title: 'News' }];
 
-    (global.fetch as any).mockImplementation((url: string) => {
-      if (url.includes('/api/feed/')) {
+    vi.mocked(global.fetch).mockImplementation((url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('/api/feed/')) {
         return Promise.resolve({
           ok: true,
           json: async () => mockFeeds,
-        });
+        } as Response);
       }
-      if (url.includes('/api/tag')) {
+      if (urlStr.includes('/api/tag')) {
         return Promise.resolve({
           ok: true,
           json: async () => mockTags,
-        });
+        } as Response);
       }
       return Promise.reject(new Error(`Unknown URL: ${url}`));
     });
 
     render(
       <MemoryRouter>
-        <FeedList theme="light" setTheme={() => { }} />
+        <FeedList
+          theme="light"
+          setTheme={() => { }}
+          setSidebarVisible={() => { }}
+          isMobile={false}
+        />
       </MemoryRouter>
     );
 
@@ -55,12 +61,13 @@ describe('Tag View Integration', () => {
       { _id: 101, title: 'Tag Item 1', url: 'http://example.com/1', feed_title: 'Feed 1' },
     ];
 
-    (global.fetch as any).mockImplementation((url: string) => {
-      if (url.includes('/api/stream')) {
+    vi.mocked(global.fetch).mockImplementation((url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('/api/stream')) {
         return Promise.resolve({
           ok: true,
           json: async () => mockItems,
-        });
+        } as Response);
       }
       return Promise.reject(new Error(`Unknown URL: ${url}`));
     });

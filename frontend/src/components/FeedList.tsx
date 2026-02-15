@@ -66,11 +66,11 @@ export default function FeedList({
     Promise.all([
       apiFetch('/api/feed/').then((res) => {
         if (!res.ok) throw new Error('Failed to fetch feeds');
-        return res.json();
+        return res.json() as Promise<Feed[]>;
       }),
       apiFetch('/api/tag').then((res) => {
         if (!res.ok) throw new Error('Failed to fetch tags');
-        return res.json();
+        return res.json() as Promise<Category[]>;
       }),
     ])
       .then(([feedsData, tagsData]) => {

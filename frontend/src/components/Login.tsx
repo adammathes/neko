@@ -29,7 +29,7 @@ export default function Login() {
         const data = await res.json();
         setError(data.message || 'Login failed');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Network error');
     }
   };

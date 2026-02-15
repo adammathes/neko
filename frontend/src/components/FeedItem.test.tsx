@@ -31,7 +31,7 @@ describe('FeedItem Component', () => {
   });
 
   it('toggles star status', async () => {
-    (global.fetch as any).mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    vi.mocked(global.fetch).mockResolvedValueOnce({ ok: true, json: async () => ({}) } as Response);
 
     render(<FeedItem item={mockItem} />);
 
@@ -73,10 +73,10 @@ describe('FeedItem Component', () => {
   });
 
   it('loads full content', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    vi.mocked(global.fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ ...mockItem, full_content: '<p>Full Content Loaded</p>' }),
-    });
+    } as Response);
 
     render(<FeedItem item={mockItem} />);
 

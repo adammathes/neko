@@ -26,16 +26,17 @@
   - [Building](#building)
     - [Docker](#docker)
     - [Build from Source](#build-from-source)
+    - [Development and Testing](#development-and-testing)
 - [Configuration](#configuration)
   - [Storage](#storage)
 - [Usage](#usage)
   - [Web Interface](#web-interface)
+  - [Sidebar Variants](#sidebar-variants)
   - [Add Feed](#add-feed)
   - [Crawl Feeds](#crawl-feeds)
   - [Export](#export)
 - [All Command Line Options](#all-command-line-options)
 - [Configuration File](#configuration-file)
-- [TODO](#todo)
 - [History](#history)
   - [Early 2017](#early-2017)
   - [July 2018 -- v0.2](#july-2018----v02)
@@ -65,7 +66,6 @@ Backend is written in `Go` and there is a modern `React/Vite` SPA frontend.
    * automatically marks items read in an infinite stream of never-ending content (until you run out of content and it ends)
    * full text search
    * scrapes full text of pages on demand
-   * multiple sidebar variants (Glass, Minimal, Swiss/Type, and Playful/Banana)
    * collapsible sidebar sections for Feeds and Tags
 
 ## Screenshots
@@ -275,20 +275,6 @@ password: VeryLongRandomStringBecauseSecurityIsFun
 # secure_cookies: true  # Set to true when using HTTPS in production
 
 ```
-
-
-# TODO
-
-   * manually initiate crawl/refresh from web interface (done)
-   * auto-refresh feeds from web interface (done)
-   * import (done)
-   * mark all as read (done)
-   * rewrite frontend in a modern js framework (done: React/Vite)
-   * prettify interface (done)
-   * sidebar variants and personalization (done)
-   * cross-compilation of binaries for "normal" platforms
-   * implement Gzip compression (done)
-   * unit and E2E testing infrastructure (done)
 
 # History
 

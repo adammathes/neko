@@ -1,0 +1,55 @@
+{
+    "name": "Neko (Podman)",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "node": "20"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "go.toolsManagement.checkForUpdates": "local",
+                "go.useLanguageServer": true,
+                "go.gopath": "/go",
+                "editor.formatOnSave": true,
+                "eslint.workingDirectories": [
+                    "./frontend"
+                ]
+            },
+            "extensions": [
+                "golang.Go",
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "vitest.explorer",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    },
+    "forwardPorts": [
+        8080,
+        5173
+    ],
+    "portsAttributes": {
+        "5173": {
+            "label": "Frontend (Vite)",
+            "onAutoForward": "notify"
+        },
+        "8080": {
+            "label": "Backend (Neko)",
+            "onAutoForward": "notify"
+        }
+    },
+    "postCreateCommand": "go mod download && (cd frontend && npm install)",
+    "remoteUser": "vscode",
+    "runArgs": [
+        "--security-opt",
+        "label=disable"
+    ],
+    "containerEnv": {
+        "NEKO_PORT": "8080"
+    }
+}

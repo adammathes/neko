@@ -18,10 +18,10 @@ describe('Settings Component', () => {
       { _id: 2, title: 'Gaming', url: 'http://gaming.com/rss', category: 'gaming' },
     ];
 
-    (global.fetch as any).mockResolvedValueOnce({
+    vi.mocked(global.fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => mockFeeds,
-    });
+    } as Response);
 
     render(<Settings />);
 
@@ -33,13 +33,13 @@ describe('Settings Component', () => {
   });
 
   it('adds a new feed', async () => {
-    (global.fetch as any)
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // Initial load
-      .mockResolvedValueOnce({ ok: true, json: async () => ({}) }) // Add feed
+    vi.mocked(global.fetch)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] } as Response) // Initial load
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) } as Response) // Add feed
       .mockResolvedValueOnce({
         ok: true,
         json: async () => [{ _id: 3, title: 'New Feed', url: 'http://new.com/rss' }],
-      }); // Refresh load
+      } as Response); // Refresh load
 
     render(<Settings />);
 
@@ -75,9 +75,9 @@ describe('Settings Component', () => {
       { _id: 1, title: 'Tech News', url: 'http://tech.com/rss', category: 'tech' },
     ];
 
-    (global.fetch as any)
-      .mockResolvedValueOnce({ ok: true, json: async () => mockFeeds }) // Initial load
-      .mockResolvedValueOnce({ ok: true }); // Delete
+    vi.mocked(global.fetch)
+      .mockResolvedValueOnce({ ok: true, json: async () => mockFeeds } as Response) // Initial load
+      .mockResolvedValueOnce({ ok: true } as Response); // Delete
 
     render(<Settings />);
 
@@ -100,13 +100,13 @@ describe('Settings Component', () => {
   });
 
   it('imports an OPML file', async () => {
-    (global.fetch as any)
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // Initial load
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ status: 'ok' }) }) // Import
+    vi.mocked(global.fetch)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] } as Response) // Initial load
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ status: 'ok' }) } as Response) // Import
       .mockResolvedValueOnce({
         ok: true,
         json: async () => [{ _id: 1, title: 'Imported Feed', url: 'http://imported.com/rss' }],
-      }); // Refresh load
+      } as Response); // Refresh load
 
     render(<Settings />);
 
