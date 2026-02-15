@@ -191,11 +191,23 @@ You can add feeds directly from the command line for convenience --
 
 ## Crawl Feeds
 
-Update feeds from the command line with --
+By default, when running the web server (`neko`), a background crawler runs every **60 minutes** to fetch new items.
+
+You can customize this interval using the `--minutes` flag:
+
+    $ neko --minutes=30    # Crawl every 30 minutes
+
+To **disable** background crawling, set minutes to 0:
+
+    $ neko --minutes=0     # Run web server only, no background crawling
+
+### Manual Update
+
+You can manually trigger a feed update from the command line without starting the server:
 
     $ neko --update
 
-This will fetch, download, parse, and store in the database your feeds.
+This will fetch, download, parse, and store in the database your feeds once and then exit.
 
 ## Export
 
@@ -208,6 +220,18 @@ Change `opml` to `text` for a simple list of feed URLs, or `json` for JSON forma
 Export is also available in the web interface.
 
 Import of OPML and other things is available via the web interface.
+
+## Purge Items
+
+You can delete old items to free up database space. By default, only **read** items are deleted.
+
+    $ neko --purge=30      # Delete read items older than 30 days
+
+To include **unread** items in the purge:
+
+    $ neko --purge=30 --purge-unread
+
+**Note:** Starred items are never deleted.
 
 # All Command Line Options
 
@@ -227,14 +251,18 @@ Usage of neko:
   -h, --help
     	print usage information
   -s, --http int
-    	HTTP port to serve on
+        HTTP port to serve on
   -i, --imageproxy
     	rewrite and proxy all image requests for privacy (experimental)
   -m, --minutes int
-    	minutes between crawling feeds
+    	minutes between crawling feeds (default -1, uses 60 if unset)
   -p, --password string
     	password to access web interface
-      --secure-cookies
+  --purge int
+        purge read items older than N days
+  --purge-unread
+        when purging, also include unread items
+  --secure-cookies
     	set Secure flag on cookies (requires HTTPS)
   -u, --update
     	fetch feeds and store new items

@@ -63,8 +63,8 @@ func Run(args []string) error {
 	f.IntVar(&port, "http", 0, "HTTP port to serve on")
 	f.IntVar(&port, "s", 0, "HTTP port to serve on (short)")
 
-	f.IntVar(&minutes, "minutes", 0, "minutes between crawling feeds")
-	f.IntVar(&minutes, "m", 0, "minutes between crawling feeds (short)")
+	f.IntVar(&minutes, "minutes", -1, "minutes between crawling feeds")
+	f.IntVar(&minutes, "m", -1, "minutes between crawling feeds (short)")
 
 	f.BoolVar(&proxyImages, "imageproxy", false, "rewrite and proxy all image requests")
 	f.BoolVar(&proxyImages, "i", false, "rewrite and proxy all image requests (short)")
@@ -117,7 +117,7 @@ func Run(args []string) error {
 		config.Config.DigestPassword = password
 	}
 
-	if minutes != 0 {
+	if minutes != -1 {
 		config.Config.CrawlMinutes = minutes
 	}
 
