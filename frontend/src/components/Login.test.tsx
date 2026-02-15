@@ -23,6 +23,7 @@ describe('Login Component', () => {
 
   it('renders login form', () => {
     renderLogin();
+    expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
   });
@@ -34,6 +35,7 @@ describe('Login Component', () => {
 
     renderLogin();
 
+    fireEvent.change(screen.getByLabelText(/username/i), { target: { value: 'testuser' } });
     fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'secret' } });
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
@@ -42,9 +44,17 @@ describe('Login Component', () => {
         '/api/login',
         expect.objectContaining({
           method: 'POST',
+          body: expect.any(URLSearchParams),
         })
       );
     });
+
+    // Check if params contained username and password
+    const callArgs = vi.mocked(global.fetch).mock.calls[0][1];
+    const body = callArgs?.body as URLSearchParams;
+    expect(body.get('username')).toBe('testuser');
+    expect(body.get('password')).toBe('secret');
+
     // Navigation assertion is tricky without mocking useNavigate,
     // but if no error is shown, we assume success path was taken
     expect(screen.queryByText(/login failed/i)).not.toBeInTheDocument();
@@ -58,6 +68,7 @@ describe('Login Component', () => {
 
     renderLogin();
 
+    fireEvent.change(screen.getByLabelText(/username/i), { target: { value: 'testuser' } });
     fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'wrong' } });
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
@@ -71,6 +82,7 @@ describe('Login Component', () => {
 
     renderLogin();
 
+    fireEvent.change(screen.getByLabelText(/username/i), { target: { value: 'testuser' } });
     fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'secret' } });
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
 

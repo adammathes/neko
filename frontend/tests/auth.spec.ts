@@ -26,11 +26,8 @@ test.describe('Authentication - No Password Required', () => {
         // Visit login page
         await page.goto('/v2/login');
 
-        // Submit with empty password
-        const passwordInput = page.getByLabel(/password/i);
-        await expect(passwordInput).toBeVisible();
-
-        // Leave password empty and submit
+        // Fill username and submit with empty password
+        await page.fill('input[id="username"]', 'neko');
         await page.click('button[type="submit"]');
 
         // Should redirect to dashboard
@@ -68,6 +65,7 @@ test.describe('Authentication - Password Required', () => {
         await page.goto('/v2/login');
 
         // Enter wrong password
+        await page.fill('input[id="username"]', 'neko');
         await page.fill('input[type="password"]', 'wrongpassword');
         await page.click('button[type="submit"]');
 
@@ -82,6 +80,7 @@ test.describe('Authentication - Password Required', () => {
         await page.goto('/v2/login');
 
         // Enter correct password (must match what the server was started with)
+        await page.fill('input[id="username"]', 'neko');
         await page.fill('input[type="password"]', 'testpass');
         await page.click('button[type="submit"]');
 
@@ -94,6 +93,7 @@ test.describe('Authentication - Password Required', () => {
     test.skip('should persist authentication across page reloads', async ({ page }) => {
         // Login first
         await page.goto('/v2/login');
+        await page.fill('input[id="username"]', 'neko');
         await page.fill('input[type="password"]', 'testpass');
         await page.click('button[type="submit"]');
         await expect(page).toHaveURL(/.*\/v2\/?$/);
@@ -109,6 +109,7 @@ test.describe('Authentication - Password Required', () => {
     test.skip('should logout and redirect to login page', async ({ page }) => {
         // Login first
         await page.goto('/v2/login');
+        await page.fill('input[id="username"]', 'neko');
         await page.fill('input[type="password"]', 'testpass');
         await page.click('button[type="submit"]');
         await expect(page).toHaveURL(/.*\/v2\/?$/);
