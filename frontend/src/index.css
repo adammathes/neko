@@ -2,6 +2,20 @@
   /* Font Variables */
   --font-body: Palatino, 'Palatino Linotype', 'Palatino LT STD', 'Book Antiqua', Georgia, serif;
   --font-heading: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  line-height: 1.5;
+  font-size: 18px;
+
+  /* Light Mode Defaults */
+  --bg-color: #ffffff;
+  --text-color: rgba(0, 0, 0, 0.87);
+  --sidebar-bg: #ccc;
+  --link-color: #0000ee;
+  /* Standard blue link */
+
+  color-scheme: light dark;
+  color: var(--text-color);
+  background-color: var(--bg-color);
 }
 
 html,
@@ -32,8 +46,7 @@ h5,
 
 /* Font Themes */
 .font-default {
-  --font-body: Palatino, 'Palatino Linotype', 'Palatino LT STD', 'Book Antiqua', Georgia, serif;
-  --font-heading: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  /* Uses :root defaults */
   font-family: var(--font-body);
 }
 
@@ -55,21 +68,6 @@ h5,
   font-family: var(--font-body);
 }
 
-:root {
-  line-height: 1.5;
-  font-size: 18px;
-
-  /* Light Mode Defaults */
-  --bg-color: #ffffff;
-  --text-color: rgba(0, 0, 0, 0.87);
-  --sidebar-bg: #ccc;
-  --link-color: #0000ee;
-  /* Standard blue link */
-
-  color-scheme: light dark;
-  color: var(--text-color);
-  background-color: var(--bg-color);
-}
 
 .theme-light {
   --bg-color: #ffffff;
