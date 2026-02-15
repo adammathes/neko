@@ -131,6 +131,28 @@ Utility scripts and test wrappers are located in the `scripts/` directory:
 - `scripts/run_e2e_safe.sh`: A safe wrapper for running Playwright E2E tests.
 - `scripts/run_e2e.sh`: Standard E2E test runner.
 
+
+### Development with Containers
+
+If you don't have Go or Node installed locally, or prefer an isolated environment, you can use the provided Dockerfile. Note that the `.devcontainer` VS Code integration has encountered issues with some setups (e.g. Antigravity + Colima), so manual Docker commands are recommended as a fallback.
+
+1. **Build the development image**:
+   ```bash
+   docker build -t neko-dev -f .devcontainer/Dockerfile .
+   ```
+
+2. **Run tests**:
+   ```bash
+   # Runs backend tests, installs frontend deps, and runs frontend tests
+   docker run --rm -v $(pwd):/workspace -w /workspace neko-dev \
+     bash -c "go test ./... && cd frontend && npm install && npm test"
+   ```
+
+3. **Interactive shell**:
+   ```bash
+   docker run -it --rm -v $(pwd):/workspace -w /workspace neko-dev bash
+   ```
+
 # Configuration
 
 Everything can handled with a few command line flags. You shouldn't need to change the defaults most of the time.

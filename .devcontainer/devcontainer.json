@@ -1,13 +1,9 @@
+// Note: This config is untested in Antigravity. Use vanilla Docker for reliability 
 {
-    "name": "Neko (Podman)",
+    "name": "Neko (Dev)",
     "build": {
         "dockerfile": "Dockerfile",
         "context": ".."
-    },
-    "features": {
-        "ghcr.io/devcontainers/features/node:1": {
-            "node": "20"
-        }
     },
     "customizations": {
         "vscode": {
