@@ -9,7 +9,7 @@ VERSION=0.3
 BUILD=`git rev-parse HEAD`
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
-.PHONY: default all clean ui build install test test-race test-frontend test-e2e ui-check lint check ci run dev docs install-hooks
+.PHONY: default all clean ui build install test test-race test-frontend test-e2e ui-check lint check ci run dev docs install-hooks cover coverage-html
 
 default: build
 
@@ -32,11 +32,18 @@ install: build
 	cp ${BINARY} ${GOBIN}
 
 test:
-	${GO} test ./...
+	${GO} test -cover ./...
 	cd frontend && ${NPM} test -- --run
 
 test-race:
 	${GO} test -race ./...
+
+cover:
+	${GO} test -coverprofile=coverage.out ./...
+	${GO} tool cover -func=coverage.out
+
+coverage-html: cover
+	${GO} tool cover -html=coverage.out
 
 test-frontend:
 	cd frontend && ${NPM} run lint
