@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import type { Item } from '../types';
 import FeedItem from './FeedItem';
@@ -11,13 +11,29 @@ export default function FeedItems() {
   const filterFn = searchParams.get('filter') || 'unread';
 
   const [items, setItems] = useState<Item[]>([]);
+  const itemsRef = useRef<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const loadingMoreRef = useRef(loadingMore);
   const [hasMore, setHasMore] = useState(true);
+  const hasMoreRef = useRef(hasMore);
   const [error, setError] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
-  const fetchItems = (maxId?: string) => {
+  // Sync refs
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
+  useEffect(() => {
+    loadingMoreRef.current = loadingMore;
+  }, [loadingMore]);
+
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+
+  const fetchItems = useCallback((maxId?: string) => {
     if (maxId) {
       setLoadingMore(true);
     } else {
@@ -88,25 +104,23 @@ export default function FeedItems() {
         setLoading(false);
         setLoadingMore(false);
       });
-  };
+  }, [feedId, tagName, filterFn, searchParams]);
 
   useEffect(() => {
     fetchItems();
     setSelectedIndex(-1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [feedId, tagName, filterFn, searchParams]);
+  }, [fetchItems]);
 
 
-  const scrollToItem = (index: number) => {
+  const scrollToItem = useCallback((index: number) => {
     const element = document.getElementById(`item-${index}`);
     if (element) {
       element.scrollIntoView({ behavior: 'auto', block: 'start' });
     }
-  };
+  }, []);
 
-  const markAsRead = (item: Item) => {
+  const markAsRead = useCallback((item: Item) => {
     const updatedItem = { ...item, read: true };
-    // Optimistic update
     setItems((prevItems) => prevItems.map((i) => (i._id === item._id ? updatedItem : i)));
 
     apiFetch(`/api/item/${item._id}`, {
@@ -114,11 +128,10 @@ export default function FeedItems() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ read: true, starred: item.starred }),
     }).catch((err) => console.error('Failed to mark read', err));
-  };
+  }, []);
 
-  const toggleStar = (item: Item) => {
+  const toggleStar = useCallback((item: Item) => {
     const updatedItem = { ...item, starred: !item.starred };
-    // Optimistic update
     setItems((prevItems) => prevItems.map((i) => (i._id === item._id ? updatedItem : i)));
 
     apiFetch(`/api/item/${item._id}`, {
@@ -126,27 +139,33 @@ export default function FeedItems() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ read: item.read, starred: !item.starred }),
     }).catch((err) => console.error('Failed to toggle star', err));
-  };
+  }, []);
+
+  const handleUpdateItem = useCallback((updatedItem: Item) => {
+    setItems((prevItems) => prevItems.map((i) => (i._id === updatedItem._id ? updatedItem : i)));
+  }, []);
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (items.length === 0) return;
+      // Use ref to get latest items without effect re-running
+      const currentItems = itemsRef.current;
+      if (currentItems.length === 0) return;
 
       if (e.key === 'j') {
         setSelectedIndex((prev) => {
-          const nextIndex = Math.min(prev + 1, items.length - 1);
+          const nextIndex = Math.min(prev + 1, currentItems.length - 1);
           if (nextIndex !== prev) {
-            const item = items[nextIndex];
+            const item = currentItems[nextIndex];
             if (!item.read) {
               markAsRead(item);
             }
             scrollToItem(nextIndex);
           }
 
-          // If we're now on the last item and there are more items to load,
-          // trigger loading them so the next 'j' press will work
-          if (nextIndex === items.length - 1 && hasMore && !loadingMore) {
-            fetchItems(String(items[items.length - 1]._id));
+          // Trigger load more if needed
+          if (nextIndex === currentItems.length - 1 && hasMoreRef.current && !loadingMoreRef.current) {
+            fetchItems(String(currentItems[currentItems.length - 1]._id));
           }
 
           return nextIndex;
@@ -161,8 +180,8 @@ export default function FeedItems() {
         });
       } else if (e.key === 's') {
         setSelectedIndex((currentIndex) => {
-          if (currentIndex >= 0 && currentIndex < items.length) {
-            toggleStar(items[currentIndex]);
+          if (currentIndex >= 0 && currentIndex < currentItems.length) {
+            toggleStar(currentItems[currentIndex]);
           }
           return currentIndex;
         });
@@ -171,21 +190,24 @@ export default function FeedItems() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, hasMore, loadingMore]);
+  }, [markAsRead, scrollToItem, toggleStar, fetchItems]);
 
 
+  // Stable Observer
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const sentinelObserverRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
-    // Observer for marking items as read
-    const itemObserver = new IntersectionObserver(
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // If item is not intersecting and is above the viewport, it's been scrolled past
           if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
             const index = Number(entry.target.getAttribute('data-index'));
-            if (!isNaN(index) && index >= 0 && index < items.length) {
-              const item = items[index];
+            const currentItems = itemsRef.current;
+            if (!isNaN(index) && index >= 0 && index < currentItems.length) {
+              const item = currentItems[index];
               if (!item.read) {
                 markAsRead(item);
               }
@@ -196,32 +218,36 @@ export default function FeedItems() {
       { root: null, threshold: 0 }
     );
 
-    // Observer for infinite scroll (less aggressive, triggers earlier)
-    const sentinelObserver = new IntersectionObserver(
+    const currentItems = itemsRef.current;
+    currentItems.forEach((_, index) => {
+      const el = document.getElementById(`item-${index}`);
+      if (el) observerRef.current?.observe(el);
+    });
+
+    return () => observerRef.current?.disconnect();
+  }, [items.length, markAsRead]); // Only re-setup if item count changes
+
+
+  useEffect(() => {
+    if (sentinelObserverRef.current) sentinelObserverRef.current.disconnect();
+
+    sentinelObserverRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !loadingMore && hasMore && items.length > 0) {
-            fetchItems(String(items[items.length - 1]._id));
+          if (entry.isIntersecting && !loadingMoreRef.current && hasMoreRef.current && itemsRef.current.length > 0) {
+            fetchItems(String(itemsRef.current[itemsRef.current.length - 1]._id));
           }
         });
       },
       { root: null, threshold: 0, rootMargin: '100px' }
     );
 
-    items.forEach((_, index) => {
-      const el = document.getElementById(`item-${index}`);
-      if (el) itemObserver.observe(el);
-    });
-
     const sentinel = document.getElementById('load-more-sentinel');
-    if (sentinel) sentinelObserver.observe(sentinel);
+    if (sentinel) sentinelObserverRef.current.observe(sentinel);
 
-    return () => {
-      itemObserver.disconnect();
-      sentinelObserver.disconnect();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, loadingMore, hasMore]);
+    return () => sentinelObserverRef.current?.disconnect();
+  }, [hasMore, fetchItems]); // removed loadingMore from deps, using ref inside. hasMore is needed for DOM presence.
+
 
   if (loading) return <div className="feed-items-loading">Loading items...</div>;
   if (error) return <div className="feed-items-error">Error: {error}</div>;
@@ -240,7 +266,11 @@ export default function FeedItems() {
               data-selected={index === selectedIndex}
               onClick={() => setSelectedIndex(index)}
             >
-              <FeedItem item={item} />
+              <FeedItem
+                item={item}
+                onToggleStar={() => toggleStar(item)}
+                onUpdate={handleUpdateItem}
+              />
             </div>
           ))}
           {hasMore && (

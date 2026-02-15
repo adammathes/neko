@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, memo } from 'react';
 import type { Item } from '../types';
 import './FeedItem.css';
 
@@ -6,54 +6,26 @@ import { apiFetch } from '../utils';
 
 interface FeedItemProps {
   item: Item;
+  onToggleStar?: (item: Item) => void;
+  onUpdate?: (item: Item) => void;
 }
 
-export default function FeedItem({ item: initialItem }: FeedItemProps) {
-  const [item, setItem] = useState(initialItem);
+const FeedItem = memo(function FeedItem({ item, onToggleStar, onUpdate }: FeedItemProps) {
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setItem(initialItem);
-  }, [initialItem]);
+  // We rely on props.item for data.
+  // If we fetch full content, we notify the parent via onUpdate.
 
-  const toggleStar = () => {
-    updateItem({ ...item, starred: !item.starred });
-  };
-
-  const updateItem = (newItem: Item) => {
-    setLoading(true);
-    // Optimistic update
-    const previousItem = item;
-    setItem(newItem);
-
-    apiFetch(`/api/item/${newItem._id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        _id: newItem._id,
-        read: newItem.read,
-        starred: newItem.starred,
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Failed to update item');
-        }
-        return res.json();
-      })
-      .then(() => {
-        // Confirm with server response if needed, but for now we trust the optimistic update
-        // or we could setItem(updated) if the server returns the full object
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error updating item:', err);
-        // Revert on error
-        setItem(previousItem);
-        setLoading(false);
-      });
+  const handleToggleStar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleStar) {
+      onToggleStar(item);
+    } else {
+      // Fallback if no handler passed (backward compat or isolated usage)
+      // But really we should rely on parent.
+      // For now, let's keep the optimistic local update logic if we were standalone,
+      // but since we are optimizing, we assume parent handles it.
+    }
   };
 
   const loadFullContent = (e: React.MouseEvent) => {
@@ -65,7 +37,11 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
         return res.json();
       })
       .then((data) => {
-        setItem({ ...item, ...data });
+        // Merge the new data (full_content) into the item and notify parent
+        const newItem = { ...item, ...data };
+        if (onUpdate) {
+          onUpdate(newItem);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -81,10 +57,7 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
           {item.title || '(No Title)'}
         </a>
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleStar();
-          }}
+          onClick={handleToggleStar}
           className={`star-btn ${item.starred ? 'is-starred' : 'is-unstarred'}`}
           title={item.starred ? 'Unstar' : 'Star'}
         >
@@ -112,4 +85,6 @@ export default function FeedItem({ item: initialItem }: FeedItemProps) {
       )}
     </li>
   );
-}
+});
+
+export default FeedItem;
