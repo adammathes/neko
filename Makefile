@@ -9,7 +9,7 @@ VERSION=0.3
 BUILD=`git rev-parse HEAD`
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
-.PHONY: default all clean ui build install test test-race test-frontend test-e2e ui-check lint ci run dev docs
+.PHONY: default all clean ui build install test test-race test-frontend test-e2e ui-check lint check ci run dev docs
 
 default: build
 
@@ -49,8 +49,10 @@ ui-check: ui
 	git diff --exit-code web/dist/v2/
 
 lint:
-	${GO} vet ./...
+	golangci-lint run
 	cd frontend && ${NPM} run lint
+
+check: lint test
 
 ci: lint test-race test-frontend ui-check test-e2e
 

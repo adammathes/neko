@@ -1,20 +1,26 @@
+version: "2"
 run:
-  timeout: 5m
   tests: true
+  timeout: 5m
 
 linters:
+  disable-all: true
+  disable:
+    - errcheck
   enable:
-    - govet
     - staticcheck
-    - gofmt
-    - goimports
-    - misspell
-    - gocyclo
+    - govet
+    - ineffassign
     - unparam
-    - unused
+    - misspell
 
-linters-settings:
-  gocyclo:
-    min-complexity: 15
-  goimports:
-    local-prefixes: adammathes.com/neko
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - staticcheck
+

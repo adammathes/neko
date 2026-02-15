@@ -36,7 +36,7 @@ func TestRunCrawl(t *testing.T) {
 	}
 }
 
-func TestBackgroundCrawlZero(t *testing.T) {
+func TestBackgroundCrawlZero(_ *testing.T) {
 	backgroundCrawl(0) // Should return immediately
 }
 

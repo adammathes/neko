@@ -1,16 +1,17 @@
 package crawler
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/mmcdole/gofeed"
 
 	"adammathes.com/neko/internal/safehttp"
 	"adammathes.com/neko/internal/vlog"
 	"adammathes.com/neko/models/feed"
 	"adammathes.com/neko/models/item"
-	"github.com/mmcdole/gofeed"
 )
 
 const MAX_CRAWLERS = 5
@@ -87,7 +88,7 @@ func GetFeedContent(feedURL string) string {
 		return ""
 	}
 
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return ""
 	}

@@ -116,11 +116,11 @@ func Run(args []string) error {
 		config.Config.CrawlMinutes = minutes
 	}
 
-	if proxyImages != false {
+	if proxyImages {
 		config.Config.ProxyImages = proxyImages
 	}
 
-	if secureCookies != false {
+	if secureCookies {
 		config.Config.SecureCookies = secureCookies
 	}
 

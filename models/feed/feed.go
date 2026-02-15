@@ -6,9 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
+
 	"adammathes.com/neko/internal/safehttp"
 	"adammathes.com/neko/models"
-	"github.com/PuerkitoBio/goquery"
 )
 
 type Feed struct {
@@ -152,7 +153,15 @@ func ResolveFeedURL(url string) string {
 	}
 
 	// goquery is probably overkill here
-	doc, err := goquery.NewDocument(url)
+	resp, err = c.Get(url)
+	if err != nil {
+		return url
+	}
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return url
+	}
 	var f string
 
 	// loop over each link element, return first one that is of type rss or atom

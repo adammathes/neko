@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,13 +15,13 @@ import (
 
 	"compress/gzip"
 	"embed"
-	"io"
 	"sync"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"adammathes.com/neko/api"
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/internal/safehttp"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var gzPool = sync.Pool{
@@ -76,7 +76,7 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 
 	request, err := http.NewRequest("GET", string(decodedURL), nil)
 	if err != nil {
-		http.Error(w, "failed to proxy image", 404)
+		http.Error(w, "failed to proxy image", http.StatusNotFound)
 		return
 	}
 
@@ -85,13 +85,13 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	resp, err := c.Do(request)
 
 	if err != nil {
-		http.Error(w, "failed to proxy image", 404)
+		http.Error(w, "failed to proxy image", http.StatusNotFound)
 		return
 	}
 
-	bts, err := ioutil.ReadAll(resp.Body)
+	bts, err := io.ReadAll(resp.Body)
 	if err != nil {
-		http.Error(w, "failed to read proxy image", 404)
+		http.Error(w, "failed to read proxy image", http.StatusNotFound)
 		return
 	}
 
@@ -114,12 +114,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			v, _ := bcrypt.GenerateFromPassword([]byte(password), 0)
 			c := http.Cookie{Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly: true}
 			http.SetCookie(w, &c)
-			http.Redirect(w, r, "/", 307)
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		} else {
-			http.Error(w, "bad login", 401)
+			http.Error(w, "bad login", http.StatusUnauthorized)
 		}
 	default:
-		http.Error(w, "nope", 500)
+		http.Error(w, "nope", http.StatusInternalServerError)
 	}
 }
 
@@ -148,7 +148,7 @@ func AuthWrap(wrapped http.HandlerFunc) http.HandlerFunc {
 		if Authenticated(r) {
 			wrapped(w, r)
 		} else {
-			http.Redirect(w, r, "/login/", 307)
+			http.Redirect(w, r, "/login/", http.StatusTemporaryRedirect)
 		}
 	}
 }
@@ -158,7 +158,7 @@ func AuthWrapHandler(wrapped http.Handler) http.Handler {
 		if Authenticated(r) {
 			wrapped.ServeHTTP(w, r)
 		} else {
-			http.Redirect(w, r, "/login/", 307)
+			http.Redirect(w, r, "/login/", http.StatusTemporaryRedirect)
 		}
 	})
 }
@@ -192,20 +192,8 @@ func apiLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := r.FormValue("username")
+	_ = r.FormValue("username")
 	password := r.FormValue("password")
-
-	// support JSON body as well
-	if username == "" && password == "" {
-		// try parsing json
-		/*
-			type loginReq struct {
-				Username string `json:"username"`
-				Password string `json:"password"`
-			}
-			// left as todo for now as we can use form data from fetch too
-		*/
-	}
 
 	if password == config.Config.DigestPassword {
 		v, _ := bcrypt.GenerateFromPassword([]byte(password), 0)
@@ -214,7 +202,7 @@ func apiLoginHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, `{"status":"ok"}`)
 	} else {
-		http.Error(w, `{"status":"error", "message":"bad login"}`, 401)
+		http.Error(w, `{"status":"error", "message":"bad login"}`, http.StatusUnauthorized)
 	}
 }
 

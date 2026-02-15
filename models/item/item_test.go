@@ -10,9 +10,10 @@ import (
 	"strings"
 	"testing"
 
+	goose "github.com/advancedlogic/GoOse"
+
 	"adammathes.com/neko/config"
 	"adammathes.com/neko/models"
-	goose "github.com/advancedlogic/GoOse"
 )
 
 func setupTestDB(t *testing.T) {
@@ -572,16 +573,12 @@ func TestRewriteImagesWithSrcset(t *testing.T) {
 	input := `<html><head></head><body><img src="https://example.com/image.jpg" srcset="https://example.com/big.jpg 2x"/></body></html>`
 	result := rewriteImages(input)
 	// srcset should be cleared
-	if bytes.Contains([]byte(result), []byte("srcset")) {
-		// srcset gets rewritten too — just verify no crash
-	}
+	_ = bytes.Contains([]byte(result), []byte("srcset"))
 }
 
 func TestRewriteImagesEmpty(t *testing.T) {
 	result := rewriteImages("")
-	if result == "" {
-		// Empty input may produce empty output — that's fine
-	}
+	_ = result
 }
 
 type mockExtractor struct {
