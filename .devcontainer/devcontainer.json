@@ -1,10 +1,10 @@
-// Note: This config is untested in Antigravity. Use vanilla Docker for reliability 
 {
     "name": "Neko (Dev)",
-    "build": {
-        "dockerfile": "Dockerfile",
-        "context": ".."
-    },
+    "dockerComposeFile": [
+        "../docker-compose.dev.yaml"
+    ],
+    "service": "neko-dev",
+    "workspaceFolder": "/workspace",
     "customizations": {
         "vscode": {
             "settings": {
@@ -25,6 +25,7 @@
             ]
         }
     },
+    // Port forwarding is handled by docker-compose, but we list them here so VS Code knows about them
     "forwardPorts": [
         8080,
         5173
@@ -41,10 +42,6 @@
     },
     "postCreateCommand": "go mod download && (cd frontend && npm install)",
     "remoteUser": "vscode",
-    "runArgs": [
-        "--security-opt",
-        "label=disable"
-    ],
     "containerEnv": {
         "NEKO_PORT": "8080"
     }
