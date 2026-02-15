@@ -147,4 +147,83 @@ describe('FeedList Component', () => {
       expect(screen.getByText(/no feeds found/i)).toBeInTheDocument();
     });
   });
+
+  it('handles search submission', async () => {
+    vi.mocked(global.fetch).mockResolvedValue({ ok: true, json: async () => [] } as Response);
+    render(
+      <BrowserRouter>
+        <FeedList theme="light" setTheme={() => { }} setSidebarVisible={() => { }} isMobile={false} />
+      </BrowserRouter>
+    );
+
+    // Wait for load
+    await waitFor(() => {
+      expect(screen.queryByText(/loading feeds/i)).not.toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByPlaceholderText(/search\.\.\./i);
+    fireEvent.change(searchInput, { target: { value: 'test search' } });
+    fireEvent.submit(searchInput.closest('form')!);
+
+    // Should navigate to include search query
+    // Since we're using BrowserRouter in test, we can only check if it doesn't crash
+    // but we can't easily check 'navigate' unless we mock it.
+  });
+
+  it('handles logout', async () => {
+    vi.mocked(global.fetch).mockResolvedValue({ ok: true, json: async () => [] } as Response);
+
+    // Mock window.location
+    const originalLocation = window.location;
+    const locationMock = new URL('http://localhost/v2/');
+
+    delete (window as { location?: Location }).location;
+    (window as { location?: unknown }).location = {
+      ...originalLocation,
+      assign: vi.fn(),
+      replace: vi.fn(),
+      get href() { return locationMock.href; },
+      set href(val: string) { locationMock.href = new URL(val, locationMock.origin).href; }
+    };
+
+    render(
+      <BrowserRouter>
+        <FeedList theme="light" setTheme={() => { }} setSidebarVisible={() => { }} isMobile={false} />
+      </BrowserRouter>
+    );
+
+    // Wait for load
+    await waitFor(() => {
+      expect(screen.queryByText(/loading feeds/i)).not.toBeInTheDocument();
+    });
+
+    const logoutBtn = screen.getByText(/logout/i);
+    fireEvent.click(logoutBtn);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/logout', expect.any(Object));
+      expect(window.location.href).toContain('/v2/login');
+    });
+    window.location = originalLocation;
+  });
+
+  it('closes sidebar on mobile link click', async () => {
+    vi.mocked(global.fetch).mockResolvedValue({ ok: true, json: async () => [] } as Response);
+    const setSidebarVisible = vi.fn();
+    render(
+      <BrowserRouter>
+        <FeedList theme="light" setTheme={() => { }} setSidebarVisible={setSidebarVisible} isMobile={true} />
+      </BrowserRouter>
+    );
+
+    // Wait for load
+    await waitFor(() => {
+      expect(screen.queryByText(/loading feeds/i)).not.toBeInTheDocument();
+    });
+
+    const unreadLink = screen.getByText(/unread/i);
+    fireEvent.click(unreadLink);
+
+    expect(setSidebarVisible).toHaveBeenCalledWith(false);
+  });
 });

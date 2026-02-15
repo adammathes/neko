@@ -138,8 +138,9 @@ export default function Settings({ fontTheme, setFontTheme }: SettingsProps) {
         <div className="appearance-section">
           <h3>Appearance</h3>
           <div className="font-selector">
-            <label>Font Theme:</label>
+            <label htmlFor="font-theme-select">Font Theme:</label>
             <select
+              id="font-theme-select"
               value={fontTheme || 'default'}
               onChange={(e) => setFontTheme(e.target.value)}
               className="font-select"

@@ -136,4 +136,72 @@ describe('Settings Component', () => {
       expect(screen.getByText('Imported Feed')).toBeInTheDocument();
     });
   });
+
+  it('triggers a crawl', async () => {
+    vi.mocked(global.fetch)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] } as Response) // Initial load
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ message: 'crawl started' }) } as Response); // Crawl
+
+    // Mock alert
+    const alertMock = vi.spyOn(window, 'alert').mockImplementation(() => { });
+
+    render(<Settings />);
+
+    // Wait for load
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    });
+
+    const crawlBtn = screen.getByText(/crawl all feeds now/i);
+    fireEvent.click(crawlBtn);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/crawl',
+        expect.objectContaining({ method: 'POST' })
+      );
+      expect(alertMock).toHaveBeenCalledWith('Crawl started!');
+    });
+    alertMock.mockRestore();
+  });
+
+  it('handles API errors', async () => {
+    vi.mocked(global.fetch)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] } as Response) // Initial load load
+      .mockResolvedValueOnce({ ok: false, json: async () => ({}) } as Response); // Add feed error
+
+    render(<Settings />);
+
+    // Wait for load
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    });
+
+    const input = screen.getByPlaceholderText('https://example.com/feed.xml');
+    const button = screen.getByText('Add Feed');
+
+    fireEvent.change(input, { target: { value: 'http://fail.com/rss' } });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText(/failed to add feed/i)).toBeInTheDocument();
+    });
+  });
+
+  it('handles font theme change', async () => {
+    const setFontTheme = vi.fn();
+    vi.mocked(global.fetch).mockResolvedValueOnce({ ok: true, json: async () => [] } as Response);
+
+    render(<Settings fontTheme="default" setFontTheme={setFontTheme} />);
+
+    // Wait for load
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    });
+
+    const select = screen.getByLabelText(/font theme/i);
+    fireEvent.change(select, { target: { value: 'serif' } });
+
+    expect(setFontTheme).toHaveBeenCalledWith('serif');
+  });
 });
