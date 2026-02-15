@@ -148,7 +148,10 @@ func Run(args []string) error {
 	}
 	if newFeed != "" {
 		vlog.Printf("creating new feed\n")
-		feed.NewFeed(newFeed)
+		if err := feed.NewFeed(newFeed); err != nil {
+			vlog.Printf("error creating feed: %v\n", err)
+			return err
+		}
 		return nil
 	}
 	if export != "" {

@@ -101,7 +101,7 @@ func TestAuthWrapUnauthenticated(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("Expected 307, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusTemporaryRedirect, rr.Code)
 	}
 }
 
@@ -131,7 +131,7 @@ func TestLoginHandlerPostSuccess(t *testing.T) {
 	rr := httptest.NewRecorder()
 	loginHandler(rr, req)
 	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("Expected 307, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusTemporaryRedirect, rr.Code)
 	}
 }
 
@@ -142,7 +142,7 @@ func TestLoginHandlerPostFail(t *testing.T) {
 	rr := httptest.NewRecorder()
 	loginHandler(rr, req)
 	if rr.Code != http.StatusUnauthorized {
-		t.Errorf("Expected 401, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusUnauthorized, rr.Code)
 	}
 }
 
@@ -151,7 +151,7 @@ func TestLoginHandlerBadMethod(t *testing.T) {
 	rr := httptest.NewRecorder()
 	loginHandler(rr, req)
 	if rr.Code != http.StatusInternalServerError {
-		t.Errorf("Expected 500, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
 
@@ -161,7 +161,7 @@ func TestLogoutHandler(t *testing.T) {
 	logoutHandler(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusOK, rr.Code)
 	}
 	cookies := rr.Result().Cookies()
 	found := false
@@ -189,7 +189,7 @@ func TestImageProxyHandlerIfNoneMatch(t *testing.T) {
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotModified {
-		t.Errorf("Expected 304, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusNotModified, rr.Code)
 	}
 }
 
@@ -206,14 +206,14 @@ func TestImageProxyHandlerEtag(t *testing.T) {
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotModified {
-		t.Errorf("Expected 304, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusNotModified, rr.Code)
 	}
 }
 
 func TestImageProxyHandlerSuccess(t *testing.T) {
 	imgServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/jpeg")
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("fake-image-data"))
 	}))
 	defer imgServer.Close()
@@ -225,7 +225,7 @@ func TestImageProxyHandlerSuccess(t *testing.T) {
 	imageProxyHandler(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusOK, rr.Code)
 	}
 	if rr.Body.String() != "fake-image-data" {
 		t.Errorf("Expected image data, got %q", rr.Body.String())
@@ -239,7 +239,7 @@ func TestImageProxyHandlerBadRemote(t *testing.T) {
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -248,7 +248,7 @@ func TestImageProxyHandlerEmptyId(t *testing.T) {
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -257,7 +257,7 @@ func TestImageProxyHandlerBadBase64(t *testing.T) {
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -281,7 +281,7 @@ func TestApiMounting(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200 via API mount, got %d", rr.Code)
+		t.Errorf("Expected %d via API mount, got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -293,7 +293,7 @@ func TestIndexHandler(t *testing.T) {
 	indexHandler(rr, req)
 
 	if rr.Code != http.StatusOK && rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 200 or 404, got %d", rr.Code)
+		t.Errorf("Expected %d or %d, got %d", http.StatusOK, http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -305,7 +305,7 @@ func TestServeBoxedFile(t *testing.T) {
 	serveBoxedFile(rr, req, "style.css")
 
 	if rr.Code != http.StatusOK && rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 200 or 404, got %d", rr.Code)
+		t.Errorf("Expected %d or %d, got %d", http.StatusOK, http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -319,7 +319,7 @@ func TestAuthWrapHandlerUnauthenticated(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("Expected 307 redirect, got %d", rr.Code)
+		t.Errorf("Expected %d redirect, got %d", http.StatusTemporaryRedirect, rr.Code)
 	}
 }
 
@@ -330,7 +330,7 @@ func TestApiLoginHandlerSuccess(t *testing.T) {
 	rr := httptest.NewRecorder()
 	apiLoginHandler(rr, req)
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusOK, rr.Code)
 	}
 	body := rr.Body.String()
 	if body != `{"status":"ok"}` {
@@ -345,7 +345,7 @@ func TestApiLoginHandlerFail(t *testing.T) {
 	rr := httptest.NewRecorder()
 	apiLoginHandler(rr, req)
 	if rr.Code != http.StatusUnauthorized {
-		t.Errorf("Expected 401, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusUnauthorized, rr.Code)
 	}
 }
 
@@ -356,7 +356,7 @@ func TestApiAuthStatusHandlerAuthenticated(t *testing.T) {
 	rr := httptest.NewRecorder()
 	apiAuthStatusHandler(rr, req)
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusOK, rr.Code)
 	}
 	body := rr.Body.String()
 	if body != `{"status":"ok", "authenticated":true}` {
@@ -396,7 +396,7 @@ func TestApiAuthStatusHandlerUnauthenticated(t *testing.T) {
 	rr := httptest.NewRecorder()
 	apiAuthStatusHandler(rr, req)
 	if rr.Code != http.StatusUnauthorized {
-		t.Errorf("Expected 401, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusUnauthorized, rr.Code)
 	}
 	body := rr.Body.String()
 	if body != `{"status":"error", "authenticated":false}` {
@@ -411,7 +411,7 @@ func TestLoginHandlerGet(t *testing.T) {
 
 	// should return login.html from rice box
 	if rr.Code != http.StatusOK && rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 200 or 404, got %d", rr.Code)
+		t.Errorf("Expected %d or %d, got %d", http.StatusOK, http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -474,7 +474,7 @@ func TestGzipCompression(t *testing.T) {
 	handler304.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusNotModified {
-		t.Errorf("Expected 304, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusNotModified, rr.Code)
 	}
 	if rr.Header().Get("Content-Encoding") == "gzip" {
 		t.Error("Expected no Content-Encoding for 304 response")
@@ -494,7 +494,7 @@ func TestNewRouter(t *testing.T) {
 
 	// Should be unauthorized but the route should be found
 	if rr.Code != http.StatusUnauthorized {
-		t.Errorf("Expected 401 for unauthorized /api/auth, got %d", rr.Code)
+		t.Errorf("Expected %d for unauthorized /api/auth, got %d", http.StatusUnauthorized, rr.Code)
 	}
 }
 
@@ -509,7 +509,7 @@ func TestIndexHandlerRedirect(t *testing.T) {
 
 	// Should redirect to login since not authenticated
 	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("Expected 307 redirect for unauthenticated root, got %d", rr.Code)
+		t.Errorf("Expected %d redirect for unauthenticated root, got %d", http.StatusTemporaryRedirect, rr.Code)
 	}
 }
 
@@ -520,7 +520,7 @@ func TestServeFrontendEdgeCases(t *testing.T) {
 	handler := http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))
 	handler.ServeHTTP(rr, req)
 	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404 for missing asset, got %d", rr.Code)
+		t.Errorf("Expected %d for missing asset, got %d", http.StatusNotFound, rr.Code)
 	}
 
 	// 2. Missing file without extension should serve index.html (or 404 if index.html missing)
@@ -529,7 +529,7 @@ func TestServeFrontendEdgeCases(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 	// We check for 200 or 404 depending on if index.html is in the box
 	if rr.Code != http.StatusOK && rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 200 or 404 for client route, got %d", rr.Code)
+		t.Errorf("Expected %d or %d, got %d", http.StatusOK, http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -545,10 +545,10 @@ func TestGzipMiddlewareStatusCodes(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusCreated {
-		t.Errorf("Expected 201, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusCreated, rr.Code)
 	}
 	if rr.Header().Get("Content-Encoding") != "gzip" {
-		t.Error("Expected gzip encoding even for 201 Created")
+		t.Error("Expected gzip encoding even for http.StatusCreated")
 	}
 }
 
@@ -564,11 +564,11 @@ func TestGzipMiddlewareErrorStatus(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusNotFound, rr.Code)
 	}
 	// Currently we gzip anything compressible regardless of status
 	if rr.Header().Get("Content-Encoding") != "gzip" {
-		t.Error("Expected gzip encoding even for 404 (current behavior)")
+		t.Error("Expected gzip encoding even for http.StatusNotFound (current behavior)")
 	}
 }
 
@@ -616,7 +616,7 @@ func TestImageProxyHandlerMissingURL(t *testing.T) {
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -625,7 +625,7 @@ func TestImageProxyHandlerInvalidBase64(t *testing.T) {
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -635,7 +635,7 @@ func TestServeFrontendNotFound(t *testing.T) {
 	ServeFrontend(rr, req)
 	// Should fallback to index.html if it's not a dot-extension file
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200 (fallback to index.html), got %d", rr.Code)
+		t.Errorf("Expected %d (fallback to index.html), got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -649,7 +649,7 @@ func TestImageProxyHeaders(t *testing.T) {
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotModified {
-		t.Errorf("Expected 304 for If-None-Match, got %d", rr.Code)
+		t.Errorf("Expected %d for If-None-Match, got %d", http.StatusNotModified, rr.Code)
 	}
 
 	// Test Etag
@@ -658,7 +658,7 @@ func TestImageProxyHeaders(t *testing.T) {
 	rr = httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotModified {
-		t.Errorf("Expected 304 for Etag, got %d", rr.Code)
+		t.Errorf("Expected %d for Etag, got %d", http.StatusNotModified, rr.Code)
 	}
 }
 
@@ -667,7 +667,7 @@ func TestServeFrontendAssetNotFound(t *testing.T) {
 	rr := httptest.NewRecorder()
 	ServeFrontend(rr, req)
 	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404 for missing asset, got %d", rr.Code)
+		t.Errorf("Expected %d for missing asset, got %d", http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -676,7 +676,7 @@ func TestServeBoxedFileNotFound(t *testing.T) {
 	rr := httptest.NewRecorder()
 	serveBoxedFile(rr, req, "nonexistent")
 	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404 for nonexistent file, got %d", rr.Code)
+		t.Errorf("Expected %d for nonexistent file, got %d", http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -689,7 +689,7 @@ func TestImageProxyHandlerHeaders(t *testing.T) {
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotModified {
-		t.Errorf("Expected 304 for matching Etag, got %d", rr.Code)
+		t.Errorf("Expected %d for matching Etag, got %d", http.StatusNotModified, rr.Code)
 	}
 }
 
@@ -707,8 +707,8 @@ func TestImageProxyHandlerRemoteError(t *testing.T) {
 	req := httptest.NewRequest("GET", "/"+id, nil)
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
-	if rr.Code != 404 {
-		t.Errorf("Expected 404 for remote error, got %d", rr.Code)
+	if rr.Code != http.StatusNotFound {
+		t.Errorf("Expected %d for remote error, got %d", http.StatusNotFound, rr.Code)
 	}
 }
 
@@ -717,7 +717,7 @@ func TestApiLoginHandlerBadMethod(t *testing.T) {
 	rr := httptest.NewRecorder()
 	apiLoginHandler(rr, req)
 	if rr.Code != http.StatusMethodNotAllowed {
-		t.Errorf("Expected 405, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusMethodNotAllowed, rr.Code)
 	}
 }
 
@@ -748,7 +748,7 @@ func TestCSRFMiddleware(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200 for GET, got %d", rr.Code)
+		t.Errorf("Expected %d for GET, got %d", http.StatusOK, rr.Code)
 	}
 	cookies := rr.Result().Cookies()
 	var csrfCookie *http.Cookie
@@ -768,7 +768,7 @@ func TestCSRFMiddleware(t *testing.T) {
 	rr = httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 	if rr.Code != http.StatusForbidden {
-		t.Errorf("Expected 403 for POST without token, got %d", rr.Code)
+		t.Errorf("Expected %d for POST without token, got %d", http.StatusForbidden, rr.Code)
 	}
 
 	// Case 3: POST with valid token should succeed
@@ -778,7 +778,7 @@ func TestCSRFMiddleware(t *testing.T) {
 	rr = httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200 for POST with valid token, got %d", rr.Code)
+		t.Errorf("Expected %d for POST with valid token, got %d", http.StatusOK, rr.Code)
 	}
 }
 

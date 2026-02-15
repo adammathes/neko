@@ -60,7 +60,7 @@ func TestStream(t *testing.T) {
 	server.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", rr.Code)
+		t.Errorf("expected %d, got %d", http.StatusOK, rr.Code)
 	}
 
 	var items []item.Item
@@ -82,7 +82,7 @@ func TestFeedCRUD(t *testing.T) {
 	server.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusCreated {
-		t.Errorf("expected 201, got %d", rr.Code)
+		t.Errorf("expected %d, got %d", http.StatusCreated, rr.Code)
 	}
 
 	// List
@@ -106,7 +106,7 @@ func TestFeedCRUD(t *testing.T) {
 	server.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", rr.Code)
+		t.Errorf("expected %d, got %d", http.StatusOK, rr.Code)
 	}
 
 	// Delete
@@ -115,7 +115,7 @@ func TestFeedCRUD(t *testing.T) {
 	server.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusNoContent {
-		t.Errorf("expected 204, got %d", rr.Code)
+		t.Errorf("expected %d, got %d", http.StatusNoContent, rr.Code)
 	}
 }
 
@@ -138,7 +138,7 @@ func TestItemUpdate(t *testing.T) {
 	server.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", rr.Code)
+		t.Errorf("expected %d, got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -152,7 +152,7 @@ func TestGetCategories(t *testing.T) {
 	server.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", rr.Code)
+		t.Errorf("expected %d, got %d", http.StatusOK, rr.Code)
 	}
 
 	var cats []feed.Category
@@ -174,7 +174,7 @@ func TestHandleExport(t *testing.T) {
 		server.HandleExport(rr, req)
 
 		if rr.Code != http.StatusOK {
-			t.Errorf("Expected 200 for format %s, got %d", fmt, rr.Code)
+			t.Errorf("Expected %d for format %s, got %d", http.StatusOK, fmt, rr.Code)
 		}
 	}
 
@@ -182,7 +182,7 @@ func TestHandleExport(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.HandleExport(rr, req)
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200 for unknown format, got %d", rr.Code)
+		t.Errorf("Expected %d for unknown format, got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -195,7 +195,7 @@ func TestHandleCrawl(t *testing.T) {
 	server.HandleCrawl(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusOK, rr.Code)
 	}
 	if !strings.Contains(rr.Body.String(), "crawl started") {
 		t.Error("Expected crawl started message in response")
@@ -210,7 +210,7 @@ func TestJsonError(t *testing.T) {
 	server.HandleItem(rr, req)
 
 	if rr.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusBadRequest, rr.Code)
 	}
 	var resp map[string]string
 	json.Unmarshal(rr.Body.Bytes(), &resp)
@@ -257,21 +257,21 @@ func TestHandleFeedErrors(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.ServeHTTP(rr, req)
 	if rr.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400 for missing URL, got %d", rr.Code)
+		t.Errorf("Expected %d for missing URL, got %d", http.StatusBadRequest, rr.Code)
 	}
 
 	req = httptest.NewRequest("POST", "/feed", strings.NewReader("not json"))
 	rr = httptest.NewRecorder()
 	server.ServeHTTP(rr, req)
 	if rr.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400 for invalid JSON, got %d", rr.Code)
+		t.Errorf("Expected %d for invalid JSON, got %d", http.StatusBadRequest, rr.Code)
 	}
 
 	req = httptest.NewRequest("PATCH", "/feed", nil)
 	rr = httptest.NewRecorder()
 	server.ServeHTTP(rr, req)
 	if rr.Code != http.StatusMethodNotAllowed {
-		t.Errorf("Expected 405, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusMethodNotAllowed, rr.Code)
 	}
 }
 
@@ -284,14 +284,14 @@ func TestHandleItemEdgeCases(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.ServeHTTP(rr, req)
 	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected 404, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusNotFound, rr.Code)
 	}
 
 	req = httptest.NewRequest("DELETE", "/item/1", nil)
 	rr = httptest.NewRecorder()
 	server.ServeHTTP(rr, req)
 	if rr.Code != http.StatusMethodNotAllowed {
-		t.Errorf("Expected 405, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusMethodNotAllowed, rr.Code)
 	}
 
 	var id int64
@@ -304,7 +304,7 @@ func TestHandleItemEdgeCases(t *testing.T) {
 	rr = httptest.NewRecorder()
 	server.ServeHTTP(rr, req)
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -316,7 +316,7 @@ func TestHandleFeedDeleteNoId(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.ServeHTTP(rr, req)
 	if rr.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusBadRequest, rr.Code)
 	}
 }
 
@@ -338,7 +338,7 @@ func TestMethodNotAllowed(t *testing.T) {
 		rr := httptest.NewRecorder()
 		server.ServeHTTP(rr, req)
 		if rr.Code != http.StatusMethodNotAllowed {
-			t.Errorf("Expected 405 for %s %s, got %d", tc.method, tc.url, rr.Code)
+			t.Errorf("Expected %d for %s %s, got %d", http.StatusMethodNotAllowed, tc.method, tc.url, rr.Code)
 		}
 	}
 }
@@ -350,7 +350,7 @@ func TestExportBadRequest(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.HandleExport(rr, req)
 	if rr.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400 for empty format, got %d", rr.Code)
+		t.Errorf("Expected %d for empty format, got %d", http.StatusBadRequest, rr.Code)
 	}
 }
 
@@ -361,7 +361,7 @@ func TestHandleFeedPutInvalidJson(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.HandleFeed(rr, req)
 	if rr.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400 for invalid JSON in PUT, got %d", rr.Code)
+		t.Errorf("Expected %d for invalid JSON in PUT, got %d", http.StatusBadRequest, rr.Code)
 	}
 }
 
@@ -373,7 +373,7 @@ func TestHandleFeedPutMissingId(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.HandleFeed(rr, req)
 	if rr.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400 for missing ID in PUT, got %d", rr.Code)
+		t.Errorf("Expected %d for missing ID in PUT, got %d", http.StatusBadRequest, rr.Code)
 	}
 }
 
@@ -386,7 +386,7 @@ func TestHandleItemIdMismatch(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.HandleItem(rr, req)
 	if rr.Code != http.StatusBadRequest {
-		t.Errorf("Expected 400 for ID mismatch, got %d", rr.Code)
+		t.Errorf("Expected %d for ID mismatch, got %d", http.StatusBadRequest, rr.Code)
 	}
 }
 
@@ -400,7 +400,7 @@ func TestHandleCategoryError(t *testing.T) {
 	server.HandleCategory(rr, req)
 
 	if rr.Code != http.StatusInternalServerError {
-		t.Errorf("Expected 500, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
 
@@ -418,7 +418,7 @@ func TestHandleItemAlreadyHasContent(t *testing.T) {
 	server.HandleItem(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -428,7 +428,7 @@ func TestHandleCrawlMethodNotAllowed(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.HandleCrawl(rr, req)
 	if rr.Code != http.StatusMethodNotAllowed {
-		t.Errorf("Expected 405, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusMethodNotAllowed, rr.Code)
 	}
 }
 
@@ -441,7 +441,7 @@ func TestHandleStreamComplexFilters(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.HandleStream(rr, req)
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -455,6 +455,6 @@ func TestHandleCategorySuccess(t *testing.T) {
 	rr := httptest.NewRecorder()
 	server.HandleCategory(rr, req)
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200, got %d", rr.Code)
+		t.Errorf("Expected %d, got %d", http.StatusOK, rr.Code)
 	}
 }

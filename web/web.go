@@ -98,7 +98,7 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("ETag", string(decodedURL))
 	w.Header().Set("Cache-Control", "public")
 	w.Header().Set("Expires", time.Now().Add(48*time.Hour).Format(time.RFC1123))
-	w.Write(bts)
+	_, _ = w.Write(bts)
 }
 
 var AuthCookie = "auth"
@@ -126,7 +126,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	c := http.Cookie{Name: AuthCookie, MaxAge: 0, Path: "/", HttpOnly: true}
 	http.SetCookie(w, &c)
-	fmt.Fprintf(w, "you are logged out")
+	_, _ = fmt.Fprintf(w, "you are logged out")
 }
 
 func Authenticated(r *http.Request) bool {
@@ -170,7 +170,7 @@ func serveBoxedFile(w http.ResponseWriter, r *http.Request, filename string) {
 		http.Error(w, "file not found", http.StatusNotFound)
 		return
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	fi, _ := f.Stat()
 	http.ServeContent(w, r, filename, fi.ModTime(), f.(io.ReadSeeker))
@@ -188,7 +188,7 @@ func apiLoginHandler(w http.ResponseWriter, r *http.Request) {
 		c := http.Cookie{Name: AuthCookie, Value: "noauth", Path: "/", MaxAge: SecondsInAYear, HttpOnly: true}
 		http.SetCookie(w, &c)
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"status":"ok"}`)
+		_, _ = fmt.Fprintf(w, `{"status":"ok"}`)
 		return
 	}
 
@@ -200,7 +200,7 @@ func apiLoginHandler(w http.ResponseWriter, r *http.Request) {
 		c := http.Cookie{Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly: true}
 		http.SetCookie(w, &c)
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"status":"ok"}`)
+		_, _ = fmt.Fprintf(w, `{"status":"ok"}`)
 	} else {
 		http.Error(w, `{"status":"error", "message":"bad login"}`, http.StatusUnauthorized)
 	}
@@ -209,10 +209,10 @@ func apiLoginHandler(w http.ResponseWriter, r *http.Request) {
 func apiAuthStatusHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if Authenticated(r) {
-		fmt.Fprintf(w, `{"status":"ok", "authenticated":true}`)
+		_, _ = fmt.Fprintf(w, `{"status":"ok", "authenticated":true}`)
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Fprintf(w, `{"status":"error", "authenticated":false}`)
+		_, _ = fmt.Fprintf(w, `{"status":"error", "authenticated":false}`)
 	}
 }
 
@@ -311,7 +311,7 @@ func (w *gzipWriter) WriteHeader(status int) {
 
 func (w *gzipWriter) Flush() {
 	if w.gz != nil {
-		w.gz.Flush()
+		_ = w.gz.Flush()
 	}
 	if f, ok := w.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
@@ -338,7 +338,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 		gzw := &gzipWriter{ResponseWriter: w}
 		next.ServeHTTP(gzw, r)
 		if gzw.gz != nil {
-			gzw.gz.Close()
+			_ = gzw.gz.Close()
 			gzPool.Put(gzw.gz)
 		}
 	})
@@ -348,7 +348,7 @@ func apiLogoutHandler(w http.ResponseWriter, r *http.Request) {
 	c := http.Cookie{Name: AuthCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: true}
 	http.SetCookie(w, &c)
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"status":"ok"}`)
+	_, _ = fmt.Fprintf(w, `{"status":"ok"}`)
 }
 
 func generateRandomToken(n int) string {

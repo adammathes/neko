@@ -45,12 +45,12 @@ func (s *Server) routes() {
 func jsonError(w http.ResponseWriter, msg string, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(map[string]string{"error": msg})
+	_ = json.NewEncoder(w).Encode(map[string]string{"error": msg})
 }
 
 func jsonResponse(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+	_ = json.NewEncoder(w).Encode(data)
 }
 
 func (s *Server) HandleStream(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +65,7 @@ func (s *Server) HandleStream(w http.ResponseWriter, r *http.Request) {
 	// Backward compatibility with feed_url if feed_id is not provided
 	if feedID == 0 && r.FormValue("feed_url") != "" {
 		var f feed.Feed
-		f.ByUrl(r.FormValue("feed_url"))
+		_ = f.ByUrl(r.FormValue("feed_url"))
 		feedID = f.Id
 	}
 
@@ -157,7 +157,7 @@ func (s *Server) HandleFeed(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "failed to create feed", http.StatusInternalServerError)
 			return
 		}
-		f.ByUrl(f.Url)
+		_ = f.ByUrl(f.Url)
 		ch := make(chan string)
 		go func() {
 			crawler.CrawlFeed(&f, ch)
@@ -165,7 +165,7 @@ func (s *Server) HandleFeed(w http.ResponseWriter, r *http.Request) {
 		}()
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(f)
+		_ = json.NewEncoder(w).Encode(f)
 
 	case http.MethodPut:
 		var f feed.Feed
@@ -237,7 +237,7 @@ func (s *Server) HandleExport(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=neko_export.%s", extension))
-	w.Write([]byte(exporter.ExportFeeds(format)))
+	_, _ = w.Write([]byte(exporter.ExportFeeds(format)))
 }
 
 func (s *Server) HandleImport(w http.ResponseWriter, r *http.Request) {
@@ -256,7 +256,7 @@ func (s *Server) HandleImport(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, "file required", http.StatusBadRequest)
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	err = importer.ImportFeeds(format, file)
 	if err != nil {

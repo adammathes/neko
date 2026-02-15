@@ -41,7 +41,7 @@ func ServeFrontend(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	d, err := f.Stat()
 	if err != nil {

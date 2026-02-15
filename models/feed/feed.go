@@ -53,7 +53,7 @@ func filter(where string) ([]*Feed, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	feeds := make([]*Feed, 0)
 	for rows.Next() {
@@ -134,7 +134,7 @@ func ResolveFeedURL(url string) string {
 	if err != nil {
 		return url
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	contentType := resp.Header.Get("Content-Type")
 	if contentType == "" {
@@ -157,7 +157,7 @@ func ResolveFeedURL(url string) string {
 	if err != nil {
 		return url
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return url
@@ -204,7 +204,7 @@ func Categories() ([]*Category, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	categories := make([]*Category, 0)
 	for rows.Next() {

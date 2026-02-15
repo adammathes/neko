@@ -194,7 +194,7 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 		vlog.Println(err)
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	p := filterPolicy()
 

@@ -36,7 +36,7 @@ func TestAuthenticationNoPassword(t *testing.T) {
 	wrappedHandler.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200 OK when no password is set, got %d", rr.Code)
+		t.Errorf("Expected %d OK when no password is set, got %d", http.StatusOK, rr.Code)
 	}
 
 	body := rr.Body.String()
@@ -72,7 +72,7 @@ func TestAuthenticationWithPassword(t *testing.T) {
 	wrappedHandler.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("Expected 307 redirect when not authenticated, got %d", rr.Code)
+		t.Errorf("Expected %d redirect when not authenticated, got %d", http.StatusTemporaryRedirect, rr.Code)
 	}
 
 	location := rr.Header().Get("Location")
@@ -125,7 +125,7 @@ func TestAuthenticationWithValidCookie(t *testing.T) {
 	wrappedHandler.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200 OK with valid auth cookie, got %d", rr.Code)
+		t.Errorf("Expected %d OK with valid auth cookie, got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -145,7 +145,7 @@ func TestApiLoginNoPassword(t *testing.T) {
 
 	// Should succeed with any password (or empty) when no password is configured
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200 OK for API login with no password configured, got %d", rr.Code)
+		t.Errorf("Expected %d OK for API login with no password configured, got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -164,7 +164,7 @@ func TestApiAuthStatusNoPassword(t *testing.T) {
 
 	// Should return authenticated:true when no password is set
 	if rr.Code != http.StatusOK {
-		t.Errorf("Expected 200 OK for auth status with no password, got %d", rr.Code)
+		t.Errorf("Expected %d OK for auth status with no password, got %d", http.StatusOK, rr.Code)
 	}
 
 	body := rr.Body.String()
