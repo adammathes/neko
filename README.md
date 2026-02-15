@@ -65,6 +65,8 @@ Backend is written in `Go` and there is a modern `React/Vite` SPA frontend.
    * automatically marks items read in an infinite stream of never-ending content (until you run out of content and it ends)
    * full text search
    * scrapes full text of pages on demand
+   * multiple sidebar variants (Glass, Minimal, Swiss/Type, and Playful/Banana)
+   * collapsible sidebar sections for Feeds and Tags
 
 ## Screenshots
 
@@ -119,9 +121,15 @@ Neko is designed for easy building. Static assets for the frontends are pre-buil
    If you want to update the frontends without a full clean:
    ```bash
    make ui           # Rebuild React frontend
-   make vanilla-ui   # Update Vanilla assets
    make build        # Build final binary
    ```
+
+### Development and Testing
+
+Utility scripts and test wrappers are located in the `scripts/` directory:
+- `scripts/clean_test_env.sh`: Resets the test database and kills stray processes.
+- `scripts/run_e2e_safe.sh`: A safe wrapper for running Playwright E2E tests.
+- `scripts/run_e2e.sh`: Standard E2E test runner.
 
 # Configuration
 
@@ -165,6 +173,16 @@ If you are hosting on a publicly available server instead of a personal computer
 
     $ neko --password=rssisveryimportant
     
+## Sidebar Variants
+
+Neko now supports several UI variants for the sidebar that can be toggled via URL parameters (and are persisted in local storage):
+
+- `?sidebar=glass`: (Default) Modern translucent glassmorphism
+- `?sidebar=minimal`: The clean v1-inspired look
+- `?sidebar=type`: Bold, Swiss-inspired typography
+- `?sidebar=banana`: Playful, "pop" aesthetic
+
+Example: `http://localhost:4994/?sidebar=type`
 ## Add Feed
 
 You can add feeds directly from the command line for convenience --
@@ -267,8 +285,10 @@ password: VeryLongRandomStringBecauseSecurityIsFun
    * mark all as read (done)
    * rewrite frontend in a modern js framework (done: React/Vite)
    * prettify interface (done)
+   * sidebar variants and personalization (done)
    * cross-compilation of binaries for "normal" platforms
    * implement Gzip compression (done)
+   * unit and E2E testing infrastructure (done)
 
 # History
 
