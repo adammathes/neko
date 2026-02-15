@@ -235,7 +235,7 @@ func TestFilterBasic(t *testing.T) {
 	i.Create()
 
 	// Filter with no constraints (except unread_only=false to not filter by read)
-	items, err := Filter(0, 0, "", false, false, 0, "")
+	items, err := Filter(0, nil, "", false, false, 0, "")
 	if err != nil {
 		t.Fatalf("Filter() should not error: %v", err)
 	}
@@ -261,7 +261,7 @@ func TestFilterByFeedId(t *testing.T) {
 	i.Create()
 
 	// Filter by a non-matching feed id
-	items, err := Filter(0, 999, "", false, false, 0, "")
+	items, err := Filter(0, []int64{999}, "", false, false, 0, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,7 +270,7 @@ func TestFilterByFeedId(t *testing.T) {
 	}
 
 	// Filter by matching feed id
-	items, err = Filter(0, feedId, "", false, false, 0, "")
+	items, err = Filter(0, []int64{feedId}, "", false, false, 0, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -293,7 +293,7 @@ func TestFilterUnreadOnly(t *testing.T) {
 	i.Create()
 
 	// All items start unread (read_state=0)
-	items, err := Filter(0, 0, "", true, false, 0, "")
+	items, err := Filter(0, nil, "", true, false, 0, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -305,7 +305,7 @@ func TestFilterUnreadOnly(t *testing.T) {
 	i.ReadState = true
 	i.Save()
 
-	items, err = Filter(0, 0, "", true, false, 0, "")
+	items, err = Filter(0, nil, "", true, false, 0, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -328,7 +328,7 @@ func TestFilterStarredOnly(t *testing.T) {
 	i.Create()
 
 	// Not starred yet
-	items, err := Filter(0, 0, "", false, true, 0, "")
+	items, err := Filter(0, nil, "", false, true, 0, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -340,7 +340,7 @@ func TestFilterStarredOnly(t *testing.T) {
 	i.Starred = true
 	i.Save()
 
-	items, err = Filter(0, 0, "", false, true, 0, "")
+	items, err = Filter(0, nil, "", false, true, 0, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -362,7 +362,7 @@ func TestFilterByItemId(t *testing.T) {
 	}
 	i.Create()
 
-	items, err := Filter(0, 0, "", false, false, i.Id, "")
+	items, err := Filter(0, nil, "", false, false, i.Id, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -385,7 +385,7 @@ func TestFilterByMaxId(t *testing.T) {
 	i2.Create()
 
 	// max_id = i2.Id should only return items with id < i2.Id
-	items, err := Filter(i2.Id, 0, "", false, false, 0, "")
+	items, err := Filter(i2.Id, nil, "", false, false, 0, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -461,7 +461,7 @@ func TestFilterByCategory(t *testing.T) {
 	i2.Create()
 
 	// Filter by category "technology"
-	items, err := Filter(0, 0, "technology", false, false, 0, "")
+	items, err := Filter(0, nil, "technology", false, false, 0, "")
 	if err != nil {
 		t.Fatalf("Filter by category should not error: %v", err)
 	}
@@ -483,7 +483,7 @@ func TestFilterBySearch(t *testing.T) {
 	i2.Create()
 
 	// Search for "Golang"
-	items, err := Filter(0, 0, "", false, false, 0, "Golang")
+	items, err := Filter(0, nil, "", false, false, 0, "Golang")
 	if err != nil {
 		t.Fatalf("Filter by search should not error: %v", err)
 	}
@@ -511,7 +511,7 @@ func TestFilterCombined(t *testing.T) {
 	i1.Save()
 
 	// Filter: unread only + starred only — should get only starred unread
-	items, err := Filter(0, 0, "", true, true, 0, "")
+	items, err := Filter(0, nil, "", true, true, 0, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -690,14 +690,14 @@ func TestPurge(t *testing.T) {
 	if affected != 2 {
 		t.Errorf("Expected 2 items purged, got %d", affected)
 		// Debug logging to see what's left
-		remaining, _ := Filter(0, 0, "", false, false, 0, "")
+		remaining, _ := Filter(0, nil, "", false, false, 0, "")
 		for _, r := range remaining {
 			t.Logf("Remaining: %s (%s) Read: %t Starred: %t", r.Title, r.PublishDate, r.ReadState, r.Starred)
 		}
 	}
 
 	// Verify remaining items count
-	remaining, _ := Filter(0, 0, "", false, false, 0, "")
+	remaining, _ := Filter(0, nil, "", false, false, 0, "")
 	if len(remaining) != 2 {
 		t.Errorf("Expected 2 items remaining, got %d", len(remaining))
 	}
@@ -714,7 +714,7 @@ func TestPurge(t *testing.T) {
 	}
 
 	//Verify "Old Starred" is still there
-	remaining, _ = Filter(0, 0, "", false, false, 0, "")
+	remaining, _ = Filter(0, nil, "", false, false, 0, "")
 	if len(remaining) != 1 || remaining[0].Title != "Old Starred" {
 		t.Errorf("Expected only 'Old Starred' to remain, got %v", remaining)
 	}

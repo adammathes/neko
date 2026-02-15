@@ -52,7 +52,7 @@ func TestCrawlIntegration(t *testing.T) {
 	}
 
 	// Verify items were stored
-	items, err := item.Filter(0, f.Id, "", false, false, 0, "")
+	items, err := item.Filter(0, []int64{f.Id}, "", false, false, 0, "")
 	if err != nil {
 		t.Fatalf("Failed to filter items: %v", err)
 	}

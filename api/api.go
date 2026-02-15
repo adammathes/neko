@@ -60,13 +60,22 @@ func (s *Server) HandleStream(w http.ResponseWriter, r *http.Request) {
 	}
 
 	maxID, _ := strconv.ParseInt(r.FormValue("max_id"), 10, 64)
-	feedID, _ := strconv.ParseInt(r.FormValue("feed_id"), 10, 64)
 
-	// Backward compatibility with feed_url if feed_id is not provided
-	if feedID == 0 && r.FormValue("feed_url") != "" {
+	var feedIDs []int64
+	if idsStr := r.FormValue("feed_ids"); idsStr != "" {
+		for _, idStr := range strings.Split(idsStr, ",") {
+			if id, err := strconv.ParseInt(idStr, 10, 64); err == nil {
+				feedIDs = append(feedIDs, id)
+			}
+		}
+	} else if feedID, _ := strconv.ParseInt(r.FormValue("feed_id"), 10, 64); feedID != 0 {
+		feedIDs = []int64{feedID}
+	} else if r.FormValue("feed_url") != "" {
 		var f feed.Feed
 		_ = f.ByUrl(r.FormValue("feed_url"))
-		feedID = f.Id
+		if f.Id != 0 {
+			feedIDs = []int64{f.Id}
+		}
 	}
 
 	category := r.FormValue("tag")
@@ -78,7 +87,7 @@ func (s *Server) HandleStream(w http.ResponseWriter, r *http.Request) {
 		unreadOnly = false
 	}
 
-	items, err := item.Filter(maxID, feedID, category, unreadOnly, starredOnly, 0, searchQuery)
+	items, err := item.Filter(maxID, feedIDs, category, unreadOnly, starredOnly, 0, searchQuery)
 	if err != nil {
 		log.Println(err)
 		jsonError(w, "failed to filter items", http.StatusInternalServerError)

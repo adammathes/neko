@@ -97,7 +97,7 @@ func filterPolicy() *bluemonday.Policy {
 }
 
 func ItemById(id int64) *Item {
-	items, err := Filter(0, 0, "", false, false, id, "")
+	items, err := Filter(0, nil, "", false, false, id, "")
 	if err != nil || len(items) == 0 {
 		return nil
 	}
@@ -134,7 +134,7 @@ func (i *Item) GetFullContent() {
 	}
 }
 
-func Filter(max_id int64, feed_id int64, category string, unread_only bool, starred_only bool, item_id int64, search_query string) ([]*Item, error) {
+func Filter(max_id int64, feed_ids []int64, category string, unread_only bool, starred_only bool, item_id int64, search_query string) ([]*Item, error) {
 
 	var args []interface{}
 	tables := " feed,item"
@@ -155,9 +155,13 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 		args = append(args, max_id)
 	}
 
-	if feed_id != 0 {
-		query = query + " AND feed.id=? "
-		args = append(args, feed_id)
+	if len(feed_ids) > 0 {
+		placeholders := make([]string, len(feed_ids))
+		for i := range feed_ids {
+			placeholders[i] = "?"
+			args = append(args, feed_ids[i])
+		}
+		query = query + " AND feed.id IN (" + strings.Join(placeholders, ",") + ") "
 	}
 
 	if category != "" {
