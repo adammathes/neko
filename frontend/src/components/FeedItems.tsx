@@ -192,7 +192,7 @@ export default function FeedItems() {
       { root: null, threshold: 0 }
     );
 
-    // Observer for infinite scroll (less aggressive, must be fully visible)
+    // Observer for infinite scroll (less aggressive, triggers earlier)
     const sentinelObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -201,7 +201,7 @@ export default function FeedItems() {
           }
         });
       },
-      { root: null, threshold: 1.0 }
+      { root: null, threshold: 0.1, rootMargin: '100px' }
     );
 
     items.forEach((_, index) => {
