@@ -14,4 +14,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 # Install golangci-lint (for ticket NK-arckp3)
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.64.5
 
-# [Optional] Install Node.js is handled by features in devcontainer.json
+# Install Node.js 20 directly (so this image works with vanilla Docker without devcontainer features)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
