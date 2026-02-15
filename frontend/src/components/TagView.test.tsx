@@ -53,7 +53,7 @@ describe('Tag View Integration', () => {
 
     // Verify structure
     const techTag = screen.getByText('News').closest('a');
-    expect(techTag).toHaveAttribute('href', '/tag/News');
+    expect(techTag).toHaveAttribute('href', '/tag/News?filter=unread');
   });
 
   it('fetches items by tag in FeedItems', async () => {

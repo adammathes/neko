@@ -44,7 +44,8 @@ export default function FeedList({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/?q=${encodeURIComponent(searchQuery.trim())}`);
+      const filterPart = currentFilter ? `&filter=${currentFilter}` : '';
+      navigate(`/?q=${encodeURIComponent(searchQuery.trim())}${filterPart}`);
     }
   };
 
@@ -112,17 +113,29 @@ export default function FeedList({
       <div className="filter-section">
         <ul className="filter-list">
           <li className="unread_filter">
-            <Link to="/?filter=unread" className={currentFilter === 'unread' ? 'active' : ''} onClick={handleLinkClick}>
+            <Link
+              to={location.pathname + '?filter=unread'}
+              className={currentFilter === 'unread' ? 'active' : ''}
+              onClick={handleLinkClick}
+            >
               unread
             </Link>
           </li>
           <li className="all_filter">
-            <Link to="/?filter=all" className={currentFilter === 'all' ? 'active' : ''} onClick={handleLinkClick}>
+            <Link
+              to={location.pathname + '?filter=all'}
+              className={currentFilter === 'all' ? 'active' : ''}
+              onClick={handleLinkClick}
+            >
               all
             </Link>
           </li>
           <li className="starred_filter">
-            <Link to="/?filter=starred" className={currentFilter === 'starred' ? 'active' : ''} onClick={handleLinkClick}>
+            <Link
+              to={location.pathname + '?filter=starred'}
+              className={currentFilter === 'starred' ? 'active' : ''}
+              onClick={handleLinkClick}
+            >
               starred
             </Link>
           </li>
@@ -138,7 +151,7 @@ export default function FeedList({
             {tags.map((tag) => (
               <li key={tag.title} className="tag-item">
                 <Link
-                  to={`/tag/${encodeURIComponent(tag.title)}`}
+                  to={`/tag/${encodeURIComponent(tag.title)}${currentFilter ? `?filter=${currentFilter}` : ''}`}
                   className={`tag-link ${tagName === tag.title ? 'active' : ''}`}
                   onClick={handleLinkClick}
                 >
@@ -162,7 +175,7 @@ export default function FeedList({
               {feeds.map((feed) => (
                 <li key={feed._id} className="sidebar-feed-item">
                   <Link
-                    to={`/feed/${feed._id}`}
+                    to={`/feed/${feed._id}${currentFilter ? `?filter=${currentFilter}` : ''}`}
                     className={`feed-title ${feedId === String(feed._id) ? 'active' : ''}`}
                     onClick={handleLinkClick}
                   >
