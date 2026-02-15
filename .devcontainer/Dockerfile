@@ -9,7 +9,10 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     socat \
     curl \
     procps \
-    git
+    git \
+    iproute2 \
+    net-tools \
+    netcat-openbsd
 
 # Install golangci-lint (for ticket NK-arckp3)
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.64.5
