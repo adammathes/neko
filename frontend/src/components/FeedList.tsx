@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams, useLocation, useParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation, useMatch } from 'react-router-dom';
 import type { Feed, Category } from '../types';
 import './FeedList.css';
 import './FeedListVariants.css';
@@ -26,7 +26,13 @@ export default function FeedList({
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const { feedId, tagName } = useParams();
+  const feedMatch = useMatch('/feed/:feedId');
+  const tagMatch = useMatch('/tag/:tagName');
+  const isRoot = useMatch('/');
+  const isStreamPage = !!(isRoot || feedMatch || tagMatch);
+
+  const feedId = feedMatch?.params.feedId;
+  const tagName = tagMatch?.params.tagName;
 
   const sidebarVariant = searchParams.get('sidebar') || localStorage.getItem('neko-sidebar-variant') || 'glass';
 
@@ -37,15 +43,31 @@ export default function FeedList({
     }
   }, [searchParams]);
 
-  const currentFilter =
-    searchParams.get('filter') ||
-    (location.pathname === '/' && !feedId && !tagName ? 'unread' : '');
+  const currentFilter = searchParams.get('filter') || (isStreamPage ? 'unread' : '');
+
+  const getFilterLink = (filter: string) => {
+    const baseStreamPath = isStreamPage ? location.pathname : '/';
+    const params = new URLSearchParams(searchParams);
+    params.set('filter', filter);
+    return `${baseStreamPath}?${params.toString()}`;
+  };
+
+  const getNavPath = (path: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (!params.has('filter') && currentFilter) {
+      params.set('filter', currentFilter);
+    }
+    const qs = params.toString();
+    return `${path}${qs ? '?' + qs : ''}`;
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      const filterPart = currentFilter ? `&filter=${currentFilter}` : '';
-      navigate(`/?q=${encodeURIComponent(searchQuery.trim())}${filterPart}`);
+      const params = new URLSearchParams(searchParams);
+      params.set('q', searchQuery.trim());
+      if (currentFilter) params.set('filter', currentFilter);
+      navigate(`/?${params.toString()}`);
     }
   };
 
@@ -114,7 +136,7 @@ export default function FeedList({
         <ul className="filter-list">
           <li className="unread_filter">
             <Link
-              to={location.pathname + '?filter=unread'}
+              to={getFilterLink('unread')}
               className={currentFilter === 'unread' ? 'active' : ''}
               onClick={handleLinkClick}
             >
@@ -123,7 +145,7 @@ export default function FeedList({
           </li>
           <li className="all_filter">
             <Link
-              to={location.pathname + '?filter=all'}
+              to={getFilterLink('all')}
               className={currentFilter === 'all' ? 'active' : ''}
               onClick={handleLinkClick}
             >
@@ -132,7 +154,7 @@ export default function FeedList({
           </li>
           <li className="starred_filter">
             <Link
-              to={location.pathname + '?filter=starred'}
+              to={getFilterLink('starred')}
               className={currentFilter === 'starred' ? 'active' : ''}
               onClick={handleLinkClick}
             >
@@ -151,7 +173,7 @@ export default function FeedList({
             {tags.map((tag) => (
               <li key={tag.title} className="tag-item">
                 <Link
-                  to={`/tag/${encodeURIComponent(tag.title)}${currentFilter ? `?filter=${currentFilter}` : ''}`}
+                  to={getNavPath(`/tag/${encodeURIComponent(tag.title)}`)}
                   className={`tag-link ${tagName === tag.title ? 'active' : ''}`}
                   onClick={handleLinkClick}
                 >
@@ -175,7 +197,7 @@ export default function FeedList({
               {feeds.map((feed) => (
                 <li key={feed._id} className="sidebar-feed-item">
                   <Link
-                    to={`/feed/${feed._id}${currentFilter ? `?filter=${currentFilter}` : ''}`}
+                    to={getNavPath(`/feed/${feed._id}`)}
                     className={`feed-title ${feedId === String(feed._id) ? 'active' : ''}`}
                     onClick={handleLinkClick}
                   >
