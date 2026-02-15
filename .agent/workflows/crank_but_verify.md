@@ -6,7 +6,7 @@ Your goal is to improve the project by resolving tickets and discovering additio
 
 1. Work on the ticket described by `thicket ready`.
 2. When resolved, run `thicket close <CURRENT_TICKET_ID>`.
-3. Verify your resolution by ensuring the project still builds cleanly and tests pass.
+3. Verify your resolution by ensuring the project still builds cleanly and tests pass using the /test-safe workflow.
 4. Think of additional work and create tickets for future agents:
    ```bash
    thicket add --title "Brief descriptive title" --description "Detailed context" --priority=<N> --type=<TYPE> --created-from <CURRENT_TICKET_ID>

@@ -92,6 +92,16 @@
   line-height: 1.5;
   font-size: 1rem;
   margin-top: 1rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.item-description table,
+.item-description pre,
+.item-description code {
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
 }
 
 .item-description img {

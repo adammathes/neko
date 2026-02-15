@@ -4,6 +4,16 @@
   --font-heading: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 body {
   font-family: var(--font-body);
 }
@@ -99,9 +109,7 @@ h5,
 }
 
 body {
-  margin: 0;
   min-width: 320px;
-  min-height: 100vh;
 }
 
 h1 {

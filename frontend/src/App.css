@@ -12,6 +12,8 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
+  width: 100%;
   overflow: hidden;
   /* Prevent body scroll */
 }
@@ -23,6 +25,7 @@ body {
   flex: 1;
   overflow: hidden;
   position: relative;
+  width: 100%;
 }
 
 .dashboard-sidebar {
@@ -42,8 +45,10 @@ body {
 
 .dashboard-main {
   flex: 1;
+  min-width: 0;
   padding: 2rem;
   overflow-y: auto;
+  overflow-x: hidden;
   background: var(--bg-color);
   margin-left: 0;
 }

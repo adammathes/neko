@@ -159,7 +159,7 @@
   gap: 2rem;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .settings-page.variant-glass {
     padding: 1.5rem;
     margin-top: 1rem;
