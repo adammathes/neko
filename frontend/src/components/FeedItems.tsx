@@ -201,7 +201,7 @@ export default function FeedItems() {
           }
         });
       },
-      { root: null, threshold: 0.1, rootMargin: '100px' }
+      { root: null, threshold: 0, rootMargin: '100px' }
     );
 
     items.forEach((_, index) => {
@@ -240,9 +240,9 @@ export default function FeedItems() {
             </div>
           ))}
           {hasMore && (
-            <div id="load-more-sentinel" className="loading-more">
+            <li id="load-more-sentinel" className="loading-more">
               {loadingMore ? 'Loading more...' : ''}
-            </div>
+            </li>
           )}
         </ul>
       )}
