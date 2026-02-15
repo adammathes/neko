@@ -30,7 +30,11 @@ export default function FeedItems() {
     const params = new URLSearchParams();
 
     if (feedId) {
-      params.append('feed_id', feedId);
+      if (feedId.includes(',')) {
+        params.append('feed_ids', feedId);
+      } else {
+        params.append('feed_id', feedId);
+      }
     } else if (tagName) {
       params.append('tag', tagName);
     }

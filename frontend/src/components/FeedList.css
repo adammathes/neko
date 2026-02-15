@@ -134,6 +134,17 @@
   margin-bottom: 0;
 }
 
+.feed-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feed-checkbox {
+  cursor: pointer;
+  margin: 0;
+}
+
 .feed-category {
   display: none;
 }

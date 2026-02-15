@@ -194,17 +194,49 @@ export default function FeedList({
             <p>No feeds found.</p>
           ) : (
             <ul className="feed-list-items">
-              {feeds.map((feed) => (
-                <li key={feed._id} className="sidebar-feed-item">
-                  <Link
-                    to={getNavPath(`/feed/${feed._id}`)}
-                    className={`feed-title ${feedId === String(feed._id) ? 'active' : ''}`}
-                    onClick={handleLinkClick}
-                  >
-                    {feed.title || feed.url}
-                  </Link>
-                </li>
-              ))}
+              {feeds.map((feed) => {
+                const isSelected = feedId?.split(',').includes(String(feed._id));
+
+                const toggleFeed = (e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  const selectedIds = feedId ? feedId.split(',') : [];
+                  let newIds;
+                  if (isSelected) {
+                    newIds = selectedIds.filter(id => id !== String(feed._id));
+                  } else {
+                    newIds = [...selectedIds, String(feed._id)];
+                  }
+
+                  if (newIds.length === 0) {
+                    navigate(getNavPath('/'));
+                  } else {
+                    navigate(getNavPath(`/feed/${newIds.join(',')}`));
+                  }
+                };
+
+                return (
+                  <li key={feed._id} className="sidebar-feed-item">
+                    <div className="feed-item-row">
+                      <input
+                        type="checkbox"
+                        checked={!!isSelected}
+                        onChange={() => { }} // Controlled by div click for better hit area
+                        onClick={toggleFeed}
+                        className="feed-checkbox"
+                      />
+                      <Link
+                        to={getNavPath(`/feed/${feed._id}`)}
+                        className={`feed-title ${isSelected ? 'active' : ''}`}
+                        onClick={handleLinkClick}
+                      >
+                        {feed.title || feed.url}
+                      </Link>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           ))}
       </div>
