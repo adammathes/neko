@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+<channel>
+  <title>Mock Feed</title>
+  <link>http://localhost:9000/mock_feed.xml</link>
+  <description>A mock feed for testing purposes</description>
+  <item>
+    <title>Mock Item 1</title>
+    <link>http://localhost:9000/item1</link>
+    <description>This is the first mock item.</description>
+    <pubDate>Mon, 06 Sep 2024 16:45:00 +0000</pubDate>
+    <guid>http://localhost:9000/item1</guid>
+  </item>
+  <item>
+    <title>Mock Item 2</title>
+    <link>http://localhost:9000/item2</link>
+    <description>This is the second mock item.</description>
+    <pubDate>Mon, 06 Sep 2024 16:40:00 +0000</pubDate>
+    <guid>http://localhost:9000/item2</guid>
+  </item>
+</channel>
+</rss>

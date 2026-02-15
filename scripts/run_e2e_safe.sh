@@ -10,8 +10,22 @@ go build -o neko_server ./cmd/neko
 echo "Creating data directory..."
 mkdir -p .data
 
+echo "Starting mock feed server on port 9090..."
+python3 -m http.server 9090 --directory scripts > mock_server.log 2>&1 &
+MOCK_PID=$!
+echo "Mock Server PID: $MOCK_PID"
+
+# Verify mock server
+sleep 2
+if ! curl -s --head http://localhost:9090/mock_feed.xml > /dev/null; then
+  echo "Mock server failed to start!"
+  cat mock_server.log
+  exit 1
+fi
+echo "Mock server is up."
+
 echo "Starting backend on port 4994..."
-./neko_server --http=4994 --database=.data/test.db > backend.log 2>&1 &
+./neko_server --verbose --allow-local --http=4994 --database=.data/test.db > backend.log 2>&1 &
 SERVER_PID=$!
 
 echo "Backend PID: $SERVER_PID"
@@ -41,12 +55,15 @@ if npm run test:e2e; then
     EXIT_CODE=0
 else
     echo "Tests failed!"
+    echo "Backend Logs:"
+    cat ../backend.log
     EXIT_CODE=1
 fi
 cd ..
 
 echo "Cleaning up..."
 kill $SERVER_PID || true
+kill $MOCK_PID || true
 scripts/clean_test_env.sh
 
 exit $EXIT_CODE

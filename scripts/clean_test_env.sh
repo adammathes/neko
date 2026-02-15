@@ -10,9 +10,10 @@ pkill -x "neko_server" || true
 pkill -f "vite" || true
 pkill -f "playwright" || true
 
-# Kill anything on ports 4994 and 5173
+# Kill anything on ports 4994 and 5173 and 9090
 fuser -k 4994/tcp || true
 fuser -k 5173/tcp || true
+fuser -k 9090/tcp || true
 
 # Remove test databases
 rm -f neko_test.db .data/test.db

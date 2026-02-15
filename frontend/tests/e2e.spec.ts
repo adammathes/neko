@@ -25,7 +25,7 @@ test.describe('Neko Reader E2E', () => {
     await expect(page).toHaveURL(/.*\/v2\/settings/);
 
     // Add a feed
-    const feedUrl = 'http://rss.cnn.com/rss/cnn_topstories.rss';
+    const feedUrl = 'http://localhost:9090/mock_feed.xml';
     await page.fill('input[type="url"]', feedUrl);
     await page.click('text=Add Feed');
 

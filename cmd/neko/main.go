@@ -13,6 +13,7 @@ import (
 
 	"flag"
 
+	"adammathes.com/neko/internal/safehttp"
 	"adammathes.com/neko/internal/vlog"
 	"adammathes.com/neko/web"
 )
@@ -71,6 +72,9 @@ func Run(args []string) error {
 	f.StringVar(&password, "password", "", "password for web interface")
 	f.StringVar(&password, "p", "", "password for web interface (short)")
 
+	var allowLocal bool
+	f.BoolVar(&allowLocal, "allow-local", false, "allow connections to local network addresses")
+
 	f.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		f.PrintDefaults()
@@ -84,6 +88,10 @@ func Run(args []string) error {
 		fmt.Printf("neko v%s | build %s\n", Version, Build)
 		f.Usage()
 		return nil
+	}
+
+	if allowLocal {
+		safehttp.AllowLocal = true
 	}
 	// reads config if present and sets defaults
 	if err := config.Init(configFile); err != nil {
