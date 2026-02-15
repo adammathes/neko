@@ -4,6 +4,9 @@
   color: #777;
   /* specific v1 color */
   font-size: 0.8rem;
+  background: var(--sidebar-bg);
+  min-height: 100%;
+  flex: 1;
 }
 
 .feed-list h1.logo {
@@ -57,6 +60,20 @@
   /* Darker than list items */
   text-transform: lowercase;
   font-variant: small-caps;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.caret {
+  display: inline-block;
+  font-size: 0.6rem;
+  transition: transform 0.2s ease;
+  color: #777;
+}
+
+.caret.expanded {
+  transform: rotate(90deg);
 }
 
 .filter-list,

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation, useParams } from 'react-router-dom';
 import type { Feed, Category } from '../types';
 import './FeedList.css';
+import './FeedListVariants.css';
 import { apiFetch } from '../utils';
 
 export default function FeedList({
@@ -20,11 +21,21 @@ export default function FeedList({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [feedsExpanded, setFeedsExpanded] = useState(false);
+  const [tagsExpanded, setTagsExpanded] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const { feedId, tagName } = useParams();
+
+  const sidebarVariant = searchParams.get('sidebar') || localStorage.getItem('neko-sidebar-variant') || 'glass';
+
+  useEffect(() => {
+    const variant = searchParams.get('sidebar');
+    if (variant) {
+      localStorage.setItem('neko-sidebar-variant', variant);
+    }
+  }, [searchParams]);
 
   const currentFilter =
     searchParams.get('filter') ||
@@ -39,6 +50,10 @@ export default function FeedList({
 
   const toggleFeeds = () => {
     setFeedsExpanded(!feedsExpanded);
+  };
+
+  const toggleTags = () => {
+    setTagsExpanded(!tagsExpanded);
   };
 
   const handleLinkClick = () => {
@@ -77,7 +92,7 @@ export default function FeedList({
   };
 
   return (
-    <div className="feed-list">
+    <div className={`feed-list variant-${sidebarVariant}`}>
       <h1 className="logo" onClick={() => setSidebarVisible(false)}>
         🐱
       </h1>
@@ -115,27 +130,29 @@ export default function FeedList({
       </div>
 
       <div className="tag-section">
-        <h4 onClick={() => { }} className="section-header">
-          Tags
+        <h4 onClick={toggleTags} className="section-header">
+          <span className={`caret ${tagsExpanded ? 'expanded' : ''}`}>▶</span> Tags
         </h4>
-        <ul className="tag-list-items">
-          {tags.map((tag) => (
-            <li key={tag.title} className="tag-item">
-              <Link
-                to={`/tag/${encodeURIComponent(tag.title)}`}
-                className={`tag-link ${tagName === tag.title ? 'active' : ''}`}
-                onClick={handleLinkClick}
-              >
-                {tag.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {tagsExpanded && (
+          <ul className="tag-list-items">
+            {tags.map((tag) => (
+              <li key={tag.title} className="tag-item">
+                <Link
+                  to={`/tag/${encodeURIComponent(tag.title)}`}
+                  className={`tag-link ${tagName === tag.title ? 'active' : ''}`}
+                  onClick={handleLinkClick}
+                >
+                  {tag.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="feed-section">
         <h4 onClick={toggleFeeds} className="section-header">
-          Feeds
+          <span className={`caret ${feedsExpanded ? 'expanded' : ''}`}>▶</span> Feeds
         </h4>
         {feedsExpanded &&
           (feeds.length === 0 ? (
