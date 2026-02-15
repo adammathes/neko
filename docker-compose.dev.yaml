@@ -1,0 +1,21 @@
+services:
+  neko-dev:
+    container_name: neko-dev
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    command: sleep infinity
+    ports:
+      # Backend
+      - "8080:8080"
+      # Frontend (Vite)
+      - "5173:5173"
+      # Optional: Range for dynamic dev tools/debuggers if needed
+      # (Uncomment if you hit port binding issues with specific tools)
+      # - "60000-65000:60000-65000"
+    # Security options to help with permission issues on some setups
+    security_opt:
+      - label=disable

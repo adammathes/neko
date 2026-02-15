@@ -134,23 +134,26 @@ Utility scripts and test wrappers are located in the `scripts/` directory:
 
 ### Development with Containers
 
-If you don't have Go or Node installed locally, or prefer an isolated environment, you can use the provided Dockerfile. Note that the `.devcontainer` VS Code integration has encountered issues with some setups (e.g. Antigravity + Colima), so manual Docker commands are recommended as a fallback.
+If you don't have Go or Node installed locally, or prefer an isolated environment, you can use the provided `docker-compose.dev.yaml`. This avoids manual setup and works around some issues with VS Code Dev Containers in certain environments (like Antigravity + Colima).
 
-1. **Build the development image**:
+1. **Start the development environment**:
    ```bash
-   docker build -t neko-dev -f .devcontainer/Dockerfile .
+   docker compose -f docker-compose.dev.yaml up -d --build
    ```
 
-2. **Run tests**:
+2. **Run tests inside the container**:
    ```bash
-   # Runs backend tests, installs frontend deps, and runs frontend tests
-   docker run --rm -v $(pwd):/workspace -w /workspace neko-dev \
-     bash -c "go test ./... && cd frontend && npm install && npm test"
+   docker compose -f docker-compose.dev.yaml exec neko-dev bash -c "go test ./... && cd frontend && npm install && npm test"
    ```
 
-3. **Interactive shell**:
+3. **Get an interactive shell**:
    ```bash
-   docker run -it --rm -v $(pwd):/workspace -w /workspace neko-dev bash
+   docker compose -f docker-compose.dev.yaml exec neko-dev bash
+   ```
+
+4. **Stop the environment**:
+   ```bash
+   docker compose -f docker-compose.dev.yaml down
    ```
 
 # Configuration
