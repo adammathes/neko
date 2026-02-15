@@ -140,19 +140,25 @@
 
 .nav-section {
   margin-top: 2rem;
-  border-top: 1px solid var(--border-color, #999);
-  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color, #eee);
+  padding-top: 1rem;
 }
 
 .logout-link {
   text-align: left;
   width: 100%;
   color: #777;
-  /* Make logout less prominent */
+  display: block;
+}
+
+.nav-link,
+.logout-link {
+  padding: 0.25rem 0;
 }
 
 .logout-link:hover {
   color: var(--link-color, blue);
+  text-decoration: underline;
 }
 
 .theme-section {
@@ -162,20 +168,40 @@
 .theme-selector {
   display: flex;
   gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .theme-selector button {
-  background: transparent;
-  border: 1px solid var(--border-color, #999);
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
   cursor: pointer;
-  padding: 0.1rem 0.3rem;
-  font-size: 0.9rem;
-  border-radius: 0;
+  padding: 0.4rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  line-height: 1;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-selector button:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 .theme-selector button.active {
   background: var(--border-color, #999);
   color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theme-dark .theme-selector button {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .theme-selector button:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Scrollbar styling for webkit */
