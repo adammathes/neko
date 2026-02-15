@@ -202,8 +202,9 @@ describe('FeedList Component', () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/logout', expect.any(Object));
-      expect(window.location.href).toContain('/v2/login');
+      expect(window.location.href).toContain('/v2/#/login');
     });
+    // @ts-expect-error - restoring window.location
     window.location = originalLocation;
   });
 

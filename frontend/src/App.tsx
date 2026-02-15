@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './components/Login';
 import './App.css';
 import { apiFetch } from './utils';
@@ -113,10 +113,10 @@ function App() {
     localStorage.setItem('neko-font-theme', newFontTheme);
   };
 
-  const basename = window.location.pathname.startsWith('/v2') ? '/v2' : '/';
+
 
   return (
-    <BrowserRouter basename={basename}>
+    <HashRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
@@ -133,7 +133,7 @@ function App() {
           }
         />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

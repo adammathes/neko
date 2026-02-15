@@ -27,7 +27,7 @@ describe('Navigation and Filtering', () => {
 
     it('preserves "all" filter when clicking a feed', async () => {
         Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
-        window.history.pushState({}, '', '/');
+        window.history.pushState({}, '', '/#/');
         render(<App />);
 
         // Wait for sidebar to load and feeds section to be visible
@@ -47,7 +47,9 @@ describe('Navigation and Filtering', () => {
         fireEvent.click(allFilter);
 
         // Verify URL has filter=all
-        expect(window.location.search).toContain('filter=all');
+        await waitFor(() => {
+            expect(window.location.hash).toContain('filter=all');
+        });
 
         // Click Feed 1
         const feed1Link = screen.getByText('Feed 1');
@@ -55,8 +57,8 @@ describe('Navigation and Filtering', () => {
 
         // Verify URL is /feed/1?filter=all (or similar)
         await waitFor(() => {
-            expect(window.location.pathname).toContain('/feed/1');
-            expect(window.location.search).toContain('filter=all');
+            expect(window.location.hash).toContain('/feed/1');
+            expect(window.location.hash).toContain('filter=all');
         });
 
         // Click Feed 2
@@ -65,48 +67,57 @@ describe('Navigation and Filtering', () => {
 
         // Verify URL is /feed/2?filter=all
         await waitFor(() => {
-            expect(window.location.pathname).toContain('/feed/2');
-            expect(window.location.search).toContain('filter=all');
+            expect(window.location.hash).toContain('/feed/2');
+            expect(window.location.hash).toContain('filter=all');
         });
     });
 
     it('highlights the correct filter link', async () => {
-        window.history.pushState({}, '', '/');
+        window.history.pushState({}, '', '/#/');
         render(<App />);
 
         await waitFor(() => {
-            expect(screen.getByText('unread')).toHaveClass('active');
+            const unreadLink = screen.getByText('unread');
+            expect(unreadLink.className).toContain('active');
         });
 
         fireEvent.click(screen.getByText('all'));
         await waitFor(() => {
-            expect(screen.getByText('all')).toHaveClass('active');
-            expect(screen.getByText('unread')).not.toHaveClass('active');
+            const allLink = screen.getByText('all');
+            const unreadLink = screen.getByText('unread');
+            expect(allLink.className).toContain('active');
+            expect(unreadLink.className).not.toContain('active');
         });
     });
 
     it('highlights "unread" as active even when on a feed page without filter param', async () => {
-        window.history.pushState({}, '', '/feed/1');
+        window.history.pushState({}, '', '/#/feed/1');
         render(<App />);
 
         await waitFor(() => {
-            expect(screen.getByText('unread')).toHaveClass('active');
+            const unreadLink = screen.getByText('unread');
+            expect(unreadLink.className).toContain('active');
         });
     });
 
     it('preserves search query when clicking a feed', async () => {
-        window.history.pushState({}, '', '/?q=linux');
+        window.history.pushState({}, '', '/#/?q=linux');
         render(<App />);
 
-        await screen.findByRole('heading', { name: /Feeds/i, level: 4 });
-        fireEvent.click(screen.getByRole('heading', { name: /Feeds/i, level: 4 }));
+        // Wait for load
+        await waitFor(() => {
+            expect(screen.queryByText(/Loading feeds/i)).not.toBeInTheDocument();
+        });
+
+        const feedsHeader = await screen.findByRole('heading', { name: /Feeds/i, level: 4 });
+        fireEvent.click(feedsHeader);
 
         await screen.findByText('Feed 1');
         fireEvent.click(screen.getByText('Feed 1'));
 
         await waitFor(() => {
-            expect(window.location.pathname).toContain('/feed/1');
-            expect(window.location.search).toContain('q=linux');
+            expect(window.location.hash).toContain('/feed/1');
+            expect(window.location.hash).toContain('q=linux');
         });
     });
 });

@@ -111,7 +111,7 @@ export default function FeedList({
   if (error) return <div className="feed-list-error">Error: {error}</div>;
 
   const handleLogout = () => {
-    apiFetch('/api/logout', { method: 'POST' }).then(() => (window.location.href = '/v2/login'));
+    apiFetch('/api/logout', { method: 'POST' }).then(() => (window.location.href = '/v2/#/login'));
   };
 
   return (

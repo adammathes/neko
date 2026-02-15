@@ -16,7 +16,7 @@ describe('App', () => {
     } as Response);
     window.history.pushState({}, 'Test page', '/v2/login');
     render(<App />);
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /login/i })).toBeInTheDocument();
   });
 
   it('renders dashboard when authenticated', async () => {
@@ -54,7 +54,7 @@ describe('App', () => {
         '/api/logout',
         expect.objectContaining({ method: 'POST' })
       );
-      expect(window.location.href).toBe('/v2/login');
+      expect(window.location.href).toBe('/v2/#/login');
     });
   });
 });
