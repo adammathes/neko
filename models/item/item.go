@@ -57,8 +57,8 @@ func (i *Item) Print() {
 
 func (i *Item) Create() error {
 	res, err := models.DB.Exec(`INSERT INTO 
-                                item(title, url, description, publish_date, feed_id)
-                                VALUES(?, ?, ?, ?, ?)`, i.Title, i.Url, i.Description, i.PublishDate, i.FeedId)
+                                item(title, url, description, publish_date, feed_id, read_state, starred)
+                                VALUES(?, ?, ?, ?, ?, ?, ?)`, i.Title, i.Url, i.Description, i.PublishDate, i.FeedId, i.ReadState, i.Starred)
 	if err != nil {
 		vlog.Printf("Error on item.Create\n%v\n%v\n", i.Url, err)
 		return err
@@ -228,6 +228,32 @@ func Filter(max_id int64, feed_id int64, category string, unread_only bool, star
 		return nil, err
 	}
 	return items, nil
+}
+
+// Purge deletes items older than the specified number of days.
+// By default it only deletes read items.
+// If allItems is true, it also deletes unread items.
+// Starred items are NEVER deleted.
+func Purge(days int, allItems bool) (int64, error) {
+	query := `DELETE FROM item WHERE datetime(publish_date) < datetime('now', ?) AND starred == 0`
+	if !allItems {
+		query = query + ` AND read_state == 1`
+	}
+	vlog.Printf("Purge query: %s with param %s\n", query, fmt.Sprintf("-%d days", days))
+	res, err := models.DB.Exec(query, fmt.Sprintf("-%d days", days))
+	if err != nil {
+		return 0, err
+	}
+	affected, _ := res.RowsAffected()
+	vlog.Printf("Purge affected rows: %d\n", affected)
+
+	// Cleanup FTS table - SQLite FTS4 doesn't automatically cleanup content table rows
+	// if we are using "content=item" (which we are).
+	// Actually we have triggers, so it should be fine.
+	// But VACUUM is good to reclaim space.
+	// _, _ = models.DB.Exec("VACUUM")
+
+	return affected, nil
 }
 
 func (i *Item) CleanHeaderImage() {

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	goose "github.com/advancedlogic/GoOse"
 
@@ -638,16 +639,83 @@ func TestRewriteImagesSrcset(t *testing.T) {
 }
 
 func TestItemSaveError(t *testing.T) {
-	setupTestDB(t)
+	config.Config.DBFile = filepath.Join(t.TempDir(), "test_bad.db")
+	models.InitDB()
+
 	i := &Item{Id: 1}
-	// Close DB to force error
 	models.DB.Close()
-	i.Save() // Should not panic, just log error
+	i.Save()
 }
 
 func TestItemFullSaveError(t *testing.T) {
-	setupTestDB(t)
+	config.Config.DBFile = filepath.Join(t.TempDir(), "test_bad_2.db")
+	models.InitDB()
 	i := &Item{Id: 1}
 	models.DB.Close()
 	i.FullSave() // Should not panic
+}
+func TestPurge(t *testing.T) {
+	setupTestDB(t)
+	feedId := createTestFeed(t)
+
+	// Create items with different dates and states
+	now := time.Now()
+	// Use explicit dates, ensure SQLite parses them correctly
+	// Old date: 60 days ago
+	oldDate := now.AddDate(0, 0, -60).Format("2006-01-02 15:04:05")
+	// Very old date: 100 days ago
+	veryOldDate := now.AddDate(0, 0, -100).Format("2006-01-02 15:04:05")
+
+	items := []*Item{
+		{Title: "Old Read", Url: "http://example.com/1", PublishDate: oldDate, FeedId: feedId, ReadState: true},
+		{Title: "Old Unread", Url: "http://example.com/2", PublishDate: oldDate, FeedId: feedId, ReadState: false},
+		{Title: "Old Starred", Url: "http://example.com/3", PublishDate: oldDate, FeedId: feedId, ReadState: true, Starred: true},
+		{Title: "Very Old Read", Url: "http://example.com/4", PublishDate: veryOldDate, FeedId: feedId, ReadState: true},
+	}
+
+	for _, i := range items {
+		err := i.Create()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Purge read items older than 30 days
+	affected, err := Purge(30, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Should have purged "Old Read" and "Very Old Read"
+	if affected != 2 {
+		t.Errorf("Expected 2 items purged, got %d", affected)
+		// Debug logging to see what's left
+		remaining, _ := Filter(0, 0, "", false, false, 0, "")
+		for _, r := range remaining {
+			t.Logf("Remaining: %s (%s) Read: %t Starred: %t", r.Title, r.PublishDate, r.ReadState, r.Starred)
+		}
+	}
+
+	// Verify remaining items count
+	remaining, _ := Filter(0, 0, "", false, false, 0, "")
+	if len(remaining) != 2 {
+		t.Errorf("Expected 2 items remaining, got %d", len(remaining))
+	}
+
+	// Purge all items older than 30 days (including unread)
+	affected, err = Purge(30, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Should have purged "Old Unread"
+	if affected != 1 {
+		t.Errorf("Expected 1 item purged, got %d", affected)
+	}
+
+	//Verify "Old Starred" is still there
+	remaining, _ = Filter(0, 0, "", false, false, 0, "")
+	if len(remaining) != 1 || remaining[0].Title != "Old Starred" {
+		t.Errorf("Expected only 'Old Starred' to remain, got %v", remaining)
+	}
 }

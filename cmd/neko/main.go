@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"time"
@@ -10,8 +11,7 @@ import (
 	"adammathes.com/neko/internal/exporter"
 	"adammathes.com/neko/models"
 	"adammathes.com/neko/models/feed"
-
-	"flag"
+	"adammathes.com/neko/models/item"
 
 	"adammathes.com/neko/internal/safehttp"
 	"adammathes.com/neko/internal/vlog"
@@ -31,6 +31,8 @@ func Run(args []string) error {
 	var help, update, verbose, proxyImages, secureCookies bool
 	var configFile, dbfile, newFeed, export, password string
 	var port, minutes int
+	var purge int
+	var purgeUnread bool
 
 	f := flag.NewFlagSet("neko", flag.ContinueOnError)
 
@@ -50,6 +52,9 @@ func Run(args []string) error {
 
 	f.StringVar(&export, "export", "", "export feed: text, opml, html, json")
 	f.StringVar(&export, "x", "", "export feed (short)")
+
+	f.IntVar(&purge, "purge", 0, "purge read items older than N days")
+	f.BoolVar(&purgeUnread, "purge-unread", false, "when purging, also include unread items")
 
 	// options
 	f.StringVar(&dbfile, "database", "", "sqlite database file")
@@ -125,6 +130,16 @@ func Run(args []string) error {
 	}
 
 	models.InitDB()
+
+	if purge > 0 {
+		vlog.Printf("purging items older than %d days (include unread: %t)\n", purge, purgeUnread)
+		affected, err := item.Purge(purge, purgeUnread)
+		if err != nil {
+			return err
+		}
+		vlog.Printf("purged %d items\n", affected)
+		return nil
+	}
 
 	if update {
 		vlog.Printf("starting crawl\n")
