@@ -32,7 +32,7 @@ jobs:
         version: v1.63
 
     - name: Test
-      run: go test -v ./...
+      run: go test -v -race ./...
 
   frontend:
     name: Frontend (Node)
@@ -58,3 +58,77 @@ jobs:
 
     - name: Test
       run: npm test -- --run
+
+  ui-check:
+    name: Frontend Build Consistency
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - name: Build assets
+      run: |
+        make ui
+    - name: Check for diff
+      run: git diff --exit-code web/dist/v2/
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [backend, frontend, ui-check]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+        npx playwright install --with-deps chromium
+
+    - name: Run E2E tests
+      run: ./scripts/run_e2e_safe.sh
+
+  docker:
+    name: Docker Build & Test
+    runs-on: ubuntu-latest
+    needs: [backend, frontend, ui-check]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build
+      run: |
+        docker build -t neko:test .
+
+    - name: Test Docker Compose
+      run: |
+        docker compose up -d
+        echo "Waiting for service to start..."
+        # Retry for up to 60 seconds
+        for i in {1..12}; do
+          if curl -s http://localhost:8080 > /dev/null; then
+            echo "Service is reachable!"
+            exit 0
+          fi
+          echo "Waiting... $i"
+          sleep 5
+        done
+        echo "Service failed to start"
+        docker compose logs
+        exit 1
