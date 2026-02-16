@@ -51,8 +51,8 @@ func TestCSRFLoginExclusion(t *testing.T) {
 	if rr.Code == http.StatusForbidden {
 		t.Errorf("Expected /login/ POST to be allowed without CSRF token, got 403 Forbidden")
 	}
-	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("Expected 307 Redirect on successful login, got %d", rr.Code)
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("Expected 303 Redirect on successful login, got %d", rr.Code)
 	}
 
 	// Test 2: POST /other without CSRF token

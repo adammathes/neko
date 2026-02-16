@@ -112,9 +112,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 		if password == config.Config.DigestPassword {
 			v, _ := bcrypt.GenerateFromPassword([]byte(password), 0)
-			c := http.Cookie{Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly: true}
+			c := http.Cookie{Name: AuthCookie, Value: string(v), Path: "/", MaxAge: SecondsInAYear, HttpOnly: true, Secure: config.Config.SecureCookies}
 			http.SetCookie(w, &c)
-			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
 			http.Error(w, "bad login", http.StatusUnauthorized)
 		}
@@ -379,7 +379,10 @@ func CSRFMiddleware(cfg *config.Settings, next http.Handler) http.Handler {
 			token = cookie.Value
 		}
 
-		if (r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete) && r.URL.Path != "/api/login" && r.URL.Path != "/login/" {
+		path := strings.TrimSuffix(r.URL.Path, "/")
+		isExcluded := path == "/api/login" || path == "/login" || path == "/api/logout"
+
+		if (r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete) && !isExcluded {
 			headerToken := r.Header.Get("X-CSRF-Token")
 			if headerToken == "" || headerToken != token {
 				http.Error(w, "CSRF token mismatch", http.StatusForbidden)

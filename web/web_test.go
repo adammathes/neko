@@ -130,8 +130,8 @@ func TestLoginHandlerPostSuccess(t *testing.T) {
 	req.Form = map[string][]string{"password": {"testpass"}}
 	rr := httptest.NewRecorder()
 	loginHandler(rr, req)
-	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("Expected %d, got %d", http.StatusTemporaryRedirect, rr.Code)
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("Expected %d, got %d", http.StatusSeeOther, rr.Code)
 	}
 }
 

@@ -11,7 +11,7 @@ export default defineConfig({
         },
     },
     build: {
-        outDir: '../web/dist/v3',
+        outDir: 'dist',
         emptyOutDir: true
     }
 });

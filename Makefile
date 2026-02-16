@@ -27,6 +27,9 @@ ui:
 
 ui-vanilla:
 	cd frontend-vanilla && ${NPM} install && ${NPM} run build
+	rm -rf web/dist/v3
+	mkdir -p web/dist/v3
+	cp -r frontend-vanilla/dist/* web/dist/v3/
 
 build:
 	${GO} build ${LDFLAGS} -o ${BINARY} ./cmd/neko
