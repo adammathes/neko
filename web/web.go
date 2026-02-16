@@ -379,7 +379,7 @@ func CSRFMiddleware(cfg *config.Settings, next http.Handler) http.Handler {
 			token = cookie.Value
 		}
 
-		if (r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete) && r.URL.Path != "/api/login" {
+		if (r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete) && r.URL.Path != "/api/login" && r.URL.Path != "/login/" {
 			headerToken := r.Header.Get("X-CSRF-Token")
 			if headerToken == "" || headerToken != token {
 				http.Error(w, "CSRF token mismatch", http.StatusForbidden)
