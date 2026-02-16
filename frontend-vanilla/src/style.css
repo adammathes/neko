@@ -5,7 +5,8 @@
   --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   line-height: 1.5;
-  font-size: 18px;
+  font-size: 15px;
+  /* Reduced from 18px */
 
   /* Light Mode Defaults */
   --bg-color: #ffffff;
@@ -88,13 +89,38 @@ body {
 
 .sidebar-section h3 {
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  /* Slightly smaller */
   text-transform: uppercase;
   letter-spacing: 0.1em;
   opacity: 0.5;
   margin-top: 2rem;
   margin-bottom: 0.5rem;
-  font-weight: 600;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sidebar-section h3:hover {
+  opacity: 0.8;
+}
+
+.sidebar-section .caret {
+  font-size: 0.6rem;
+  transition: transform 0.2s ease;
+  transform: rotate(90deg);
+  /* Expanded by default in CSS, but we'll set collapsed in HTML */
+}
+
+.sidebar-section.collapsed .caret {
+  transform: rotate(0deg);
+}
+
+.sidebar-section.collapsed ul {
+  display: none;
 }
 
 .sidebar-section ul {
@@ -105,11 +131,14 @@ body {
 
 .sidebar-section li a {
   display: block;
-  padding: 0.4rem 0.8rem;
-  margin: 0.2rem 0;
+  padding: 0.3rem 0.8rem;
+  /* Tighter padding */
+  margin: 0.1rem 0;
   border-radius: 8px;
   transition: all 0.2s ease;
   font-weight: 500;
+  font-size: 0.9rem;
+  /* Explicit smaller size */
   text-decoration: none;
   color: var(--text-color);
   opacity: 0.8;
@@ -246,10 +275,16 @@ body {
     box-shadow: 10px 0 20px rgba(0, 0, 0, 0.1);
   }
 
-  /* Keep toggle visible but maybe adjust position if needed */
+  /* Move toggle button with sidebar when visible */
   .sidebar-visible .sidebar-toggle {
     left: 12rem;
-    /* Move out with sidebar if desired, or keep fixed */
+  }
+}
+
+/* Desktop Sidebar state */
+@media (min-width: 769px) {
+  .sidebar-visible .sidebar-toggle {
+    left: 12rem;
   }
 }
 
@@ -265,11 +300,6 @@ body {
 
   .sidebar-visible .sidebar {
     display: flex;
-  }
-
-  /* On desktop, hide toggle unless we want to allow hiding sidebar manually */
-  .sidebar-toggle {
-    display: none;
   }
 }
 
@@ -440,11 +470,4 @@ button.active {
 .theme-dark button.active {
   background-color: #224;
   border-color: var(--accent-color);
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-    /* Mobile sidebar will need to be handled later */
-  }
 }

@@ -44,12 +44,12 @@ export function renderLayout() {
               <li class="filter-item" data-filter="starred"><a href="/v3/?filter=starred" data-nav="filter" data-value="starred">Starred</a></li>
             </ul>
           </section>
-          <section class="sidebar-section">
-            <h3>Tags</h3>
+          <section class="sidebar-section collapsible collapsed" id="section-tags">
+            <h3>Tags <span class="caret">▶</span></h3>
             <ul id="tag-list"></ul>
           </section>
-          <section class="sidebar-section">
-            <h3>Feeds</h3>
+          <section class="sidebar-section collapsible collapsed" id="section-feeds">
+            <h3>Feeds <span class="caret">▶</span></h3>
             <ul id="feed-list"></ul>
           </section>
         </div>
@@ -94,6 +94,13 @@ export function attachLayoutListeners() {
     if (window.innerWidth > 768 && !store.sidebarVisible) {
       store.setSidebarVisible(true);
     }
+  });
+
+  // Collapsible sections
+  document.querySelectorAll('.sidebar-section.collapsible h3').forEach(header => {
+    header.addEventListener('click', () => {
+      header.parentElement?.classList.toggle('collapsed');
+    });
   });
 
   // Event delegation for filters, tags, and feeds in sidebar
@@ -420,9 +427,11 @@ function handleRoute() {
     const id = parseInt(route.params.feedId);
     store.setActiveFeed(id);
     fetchItems(route.params.feedId);
+    document.getElementById('section-feeds')?.classList.remove('collapsed');
   } else if (route.path === '/tag' && route.params.tagName) {
     store.setActiveTag(route.params.tagName);
     fetchItems(undefined, route.params.tagName);
+    document.getElementById('section-tags')?.classList.remove('collapsed');
   } else {
     store.setActiveFeed(null);
     store.setActiveTag(null);
