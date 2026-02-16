@@ -206,7 +206,7 @@ html {
   transition: padding 0.3s ease;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .main-content {
     padding: 1rem;
     padding-top: 4rem;
@@ -264,7 +264,7 @@ html {
   z-index: 999;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .sidebar-visible .sidebar-backdrop {
     display: block;
   }
@@ -284,12 +284,10 @@ html {
     transform: translateX(0);
     box-shadow: 10px 0 20px rgba(0, 0, 0, 0.1);
   }
-
-  /* Move toggle button with sidebar when visible - Removed to keep it fixed */
 }
 
 /* Desktop Sidebar state */
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   /* Desktop Sidebar state - Removed to keep toggle fixed */
 }
 
@@ -298,7 +296,7 @@ html {
   display: none;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   .sidebar-hidden .sidebar {
     display: none;
   }
