@@ -78,7 +78,7 @@
       ${t.map(s=>P(s,s._id===c)).join("")}
     </ul>
     ${i.hasMore?'<div id="load-more-sentinel" class="loading-more">Loading more...</div>':""}
-  `;const n=document.getElementById("load-more-sentinel");n&&new IntersectionObserver(r=>{r[0].isIntersecting&&!i.loading&&i.hasMore&&U()},{threshold:.1}).observe(n),b=new IntersectionObserver(s=>{s.forEach(r=>{if(r.isIntersecting){const d=r.target,u=parseInt(d.getAttribute("data-id")||"0");if(u){const f=i.items.find(l=>l._id===u);f&&!f.read&&(h(u,{read:!0}),b?.unobserve(d))}}})},{threshold:.5}),a.querySelectorAll(".feed-item").forEach(s=>b.observe(s))}function I(){const t=document.getElementById("content-area");t&&(t.innerHTML=`
+  `;const n=document.getElementById("load-more-sentinel");n&&new IntersectionObserver(r=>{r[0].isIntersecting&&!i.loading&&i.hasMore&&U()},{threshold:.1}).observe(n),b=new IntersectionObserver(s=>{s.forEach(r=>{if(r.isIntersecting){const d=r.target,u=parseInt(d.getAttribute("data-id")||"0");if(u){const f=i.items.find(l=>l._id===u);f&&!f.read&&(h(u,{read:!0}),b?.unobserve(d))}}})},{threshold:1}),a.querySelectorAll(".feed-item").forEach(s=>b.observe(s))}function I(){const t=document.getElementById("content-area");t&&(t.innerHTML=`
     <div class="settings-view">
       <h2>Settings</h2>
       
