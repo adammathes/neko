@@ -62,7 +62,7 @@ describe('main application logic', () => {
         renderLayout();
         expect(document.getElementById('sidebar')).not.toBeNull();
         expect(document.getElementById('content-area')).not.toBeNull();
-        expect(document.getElementById('logo-link')).not.toBeNull();
+        expect(document.getElementById('sidebar-toggle-btn')).not.toBeNull();
     });
 
     it('renderFeeds should populate feed list', () => {

@@ -30,7 +30,14 @@ body {
   color: var(--text-color);
   height: 100vh;
   width: 100%;
+  max-width: 100vw;
   overflow: hidden;
+  /* Restore explicit hidden for app-shell feel */
+}
+
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 #app {
@@ -66,17 +73,7 @@ body {
   border-right-color: rgba(255, 255, 255, 0.05);
 }
 
-.sidebar-header {
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: center;
-}
-
-.sidebar-logo {
-  font-size: 3rem;
-  cursor: pointer;
-  user-select: none;
-}
+/* Sidebar Header Removed */
 
 .sidebar-search {
   margin-bottom: 2rem;
@@ -392,11 +389,22 @@ body {
   word-break: break-word;
 }
 
-.item-description img {
+.item-description img,
+.item-description video,
+.item-description pre {
   max-width: 100%;
   height: auto;
   display: block;
   margin: 1rem 0;
+}
+
+.item-description pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-x: auto;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1em;
+  border-radius: 4px;
 }
 
 .scrape-btn {
@@ -483,6 +491,7 @@ button.active {
   background-color: #224;
   border-color: var(--accent-color);
 }
+
 .add-feed-form {
   display: flex;
   gap: 0.5rem;
@@ -514,7 +523,8 @@ button.active {
   color: var(--text-color);
 }
 
-.data-actions button, .data-actions .button {
+.data-actions button,
+.data-actions .button {
   display: inline-block;
   text-align: center;
   width: 100%;
