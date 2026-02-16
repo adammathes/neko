@@ -45,8 +45,8 @@ type Item struct {
 	ReadState bool `json:"read"`
 	Starred   bool `json:"starred"`
 
-	FullContent string `json:"full_content"`
-	HeaderImage string `json:"header_image"`
+	FullContent string `json:"full_content,omitempty"`
+	HeaderImage string `json:"header_image,omitempty"`
 }
 
 func (i *Item) Print() {
@@ -97,7 +97,7 @@ func filterPolicy() *bluemonday.Policy {
 }
 
 func ItemById(id int64) *Item {
-	items, err := Filter(0, nil, "", false, false, id, "")
+	items, err := Filter(0, nil, "", false, false, id, "", true)
 	if err != nil || len(items) == 0 {
 		return nil
 	}
@@ -134,7 +134,12 @@ func (i *Item) GetFullContent() {
 	}
 }
 
-func Filter(max_id int64, feed_ids []int64, category string, unread_only bool, starred_only bool, item_id int64, search_query string) ([]*Item, error) {
+func Filter(max_id int64, feed_ids []int64, category string, unread_only bool, starred_only bool, item_id int64, search_query string, includeContent ...bool) ([]*Item, error) {
+
+	withContent := false
+	if len(includeContent) > 0 {
+		withContent = includeContent[0]
+	}
 
 	var args []interface{}
 	tables := " feed,item"
@@ -142,12 +147,15 @@ func Filter(max_id int64, feed_ids []int64, category string, unread_only bool, s
 		tables = tables + ",fts_item"
 	}
 
-	query := `SELECT item.id, item.feed_id, item.title, 
-                     item.url, item.description, 
-                     item.read_state, item.starred, item.publish_date,
-                     item.full_content, item.header_image,
-                     feed.url, feed.title, feed.category
-              FROM `
+	selectCols := `item.id, item.feed_id, item.title,
+                     item.url, item.description,
+                     item.read_state, item.starred, item.publish_date`
+	if withContent {
+		selectCols += `, item.full_content, item.header_image`
+	}
+	selectCols += `, feed.url, feed.title, feed.category`
+
+	query := `SELECT ` + selectCols + ` FROM `
 	query = query + tables + ` WHERE item.feed_id=feed.id AND item.id!=0 `
 
 	if max_id != 0 {
@@ -206,7 +214,12 @@ func Filter(max_id int64, feed_ids []int64, category string, unread_only bool, s
 	for rows.Next() {
 		i := new(Item)
 		var feed_id int64
-		err := rows.Scan(&i.Id, &feed_id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FullContent, &i.HeaderImage, &i.FeedUrl, &i.FeedTitle, &i.FeedCategory)
+		var err error
+		if withContent {
+			err = rows.Scan(&i.Id, &feed_id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FullContent, &i.HeaderImage, &i.FeedUrl, &i.FeedTitle, &i.FeedCategory)
+		} else {
+			err = rows.Scan(&i.Id, &feed_id, &i.Title, &i.Url, &i.Description, &i.ReadState, &i.Starred, &i.PublishDate, &i.FeedUrl, &i.FeedTitle, &i.FeedCategory)
+		}
 		if err != nil {
 			vlog.Println(err)
 			return nil, err
@@ -223,9 +236,11 @@ func Filter(max_id int64, feed_ids []int64, category string, unread_only bool, s
 		i.Url = p.Sanitize(i.Url)
 		i.FeedTitle = p.Sanitize(i.FeedTitle)
 		i.FeedUrl = p.Sanitize(i.FeedUrl)
-		i.FullContent = p.Sanitize(i.FullContent)
-		i.HeaderImage = p.Sanitize(i.HeaderImage)
-		i.CleanHeaderImage()
+		if withContent {
+			i.FullContent = p.Sanitize(i.FullContent)
+			i.HeaderImage = p.Sanitize(i.HeaderImage)
+			i.CleanHeaderImage()
+		}
 		items = append(items, i)
 	}
 	if err = rows.Err(); err != nil {

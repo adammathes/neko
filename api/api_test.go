@@ -445,6 +445,35 @@ func TestHandleStreamComplexFilters(t *testing.T) {
 	}
 }
 
+func TestStreamExcludesFullContent(t *testing.T) {
+	setupTestDB(t)
+	server := newTestServer()
+
+	f := &feed.Feed{Url: "http://example.com/content", Title: "Content Feed"}
+	f.Create()
+	i := &item.Item{
+		Title:  "Content Item",
+		Url:    "http://example.com/content/1",
+		FeedId: f.Id,
+	}
+	_ = i.Create()
+	// Simulate having full_content stored in DB
+	models.DB.Exec("UPDATE item SET full_content=? WHERE id=?", "<p>Full article text</p>", i.Id)
+
+	// Stream response should NOT include full_content
+	req := httptest.NewRequest("GET", "/stream?read_filter=all", nil)
+	rr := httptest.NewRecorder()
+	server.HandleStream(rr, req)
+
+	body := rr.Body.String()
+	if strings.Contains(body, "Full article text") {
+		t.Error("stream response should not contain full_content")
+	}
+	if strings.Contains(body, `"full_content"`) {
+		t.Error("stream response should not contain full_content key")
+	}
+}
+
 func TestHandleCategorySuccess(t *testing.T) {
 	setupTestDB(t)
 	server := newTestServer()
