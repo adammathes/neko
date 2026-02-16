@@ -223,14 +223,13 @@ func NewRouter(cfg *config.Settings) http.Handler {
 	staticSub, _ := fs.Sub(staticFiles, "static")
 	mux.Handle("/static/", GzipMiddleware(http.StripPrefix("/static/", http.FileServer(http.FS(staticSub)))))
 
-	// New Frontend (React/Vite) from web/dist/v2
-	// Default route
-	mux.Handle("/", GzipMiddleware(ServeFrontend("dist/v2")))
-	// Also keep /v2/ for explicit access
-	mux.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", ServeFrontend("dist/v2"))))
-
-	// Vanilla JS (v3)
+	// Default route: Vanilla JS (v3)
+	mux.Handle("/", GzipMiddleware(ServeFrontend("dist/v3")))
+	// Access v3 explicitly
 	mux.Handle("/v3/", GzipMiddleware(http.StripPrefix("/v3/", ServeFrontend("dist/v3"))))
+
+	// React Frontend (v2) at /v2/
+	mux.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", ServeFrontend("dist/v2"))))
 
 	// Legacy UI at /v1/
 	mux.Handle("/v1/", GzipMiddleware(http.StripPrefix("/v1/", AuthWrap(http.HandlerFunc(indexHandler)))))
