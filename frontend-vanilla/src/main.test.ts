@@ -259,7 +259,7 @@ describe('main application logic', () => {
         expect(store.sidebarVisible).toBe(!initialVisible);
     });
 
-    it('should mark item as read when scrolled into view', () => {
+    it('should mark item as read when scrolled past', () => {
         const mockItem = {
             _id: 123,
             title: 'Scroll Test Item',
@@ -277,13 +277,15 @@ describe('main application logic', () => {
 
         vi.mocked(apiFetch).mockResolvedValue({ ok: true } as Response);
 
-        // Simulate intersection
+        // Simulate item scrolled above viewport (no longer intersecting, bottom above root top)
         const entry = {
             target: itemEl,
-            isIntersecting: true
+            isIntersecting: false,
+            boundingClientRect: { bottom: -10 } as DOMRectReadOnly,
+            rootBounds: { top: 0 } as DOMRectReadOnly,
         } as IntersectionObserverEntry;
 
-        // This relies on the LAST created observer's callback being captured. 
+        // This relies on the LAST created observer's callback being captured.
         expect(observerCallback).toBeDefined();
         // @ts-ignore
         observerCallback([entry], {} as IntersectionObserver);
