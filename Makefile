@@ -9,7 +9,7 @@ VERSION=0.3
 BUILD=`git rev-parse HEAD`
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
-.PHONY: default all clean ui build install test test-race test-frontend test-e2e ui-check lint check ci run dev docs install-hooks cover coverage-html
+.PHONY: default all clean ui build install test test-race test-frontend test-e2e ui-check lint check ci run dev docs install-hooks cover coverage-html bench bench-short stress test-perf
 
 default: build
 
@@ -79,6 +79,18 @@ dev: build
 install-hooks:
 	chmod +x scripts/install-hooks.sh
 	./scripts/install-hooks.sh
+
+bench:
+	${GO} test -bench=. -benchmem -count=3 -run=^$$ ./...
+
+bench-short:
+	${GO} test -bench=. -benchmem -count=1 -run=^$$ ./...
+
+stress:
+	${GO} test -run=TestStress -count=1 -timeout=120s ./...
+
+test-perf:
+	cd frontend-vanilla && ${NPM} test -- --run src/perf/
 
 docs: readme.html
 
