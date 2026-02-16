@@ -262,6 +262,9 @@ export function renderItems() {
     ${store.hasMore ? '<div id="load-more-sentinel" class="loading-more">Loading more...</div>' : ''}
   `;
 
+  // Use the actual scroll container as IntersectionObserver root
+  const scrollRoot = document.getElementById('main-content');
+
   // Setup infinite scroll
   const sentinel = document.getElementById('load-more-sentinel');
   if (sentinel) {
@@ -269,14 +272,14 @@ export function renderItems() {
       if (entries[0].isIntersecting && !store.loading && store.hasMore) {
         loadMore();
       }
-    }, { threshold: 0.1 });
+    }, { root: scrollRoot, threshold: 0.1 });
     observer.observe(sentinel);
   }
 
-  // Setup item observer for marking read
+  // Setup item observer for marking read when items scroll past (above viewport)
   itemObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
+      if (!entry.isIntersecting && entry.boundingClientRect.bottom < (entry.rootBounds?.top ?? 0)) {
         const target = entry.target as HTMLElement;
         const id = parseInt(target.getAttribute('data-id') || '0');
         if (id) {
@@ -288,7 +291,7 @@ export function renderItems() {
         }
       }
     });
-  }, { threshold: 1.0 });
+  }, { root: scrollRoot, threshold: 0 });
 
   contentArea.querySelectorAll('.feed-item').forEach(el => itemObserver!.observe(el));
 }
