@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Store } from '../store';
-import type { Item, Feed, Category } from '../types';
+import type { Item, Feed } from '../types';
 
 function makeItem(id: number): Item {
     return {

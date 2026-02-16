@@ -291,7 +291,7 @@ export function renderItems() {
         }
       }
     });
-  }, { threshold: 0.5 });
+  }, { threshold: 1.0 });
 
   contentArea.querySelectorAll('.feed-item').forEach(el => itemObserver!.observe(el));
 }
