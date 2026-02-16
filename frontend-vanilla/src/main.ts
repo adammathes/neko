@@ -30,7 +30,7 @@ export function renderLayout() {
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-          <h2 id="logo-link">Neko v3</h2>
+          <div id="logo-link" class="sidebar-logo">🐱</div>
         </div>
         <div class="sidebar-search">
           <input type="search" id="search-input" placeholder="Search..." value="${store.searchQuery}">
@@ -124,7 +124,11 @@ export function attachLayoutListeners() {
     } else if (navType === 'feed') {
       e.preventDefault();
       const feedId = link.getAttribute('data-value')!;
-      router.navigate(`/feed/${feedId}`, currentQuery);
+      if (store.activeFeedId === parseInt(feedId)) {
+        router.navigate('/', currentQuery);
+      } else {
+        router.navigate(`/feed/${feedId}`, currentQuery);
+      }
     } else if (navType === 'settings') {
       e.preventDefault();
       router.navigate('/settings', currentQuery);
@@ -253,40 +257,130 @@ export function renderSettings() {
   contentArea.innerHTML = `
     <div class="settings-view">
       <h2>Settings</h2>
+      
       <section class="settings-section">
-        <h3>Theme</h3>
-        <div class="theme-options" id="theme-options">
-          <button class="${store.theme === 'light' ? 'active' : ''}" data-theme="light">Light</button>
-          <button class="${store.theme === 'dark' ? 'active' : ''}" data-theme="dark">Dark</button>
+        <h3>Add Feed</h3>
+        <div class="add-feed-form">
+          <input type="url" id="new-feed-url" placeholder="https://example.com/rss.xml">
+          <button id="add-feed-btn">Add Feed</button>
         </div>
       </section>
+
       <section class="settings-section">
-        <h3>Font</h3>
-        <select id="font-selector">
-          <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Palatino)</option>
-          <option value="serif" ${store.fontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
-          <option value="sans" ${store.fontTheme === 'sans' ? 'selected' : ''}>Sans-Serif (Helvetica)</option>
-          <option value="mono" ${store.fontTheme === 'mono' ? 'selected' : ''}>Monospace</option>
-        </select>
+        <h3>Appearance</h3>
+        <div class="settings-group">
+          <label>Theme</label>
+          <div class="theme-options" id="theme-options">
+            <button class="${store.theme === 'light' ? 'active' : ''}" data-theme="light">Light</button>
+            <button class="${store.theme === 'dark' ? 'active' : ''}" data-theme="dark">Dark</button>
+          </div>
+        </div>
+        <div class="settings-group" style="margin-top: 1rem;">
+          <label>Font</label>
+          <select id="font-selector">
+            <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Palatino)</option>
+            <option value="serif" ${store.fontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
+            <option value="sans" ${store.fontTheme === 'sans' ? 'selected' : ''}>Sans-Serif (Helvetica)</option>
+            <option value="mono" ${store.fontTheme === 'mono' ? 'selected' : ''}>Monospace</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3>Data Management</h3>
+        <div class="data-actions">
+          <button id="export-opml-btn">Export OPML</button>
+          <div class="import-section" style="margin-top: 1rem;">
+            <label for="import-opml-file" class="button">Import OPML</label>
+            <input type="file" id="import-opml-file" accept=".opml,.xml" style="display: none;">
+          </div>
+        </div>
       </section>
     </div>
   `;
 
   // Attach settings listeners
-  const themeOptions = document.getElementById('theme-options');
-  themeOptions?.addEventListener('click', (e) => {
+  document.getElementById('theme-options')?.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest('button');
     if (btn) {
       const theme = btn.getAttribute('data-theme')!;
       store.setTheme(theme);
-      renderSettings(); // Re-render to show active
+      renderSettings();
     }
   });
 
-  const fontSelector = document.getElementById('font-selector') as HTMLSelectElement;
-  fontSelector?.addEventListener('change', () => {
-    store.setFontTheme(fontSelector.value);
+  document.getElementById('font-selector')?.addEventListener('change', (e) => {
+    store.setFontTheme((e.target as HTMLSelectElement).value);
   });
+
+  document.getElementById('add-feed-btn')?.addEventListener('click', async () => {
+    const input = document.getElementById('new-feed-url') as HTMLInputElement;
+    const url = input.value.trim();
+    if (url) {
+      const success = await addFeed(url);
+      if (success) {
+        input.value = '';
+        alert('Feed added successfully!');
+        fetchFeeds();
+      } else {
+        alert('Failed to add feed.');
+      }
+    }
+  });
+
+  document.getElementById('export-opml-btn')?.addEventListener('click', () => {
+    window.location.href = '/api/export/opml';
+  });
+
+  document.getElementById('import-opml-file')?.addEventListener('change', async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+      const success = await importOPML(file);
+      if (success) {
+        alert('OPML imported successfully! Crawling started.');
+        fetchFeeds();
+      } else {
+        alert('Failed to import OPML.');
+      }
+    }
+  });
+}
+
+async function addFeed(url: string): Promise<boolean> {
+  try {
+    const res = await apiFetch('/api/feed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('Failed to add feed', err);
+    return false;
+  }
+}
+
+async function importOPML(file: File): Promise<boolean> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('format', 'opml');
+
+    // We need to handle CSRF manually since apiFetch expects JSON or simple body
+    const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrf_token='))?.split('=')[1];
+
+    const res = await fetch('/api/import', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-Token': csrfToken || ''
+      },
+      body: formData
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('Failed to import OPML', err);
+    return false;
+  }
 }
 
 // --- Data Actions ---
