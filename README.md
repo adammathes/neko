@@ -16,45 +16,13 @@
             February 2026
 </pre>
 
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
-
-- [Neko](#neko)
-  - [Features](#features)
-  - [Screenshots](#screenshots)
-- [Installation](#installation)
-  - [Requirements](#requirements)
-  - [Building](#building)
-    - [Docker](#docker)
-    - [Build from Source](#build-from-source)
-    - [Development and Testing](#development-and-testing)
-- [Configuration](#configuration)
-  - [Storage](#storage)
-- [Usage](#usage)
-  - [Web Interface](#web-interface)
-  - [Sidebar Variants](#sidebar-variants)
-  - [Add Feed](#add-feed)
-  - [Crawl Feeds](#crawl-feeds)
-  - [Export](#export)
-- [All Command Line Options](#all-command-line-options)
-- [Configuration File](#configuration-file)
-- [History](#history)
-  - [Early 2017](#early-2017)
-  - [July 2018 -- v0.2](#july-2018----v02)
-  - [February 2026 -- v.03 -- Vibe-code Modernization](#february-2026----v03----vibe-code-modernization)
-- [Feedback](#feedback)
-
-<!-- markdown-toc end -->
-
-
 # Neko
 
-`neko` is a self-hosted, rss reader focused on simplicity and efficiency.
-
-Backend is written in `Go` and there is a modern `React/Vite` SPA frontend.
+`neko` is a self-hosted, single user rss reader focused on simplicity and efficiency.
 
 *note: the cat ears are in your mind*
 
-*note: as of Feb 2026, this project is now mostly rewritten by AI as an experiment, so if you want the old original version git checkout back to 39ed5fcfe9327ab4eb81c4863d9e6353f08f6c07 from a few years ago*
+*note: as of Feb 2026, this project is now rewritten by AI as an experiment, which is actually probably better than when I wrote it myself but also still dangerous! so if you want the old original version git checkout back to 39ed5fcfe9327ab4eb81c4863d9e6353f08f6c07 from a few years ago*
 
 ## Features
 
@@ -62,11 +30,12 @@ Backend is written in `Go` and there is a modern `React/Vite` SPA frontend.
    * keyboard shortcuts
       * **j** - next item
       * **k** - previous item
-      * that's all you should ever need
+      * that's all you should ever need, really
    * automatically marks items read in an infinite stream of never-ending content (until you run out of content and it ends)
    * full text search
    * scrapes full text of pages on demand
    * collapsible sidebar sections for Feeds and Tags
+   * extremely simple and boring tech stack: backend: go, data: sqlite, frontend: vanilla javascript
 
 ## Screenshots
 
@@ -78,16 +47,23 @@ Backend is written in `Go` and there is a modern `React/Vite` SPA frontend.
 
 ## Requirements
 
-If you are using a binary, no dependencies!
+It should just work with a modern `go` installation. If not, file a bug!
 
-(I don't actually provide the binaries though.)
+## Install 
 
+The easiest way to install is via `go install`
+
+```bash
+go install adammathes.com/neko/cmd/neko@latest
+```
  
-## Building
+## Build and Run From Source
 
 ### Docker
 
-The easiest way to run Neko is using Docker and Docker Compose.
+You can run neko using using Docker and Docker Compose from the included Dockerfile.
+
+Clone this repo then:
 
 1. **Build and Start**:
    ```bash
@@ -127,9 +103,9 @@ Neko is designed for easy building. Static assets for the frontends are pre-buil
 
 # Configuration
 
-Everything can handled with a few command line flags. You shouldn't need to change the defaults most of the time.
+Everything can configured with a few command line flags. You shouldn't need to change the defaults most of the time.
 
-You can also set options using a configuration file [`yaml`](http://yaml.org), described at the end of this README (but you probably don't need to.)
+You can also set options using a configuration file [`yaml`](http://yaml.org), described at the end of this README (but you probably don't need to, other than setting a password.)
 
 ## Storage
 
@@ -161,9 +137,9 @@ You can do most of what you need to do with `neko` from the web interface, which
 
 Neko currently bundles three versions of the web interface for different preferences:
 
-*   **v2 (Modern React)**: Available at `/` (default) and `/v2/`. This is the primary modern interface.
-*   **v3 (Performance Vanilla)**: Available at `/v3/`. A high-performance, zero-dependency version built for speed and simplicity. 
-*   **v1 (Legacy Backbone)**: Available at `/v1/`. The original classic interface.
+*   **v3 (Vanilla)**: Default at / and at `/v3/`. A high-performance, zero-dependency version built for speed and simplicity. 
+*   **v2 (Modern React)**: Available at `/` (default) and `/v2/`. This was a mistake.
+*   **v1 (Legacy Backbone)**: Available at `/v1/`. The original classic interface I wrote before AI and before I understood Javascript. It uses backbone and is included for historical record, I guess.
 
 You can specify a different port using the `--http` option.
 
@@ -173,16 +149,6 @@ If you are hosting on a publicly available server instead of a personal computer
 
     $ neko --password=rssisveryimportant
     
-## Sidebar Variants
-
-Neko now supports several UI variants for the sidebar that can be toggled via URL parameters (and are persisted in local storage):
-
-- `?sidebar=glass`: (Default) Modern translucent glassmorphism
-- `?sidebar=minimal`: The clean v1-inspired look
-- `?sidebar=type`: Bold, Swiss-inspired typography
-- `?sidebar=banana`: Playful, "pop" aesthetic
-
-Example: `http://localhost:4994/?sidebar=type`
 ## Add Feed
 
 You can add feeds directly from the command line for convenience --
@@ -308,7 +274,7 @@ password: VeryLongRandomStringBecauseSecurityIsFun
 
 ## Early 2017
 
-I decided I didn't like the [original version of this that was python and mongo](https://github.com/adammathes/neko_v1) so rewrote it. I wanted to learn some Go. So assume the code is not great since I don't know what I'm doing even more so than normal.
+I decided I didn't like the [original version of this that was python and mongo](https://github.com/adammathes/neko_v1) so rewrote it. I wanted to learn some Go. 
 
 The Javascript frontend stayed still the same, I kept saying I will rewrite that too since it's old backbone.js code but it still seems to mostly work. It's not very pretty though.
 
@@ -331,10 +297,10 @@ The project underwent a significant modernization phase with the help of Google 
 
    * **Architecture**: Refactored backend into a clean REST API.
    * **Frontend**: Completely rewrote the legacy Backbone.js frontend in React/Vite as a modern Single Page Application (SPA).
+    * **Frontend**: Realized that was a huge mistake. React was a mistake, I think, for our industry. Rewrote the frontend again in plan vanilla optimized Javascript. Because AI wrote it, nobody complained!
    * **Performance**: Implemented robust Gzip compression and optimized asset delivery.
    * **Stability**: Added a comprehensive test suite with high coverage across both backend and frontend.
    * **Modern Standards**: Fully adopted Go modules and modern JavaScript build tooling.
-
 
 # Development and Testing
 
@@ -343,10 +309,9 @@ Utility scripts and test wrappers are located in the `scripts/` directory:
 - `scripts/run_e2e_safe.sh`: A safe wrapper for running Playwright E2E tests.
 - `scripts/run_e2e.sh`: Standard E2E test runner.
 
-
 ## Development with Containers
 
-If you don't have Go or Node installed locally, or prefer an isolated environment, you can use the provided `docker-compose.dev.yaml`. This avoids manual setup and works around some issues with VS Code Dev Containers in certain environments (like Antigravity + Colima).
+If you don't have Go or Node installed locally, or prefer an isolated environment, you can use the provided `docker-compose.dev.yaml`.
 
 1. **Start the development environment**:
    ```bash
