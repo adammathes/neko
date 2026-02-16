@@ -157,7 +157,13 @@ You can do most of what you need to do with `neko` from the web interface, which
 
     $ neko
     
-`neko` web interface should now be available at `127.0.0.1:4994` -- opening a browser up to that should show you the interface.
+`neko` web interface is available by default at `127.0.0.1:4994`.
+
+Neko currently bundles three versions of the web interface for different preferences:
+
+*   **v2 (Modern React)**: Available at `/` (default) and `/v2/`. This is the primary modern interface.
+*   **v3 (Performance Vanilla)**: Available at `/v3/`. A high-performance, zero-dependency version built for speed and simplicity. 
+*   **v1 (Legacy Backbone)**: Available at `/v1/`. The original classic interface.
 
 You can specify a different port using the `--http` option.
 

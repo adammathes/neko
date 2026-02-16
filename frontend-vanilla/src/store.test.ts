@@ -17,6 +17,20 @@ describe('Store', () => {
         expect(callback).toHaveBeenCalled();
     });
 
+    it('should handle tags', () => {
+        const store = new Store();
+        const mockTags = [{ title: 'Tag 1' } as any];
+        const callback = vi.fn();
+        store.on('tags-updated', callback);
+
+        store.setTags(mockTags);
+        expect(store.tags).toEqual(mockTags);
+        expect(callback).toHaveBeenCalled();
+
+        store.setActiveTag('Tag 1');
+        expect(store.activeTagName).toBe('Tag 1');
+    });
+
     it('should handle items and loading state', () => {
         const store = new Store();
         const mockItems = [{ _id: 1, title: 'Item 1' } as any];
@@ -34,6 +48,20 @@ describe('Store', () => {
         store.setItems(mockItems);
         expect(store.items).toEqual(mockItems);
         expect(itemCallback).toHaveBeenCalled();
+
+        // Test append
+        const moreItems = [{ _id: 2, title: 'Item 2' } as any];
+        store.setItems(moreItems, true);
+        expect(store.items).toHaveLength(2);
+        expect(store.items[1]._id).toBe(2);
+    });
+
+    it('should handle pagination state', () => {
+        const store = new Store();
+        store.setHasMore(true);
+        expect(store.hasMore).toBe(true);
+        store.setHasMore(false);
+        expect(store.hasMore).toBe(false);
     });
 
     it('should notify when active feed changes', () => {
@@ -64,6 +92,17 @@ describe('Store', () => {
         store.setTheme('dark');
         expect(store.theme).toBe('dark');
         expect(localStorage.getItem('neko-theme')).toBe('dark');
+        expect(callback).toHaveBeenCalled();
+    });
+
+    it('should handle font theme changes', () => {
+        const store = new Store();
+        const callback = vi.fn();
+        store.on('theme-updated', callback);
+
+        store.setFontTheme('serif');
+        expect(store.fontTheme).toBe('serif');
+        expect(localStorage.getItem('neko-font-theme')).toBe('serif');
         expect(callback).toHaveBeenCalled();
     });
 });
