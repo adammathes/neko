@@ -115,7 +115,8 @@
 <body>
     <div class="login-card">
         <h1>Welcome Back</h1>
-        <form action="/login/" method="post">
+        <form action="/login/" method="post" id="login-form">
+            <input type="hidden" name="csrf_token" id="csrf_token" value="">
             <div class="input-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" required autofocus autocomplete="username">
@@ -126,6 +127,10 @@
             </div>
             <button type="submit">Sign In</button>
         </form>
+        <script>
+            var match = document.cookie.split('; ').find(function(row) { return row.startsWith('csrf_token='); });
+            if (match) document.getElementById('csrf_token').value = match.split('=')[1];
+        </script>
         <div class="footer">
             Neko RSS Reader
         </div>

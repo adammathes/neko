@@ -380,11 +380,15 @@ func CSRFMiddleware(cfg *config.Settings, next http.Handler) http.Handler {
 		}
 
 		path := strings.TrimSuffix(r.URL.Path, "/")
-		isExcluded := path == "/api/login" || path == "/login" || path == "/api/logout"
+		isExcluded := path == "/api/login" || path == "/api/logout"
 
 		if (r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete) && !isExcluded {
-			headerToken := r.Header.Get("X-CSRF-Token")
-			if headerToken == "" || headerToken != token {
+			// Accept token from header (JS clients) or form field (HTML forms)
+			submittedToken := r.Header.Get("X-CSRF-Token")
+			if submittedToken == "" {
+				submittedToken = r.FormValue("csrf_token")
+			}
+			if submittedToken == "" || submittedToken != token {
 				http.Error(w, "CSRF token mismatch", http.StatusForbidden)
 				return
 			}
