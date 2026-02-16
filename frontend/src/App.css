@@ -65,14 +65,13 @@ body {
   z-index: 1000;
   background: var(--bg-color);
   /* Added bg to be visible over content if needed */
+  background: none;
   border: none;
   font-size: 2rem;
   line-height: 1;
   cursor: pointer;
   padding: 0.2rem;
   color: var(--text-color);
-  border-radius: 50%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
