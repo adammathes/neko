@@ -25,7 +25,9 @@ export function renderLayout() {
   if (!appEl) return;
   appEl.className = `theme-${store.theme} font-${store.fontTheme}`;
   appEl.innerHTML = `
-    <div class="layout">
+    <div class="layout ${store.sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'}">
+      <button class="sidebar-toggle" id="sidebar-toggle-btn" title="Toggle Sidebar">🐱</button>
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
           <h2 id="logo-link">Neko v3</h2>
@@ -52,7 +54,7 @@ export function renderLayout() {
           </section>
         </div>
         <div class="sidebar-footer">
-          <a href="/v3/settings" id="settings-link">Settings</a>
+          <a href="/v3/settings" data-nav="settings">Settings</a>
           <a href="#" id="logout-button">Logout</a>
         </div>
       </aside>
@@ -75,16 +77,23 @@ export function attachLayoutListeners() {
   const logoLink = document.getElementById('logo-link');
   logoLink?.addEventListener('click', () => router.navigate('/'));
 
-  const logoutBtn = document.getElementById('logout-button');
-  logoutBtn?.addEventListener('click', (e) => {
+  document.getElementById('logout-button')?.addEventListener('click', (e) => {
     e.preventDefault();
     logout();
   });
 
-  const settingsLink = document.getElementById('settings-link');
-  settingsLink?.addEventListener('click', (e) => {
-    e.preventDefault();
-    router.navigate('/settings');
+  document.getElementById('sidebar-toggle-btn')?.addEventListener('click', () => {
+    store.toggleSidebar();
+  });
+
+  document.getElementById('sidebar-backdrop')?.addEventListener('click', () => {
+    store.setSidebarVisible(false);
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768 && !store.sidebarVisible) {
+      store.setSidebarVisible(true);
+    }
   });
 
   // Event delegation for filters, tags, and feeds in sidebar
@@ -109,6 +118,14 @@ export function attachLayoutListeners() {
       e.preventDefault();
       const feedId = link.getAttribute('data-value')!;
       router.navigate(`/feed/${feedId}`, currentQuery);
+    } else if (navType === 'settings') {
+      e.preventDefault();
+      router.navigate('/settings', currentQuery);
+    }
+
+    // Auto-close sidebar on mobile after clicking a link
+    if (window.innerWidth <= 768) {
+      store.setSidebarVisible(false);
     }
   });
 
@@ -143,8 +160,6 @@ export function attachLayoutListeners() {
     const itemTitle = target.closest('[data-action="open"]');
     const itemRow = target.closest('.feed-item');
     if (itemRow && !itemTitle) { // Clicking the row itself (but not the link)
-      // We can add "expand" logic here if we want but v2 shows it by default if loaded
-      // For now, let's just mark as read if it's unread
       const id = parseInt(itemRow.getAttribute('data-id')!);
       const item = store.items.find(i => i._id === id);
       if (item && !item.read) {
@@ -229,26 +244,26 @@ export function renderSettings() {
   const contentArea = document.getElementById('content-area');
   if (!contentArea) return;
   contentArea.innerHTML = `
-        <div class="settings-view">
-            <h2>Settings</h2>
-            <section class="settings-section">
-                <h3>Theme</h3>
-                <div class="theme-options" id="theme-options">
-                    <button class="${store.theme === 'light' ? 'active' : ''}" data-theme="light">Light</button>
-                    <button class="${store.theme === 'dark' ? 'active' : ''}" data-theme="dark">Dark</button>
-                </div>
-            </section>
-            <section class="settings-section">
-                <h3>Font</h3>
-                <select id="font-selector">
-                    <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Palatino)</option>
-                    <option value="serif" ${store.fontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
-                    <option value="sans" ${store.fontTheme === 'sans' ? 'selected' : ''}>Sans-Serif (Helvetica)</option>
-                    <option value="mono" ${store.fontTheme === 'mono' ? 'selected' : ''}>Monospace</option>
-                </select>
-            </section>
+    <div class="settings-view">
+      <h2>Settings</h2>
+      <section class="settings-section">
+        <h3>Theme</h3>
+        <div class="theme-options" id="theme-options">
+          <button class="${store.theme === 'light' ? 'active' : ''}" data-theme="light">Light</button>
+          <button class="${store.theme === 'dark' ? 'active' : ''}" data-theme="dark">Dark</button>
         </div>
-    `;
+      </section>
+      <section class="settings-section">
+        <h3>Font</h3>
+        <select id="font-selector">
+          <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Palatino)</option>
+          <option value="serif" ${store.fontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
+          <option value="sans" ${store.fontTheme === 'sans' ? 'selected' : ''}>Sans-Serif (Helvetica)</option>
+          <option value="mono" ${store.fontTheme === 'mono' ? 'selected' : ''}>Monospace</option>
+        </select>
+      </section>
+    </div>
+  `;
 
   // Attach settings listeners
   const themeOptions = document.getElementById('theme-options');
@@ -480,6 +495,19 @@ store.on('theme-updated', () => {
   if (!appEl) appEl = document.querySelector<HTMLDivElement>('#app');
   if (appEl) {
     appEl.className = `theme-${store.theme} font-${store.fontTheme}`;
+  }
+});
+
+store.on('sidebar-toggle', () => {
+  const layout = document.querySelector('.layout');
+  if (layout) {
+    if (store.sidebarVisible) {
+      layout.classList.remove('sidebar-hidden');
+      layout.classList.add('sidebar-visible');
+    } else {
+      layout.classList.remove('sidebar-visible');
+      layout.classList.add('sidebar-hidden');
+    }
   }
 });
 

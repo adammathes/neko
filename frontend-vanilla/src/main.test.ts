@@ -246,4 +246,12 @@ describe('main application logic', () => {
         window.dispatchEvent(new KeyboardEvent('keydown', { key: '/' }));
         expect(spy).toHaveBeenCalled();
     });
+
+    it('should handle sidebar toggle', () => {
+        renderLayout();
+        const toggleBtn = document.getElementById('sidebar-toggle-btn') as HTMLElement;
+        const initialVisible = store.sidebarVisible;
+        toggleBtn.click();
+        expect(store.sidebarVisible).toBe(!initialVisible);
+    });
 });

@@ -163,12 +163,114 @@ body {
   min-width: 0;
   overflow-y: auto;
   background-color: var(--bg-color);
-  padding: 2rem;
+  padding: 1.5rem 2rem;
+  transition: padding 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+    padding-top: 4rem;
+    /* Space for the toggle button */
+  }
 }
 
 .main-content>* {
   max-width: 35em;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Sidebar Toggle (Neko Emoji) */
+.sidebar-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  background: var(--sidebar-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.sidebar-toggle:hover {
+  transform: scale(1.1);
+}
+
+.sidebar-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Mobile Sidebar & Backdrop */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 999;
+}
+
+@media (max-width: 768px) {
+  .sidebar-visible .sidebar-backdrop {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+  }
+
+  .sidebar-visible .sidebar {
+    transform: translateX(0);
+    box-shadow: 10px 0 20px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Keep toggle visible but maybe adjust position if needed */
+  .sidebar-visible .sidebar-toggle {
+    left: 12rem;
+    /* Move out with sidebar if desired, or keep fixed */
+  }
+}
+
+/* Layout State */
+.sidebar-hidden .sidebar {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .sidebar-hidden .sidebar {
+    display: none;
+  }
+
+  .sidebar-visible .sidebar {
+    display: flex;
+  }
+
+  /* On desktop, hide toggle unless we want to allow hiding sidebar manually */
+  .sidebar-toggle {
+    display: none;
+  }
 }
 
 /* Feed Items Styles (from v2) */

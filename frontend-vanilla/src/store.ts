@@ -1,6 +1,6 @@
 import type { Feed, Item, Category } from './types.ts';
 
-export type StoreEvent = 'feeds-updated' | 'tags-updated' | 'items-updated' | 'active-feed-updated' | 'active-tag-updated' | 'loading-state-changed' | 'filter-updated' | 'search-updated' | 'theme-updated';
+export type StoreEvent = 'feeds-updated' | 'tags-updated' | 'items-updated' | 'active-feed-updated' | 'active-tag-updated' | 'loading-state-changed' | 'filter-updated' | 'search-updated' | 'theme-updated' | 'sidebar-toggle';
 
 export type FilterType = 'unread' | 'all' | 'starred';
 
@@ -16,6 +16,7 @@ export class Store extends EventTarget {
     hasMore: boolean = true;
     theme: string = localStorage.getItem('neko-theme') || 'light';
     fontTheme: string = localStorage.getItem('neko-font-theme') || 'default';
+    sidebarVisible: boolean = window.innerWidth > 768;
 
     setFeeds(feeds: Feed[]) {
         this.feeds = feeds;
@@ -81,6 +82,15 @@ export class Store extends EventTarget {
         this.fontTheme = fontTheme;
         localStorage.setItem('neko-font-theme', fontTheme);
         this.emit('theme-updated');
+    }
+
+    setSidebarVisible(visible: boolean) {
+        this.sidebarVisible = visible;
+        this.emit('sidebar-toggle');
+    }
+
+    toggleSidebar() {
+        this.setSidebarVisible(!this.sidebarVisible);
     }
 
     private emit(type: StoreEvent, detail?: any) {
