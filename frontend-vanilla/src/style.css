@@ -66,6 +66,7 @@ html {
   overflow: hidden;
   z-index: 100;
   padding: 1.5rem;
+  padding-top: 5rem;
 }
 
 .theme-dark .sidebar {
@@ -284,17 +285,12 @@ html {
     box-shadow: 10px 0 20px rgba(0, 0, 0, 0.1);
   }
 
-  /* Move toggle button with sidebar when visible */
-  .sidebar-visible .sidebar-toggle {
-    left: 12rem;
-  }
+  /* Move toggle button with sidebar when visible - Removed to keep it fixed */
 }
 
 /* Desktop Sidebar state */
 @media (min-width: 769px) {
-  .sidebar-visible .sidebar-toggle {
-    left: 12rem;
-  }
+  /* Desktop Sidebar state - Removed to keep toggle fixed */
 }
 
 /* Layout State */

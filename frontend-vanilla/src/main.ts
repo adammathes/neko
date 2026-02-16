@@ -30,7 +30,6 @@ export function renderLayout() {
       <button class="sidebar-toggle" id="sidebar-toggle-btn" title="Toggle Sidebar">🐱</button>
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
       <aside class="sidebar" id="sidebar">
-        <h1 class="logo" data-nav="home">🐱</h1>
         <div class="sidebar-search">
           <input type="search" id="search-input" placeholder="Search..." value="${store.searchQuery}">
         </div>
