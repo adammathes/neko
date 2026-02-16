@@ -203,8 +203,10 @@ To include **unread** items in the purge:
 
 View all command line options with `-h` or `--help`
 
+```bash
     $ neko -h
-
+```
+```
 Usage of neko:
   -a, --add http://example.com/rss.xml
     	add the feed at URL http://example.com/rss.xml
@@ -234,6 +236,7 @@ Usage of neko:
     	fetch feeds and store new items
   -v, --verbose
     	verbose output
+```        
 
 These are POSIX style flags so --
 

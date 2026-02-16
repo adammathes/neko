@@ -320,4 +320,31 @@ describe('main application logic', () => {
         expect(navigateSpy).toHaveBeenCalledWith('/', expect.objectContaining({ filter: 'starred' }));
         getCurrentRouteSpy.mockRestore();
     });
+
+    it('deleteFeed should call API', async () => {
+        vi.mocked(apiFetch).mockResolvedValueOnce({ ok: true } as Response);
+        const { deleteFeed } = await import('./main');
+        await deleteFeed(123);
+        expect(apiFetch).toHaveBeenCalledWith('/api/feed/123', expect.objectContaining({ method: 'DELETE' }));
+    });
+
+    it('updateFeed should call API', async () => {
+        vi.mocked(apiFetch).mockResolvedValueOnce({ ok: true } as Response);
+        const { updateFeed } = await import('./main');
+        await updateFeed(123, { category: 'New Tag' });
+        expect(apiFetch).toHaveBeenCalledWith('/api/feed', expect.objectContaining({
+            method: 'PUT',
+            body: expect.stringContaining('"category":"New Tag"')
+        }));
+    });
+
+    it('renderSettings should show manage feeds section', () => {
+        store.setFeeds([{ _id: 1, title: 'My Feed', url: 'http://example.com', category: 'Tech' } as any]);
+        renderLayout();
+        renderSettings();
+        const manageSection = document.querySelector('.manage-feeds-section');
+        expect(manageSection).not.toBeNull();
+        expect(manageSection?.innerHTML).toContain('My Feed');
+        expect(document.querySelector('.feed-tag-input')).not.toBeNull();
+    });
 });

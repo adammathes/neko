@@ -317,6 +317,25 @@ export function renderSettings() {
         </div>
       </section>
 
+      <section class="settings-section manage-feeds-section">
+        <h3>Manage Feeds</h3>
+        <ul class="manage-feed-list" style="list-style: none; padding: 0;">
+          ${store.feeds.map(feed => `
+            <li class="manage-feed-item" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 0.5rem;">
+              <div class="feed-info">
+                <div class="feed-title" style="font-weight: bold;">${feed.title || feed.url}</div>
+                <div class="feed-url" style="font-size: 0.8em; color: #888; overflow: hidden; text-overflow: ellipsis;">${feed.url}</div>
+              </div>
+              <div class="feed-actions" style="display: flex; gap: 0.5rem;">
+                <input type="text" class="feed-tag-input" data-id="${feed._id}" value="${feed.category || ''}" placeholder="Tag" style="flex: 1; padding: 0.4rem;">
+                <button class="update-feed-tag-btn" data-id="${feed._id}" style="padding: 0.4rem 0.8rem;">Save</button>
+                <button class="delete-feed-btn" data-id="${feed._id}" style="padding: 0.4rem 0.8rem; color: red;">Delete</button>
+              </div>
+            </li>
+          `).join('')}
+        </ul>
+      </section>
+
       <section class="settings-section">
         <h3>Data Management</h3>
         <div class="data-actions">
@@ -375,6 +394,43 @@ export function renderSettings() {
       }
     }
   });
+
+  // Feed Management Listeners
+  document.querySelectorAll('.delete-feed-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = parseInt((e.target as HTMLElement).getAttribute('data-id')!);
+      if (confirm('Are you sure you want to delete this feed?')) {
+        await deleteFeed(id);
+        fetchFeeds();
+        // re-render settings to remove the deleted feed from list
+        // delay slightly to allow feed fetch? No, fetchFeeds is async.
+        // We should await fetchFeeds before re-rendering?
+        // But fetchFeeds updates store, and store emits 'feeds-updated'.
+        // Does 'feeds-updated' re-render settings?
+        // No, 'feeds-updated' calls renderFeeds (the sidebar list).
+        // So we need to explicitly call renderSettings() to update the management list.
+        // But we should wait for fetchFeeds() to complete so store is updated.
+        // wait... fetchFeeds() is async but we don't await result in the listener above?
+        // Ah, fetchFeeds() returns Promise.
+        await fetchFeeds();
+        renderSettings();
+      }
+    });
+  });
+
+  document.querySelectorAll('.update-feed-tag-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = parseInt((e.target as HTMLElement).getAttribute('data-id')!);
+      const input = document.querySelector(`.feed-tag-input[data-id="${id}"]`) as HTMLInputElement;
+      const category = input.value.trim();
+      await updateFeed(id, { category });
+      // updateFeed returns boolean, assuming success
+      await fetchFeeds();
+      await fetchTags();
+      renderSettings(); // Update list to show persistence
+      alert('Feed updated');
+    });
+  });
 }
 
 async function addFeed(url: string): Promise<boolean> {
@@ -410,6 +466,30 @@ async function importOPML(file: File): Promise<boolean> {
     return res.ok;
   } catch (err) {
     console.error('Failed to import OPML', err);
+    return false;
+  }
+}
+
+export async function deleteFeed(id: number): Promise<boolean> {
+  try {
+    const res = await apiFetch(`/api/feed/${id}`, { method: 'DELETE' });
+    return res.ok;
+  } catch (err) {
+    console.error('Failed to delete feed', err);
+    return false;
+  }
+}
+
+export async function updateFeed(id: number, updates: Partial<Feed>): Promise<boolean> {
+  try {
+    const res = await apiFetch('/api/feed', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...updates, _id: id })
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('Failed to update feed', err);
     return false;
   }
 }
