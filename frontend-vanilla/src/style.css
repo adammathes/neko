@@ -5,8 +5,8 @@
   --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   line-height: 1.5;
-  font-size: 16px;
-  /* Middle ground between 15px and 18px */
+  font-size: 18px;
+  /* Restored to original base size */
 
   /* Light Mode Defaults */
   --bg-color: #ffffff;
@@ -131,12 +131,13 @@ body {
 
 .sidebar-section li a {
   display: block;
-  padding: 0.4rem 0.8rem;
+  padding: 0.3rem 0.8rem;
   margin: 0.1rem 0;
   border-radius: 8px;
   transition: all 0.2s ease;
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 0.85rem;
+  /* Explicitly smaller sidebar links */
   /* Explicit smaller size */
   text-decoration: none;
   color: var(--text-color);
