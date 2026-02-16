@@ -95,6 +95,8 @@ export function attachLayoutListeners() {
     if (!link) return;
 
     const navType = link.getAttribute('data-nav');
+    const currentQuery = Object.fromEntries(router.getCurrentRoute().query.entries());
+
     if (navType === 'filter') {
       e.preventDefault();
       const filter = link.getAttribute('data-value') as FilterType;
@@ -102,11 +104,11 @@ export function attachLayoutListeners() {
     } else if (navType === 'tag') {
       e.preventDefault();
       const tag = link.getAttribute('data-value')!;
-      router.navigate(`/tag/${encodeURIComponent(tag)}`);
+      router.navigate(`/tag/${encodeURIComponent(tag)}`, currentQuery);
     } else if (navType === 'feed') {
       e.preventDefault();
       const feedId = link.getAttribute('data-value')!;
-      router.navigate(`/feed/${feedId}`);
+      router.navigate(`/feed/${feedId}`, currentQuery);
     }
   });
 
@@ -239,8 +241,9 @@ export function renderSettings() {
             <section class="settings-section">
                 <h3>Font</h3>
                 <select id="font-selector">
-                    <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Serif)</option>
+                    <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Palatino)</option>
                     <option value="serif" ${store.fontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
+                    <option value="sans" ${store.fontTheme === 'sans' ? 'selected' : ''}>Sans-Serif (Helvetica)</option>
                     <option value="mono" ${store.fontTheme === 'mono' ? 'selected' : ''}>Monospace</option>
                 </select>
             </section>
@@ -348,8 +351,12 @@ export async function fetchItems(feedId?: string, tagName?: string, append: bool
     if (feedId) params.append('feed_id', feedId);
     if (tagName) params.append('tag', tagName);
     if (store.searchQuery) params.append('q', store.searchQuery);
-    if (store.filter === 'unread') params.append('read', 'false');
-    if (store.filter === 'starred') params.append('starred', 'true');
+    if (store.filter === 'starred' || store.filter === 'all') {
+      params.append('read_filter', 'all');
+    }
+    if (store.filter === 'starred') {
+      params.append('starred', 'true');
+    }
 
     if (append && store.items.length > 0) {
       params.append('max_id', String(store.items[store.items.length - 1]._id));
@@ -382,9 +389,7 @@ function handleRoute() {
   const route = router.getCurrentRoute();
 
   const filterFromQuery = route.query.get('filter') as FilterType;
-  if (filterFromQuery && ['unread', 'all', 'starred'].includes(filterFromQuery)) {
-    store.setFilter(filterFromQuery);
-  }
+  store.setFilter(filterFromQuery || 'unread');
 
   const qFromQuery = route.query.get('q');
   if (qFromQuery !== null) {
@@ -463,10 +468,7 @@ store.on('feeds-updated', renderFeeds);
 store.on('tags-updated', renderTags);
 store.on('active-feed-updated', renderFeeds);
 store.on('active-tag-updated', renderTags);
-store.on('filter-updated', () => {
-  renderFilters();
-  handleRoute();
-});
+store.on('filter-updated', renderFilters);
 store.on('search-updated', () => {
   const searchInput = document.getElementById('search-input') as HTMLInputElement;
   if (searchInput && searchInput.value !== store.searchQuery) {

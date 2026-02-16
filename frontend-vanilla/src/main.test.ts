@@ -21,13 +21,13 @@ vi.mock('./api', () => ({
     apiFetch: vi.fn()
 }));
 
-// Mock IntersectionObserver
-const mockObserver = vi.fn(() => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-}));
-vi.stubGlobal('IntersectionObserver', mockObserver);
+// Mock IntersectionObserver as a constructor
+class MockIntersectionObserver {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+}
+vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
 
 describe('main application logic', () => {
     beforeEach(() => {

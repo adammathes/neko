@@ -38,6 +38,15 @@ describe('Router', () => {
         expect(route.path).toBe('/tag');
         expect(route.params.tagName).toBe('Tech News');
     });
+    it('should parse settings path', () => {
+        vi.stubGlobal('location', {
+            href: 'http://localhost/v3/settings',
+            pathname: '/v3/settings',
+            search: ''
+        });
+        const route = router.getCurrentRoute();
+        expect(route.path).toBe('/settings');
+    });
 
     it('should parse query parameters', () => {
         vi.stubGlobal('location', {

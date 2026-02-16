@@ -28,6 +28,8 @@ export class Router extends EventTarget {
         } else if (segments[0] === 'tag' && segments[1]) {
             routePath = '/tag';
             params.tagName = decodeURIComponent(segments[1]);
+        } else if (segments[0] === 'settings') {
+            routePath = '/settings';
         }
 
         return { path: routePath, params, query: url.searchParams };

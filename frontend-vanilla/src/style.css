@@ -10,9 +10,9 @@
   /* Light Mode Defaults */
   --bg-color: #ffffff;
   --text-color: rgba(0, 0, 0, 0.87);
-  --sidebar-bg: #ccc;
+  --sidebar-bg: #f5f5f5;
   --link-color: #0000ee;
-  --border-color: #999;
+  --border-color: #e5e5e5;
   --accent-color: #007bff;
 
   color-scheme: light dark;
@@ -37,9 +37,9 @@ body {
   width: 100%;
 }
 
-/* Sidebar - glassmorphism by default */
+/* Sidebar - matching v2 glass variant */
 .sidebar {
-  width: 14rem;
+  width: 11rem;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -87,7 +87,7 @@ body {
 }
 
 .sidebar-section h3 {
-  font-family: var(--font-heading);
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -116,6 +116,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: var(--font-sans);
 }
 
 .sidebar-section li a:hover {
@@ -148,7 +149,7 @@ body {
   text-decoration: none;
   color: var(--text-color);
   font-size: 0.9rem;
-  font-family: var(--font-heading);
+  font-family: var(--font-sans);
 }
 
 .sidebar-footer a:hover {
@@ -277,6 +278,11 @@ body {
 
 .font-serif {
   --font-body: Georgia, 'Times New Roman', Times, serif;
+  font-family: var(--font-body);
+}
+
+.font-sans {
+  --font-body: var(--font-heading);
   font-family: var(--font-body);
 }
 
