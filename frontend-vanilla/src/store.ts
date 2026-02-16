@@ -1,6 +1,6 @@
 import type { Feed, Item, Category } from './types.ts';
 
-export type StoreEvent = 'feeds-updated' | 'tags-updated' | 'items-updated' | 'active-feed-updated' | 'active-tag-updated' | 'loading-state-changed' | 'filter-updated';
+export type StoreEvent = 'feeds-updated' | 'tags-updated' | 'items-updated' | 'active-feed-updated' | 'active-tag-updated' | 'loading-state-changed' | 'filter-updated' | 'search-updated' | 'theme-updated';
 
 export type FilterType = 'unread' | 'all' | 'starred';
 
@@ -11,8 +11,11 @@ export class Store extends EventTarget {
     activeFeedId: number | null = null;
     activeTagName: string | null = null;
     filter: FilterType = 'unread';
+    searchQuery: string = '';
     loading: boolean = false;
     hasMore: boolean = true;
+    theme: string = localStorage.getItem('neko-theme') || 'light';
+    fontTheme: string = localStorage.getItem('neko-font-theme') || 'default';
 
     setFeeds(feeds: Feed[]) {
         this.feeds = feeds;
@@ -52,6 +55,13 @@ export class Store extends EventTarget {
         }
     }
 
+    setSearchQuery(query: string) {
+        if (this.searchQuery !== query) {
+            this.searchQuery = query;
+            this.emit('search-updated');
+        }
+    }
+
     setLoading(loading: boolean) {
         this.loading = loading;
         this.emit('loading-state-changed');
@@ -59,6 +69,18 @@ export class Store extends EventTarget {
 
     setHasMore(hasMore: boolean) {
         this.hasMore = hasMore;
+    }
+
+    setTheme(theme: string) {
+        this.theme = theme;
+        localStorage.setItem('neko-theme', theme);
+        this.emit('theme-updated');
+    }
+
+    setFontTheme(fontTheme: string) {
+        this.fontTheme = fontTheme;
+        localStorage.setItem('neko-font-theme', fontTheme);
+        this.emit('theme-updated');
     }
 
     private emit(type: StoreEvent, detail?: any) {

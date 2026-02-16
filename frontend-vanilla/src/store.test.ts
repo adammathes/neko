@@ -9,7 +9,7 @@ describe('Store', () => {
         ];
 
         const callback = vi.fn();
-        store.addEventListener('feeds-updated', callback);
+        store.on('feeds-updated', callback);
 
         store.setFeeds(mockFeeds);
 
@@ -24,8 +24,8 @@ describe('Store', () => {
         const itemCallback = vi.fn();
         const loadingCallback = vi.fn();
 
-        store.addEventListener('items-updated', itemCallback);
-        store.addEventListener('loading-state-changed', loadingCallback);
+        store.on('items-updated', itemCallback);
+        store.on('loading-state-changed', loadingCallback);
 
         store.setLoading(true);
         expect(store.loading).toBe(true);
@@ -39,10 +39,31 @@ describe('Store', () => {
     it('should notify when active feed changes', () => {
         const store = new Store();
         const callback = vi.fn();
-        store.addEventListener('active-feed-updated', callback);
+        store.on('active-feed-updated', callback);
 
         store.setActiveFeed(123);
         expect(store.activeFeedId).toBe(123);
+        expect(callback).toHaveBeenCalled();
+    });
+
+    it('should handle search query', () => {
+        const store = new Store();
+        const callback = vi.fn();
+        store.on('search-updated', callback);
+
+        store.setSearchQuery('test query');
+        expect(store.searchQuery).toBe('test query');
+        expect(callback).toHaveBeenCalled();
+    });
+
+    it('should handle theme changes', () => {
+        const store = new Store();
+        const callback = vi.fn();
+        store.on('theme-updated', callback);
+
+        store.setTheme('dark');
+        expect(store.theme).toBe('dark');
+        expect(localStorage.getItem('neko-theme')).toBe('dark');
         expect(callback).toHaveBeenCalled();
     });
 });
