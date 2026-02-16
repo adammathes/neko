@@ -622,6 +622,99 @@ func TestGetFullContentWithMock(t *testing.T) {
 	}
 }
 
+func TestFilterIncludeContent(t *testing.T) {
+	setupTestDB(t)
+	feedId := createTestFeed(t)
+
+	i := &Item{
+		Title:       "Content Item",
+		Url:         "https://example.com/content",
+		Description: "desc",
+		PublishDate: "2024-01-01 00:00:00",
+		FeedId:      feedId,
+	}
+	i.Create()
+	models.DB.Exec("UPDATE item SET full_content=?, header_image=? WHERE id=?",
+		"<p>Full article</p>", "https://example.com/img.jpg", i.Id)
+
+	// Without includeContent (default) — should NOT have full_content
+	items, err := Filter(0, nil, "", false, false, 0, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 1 {
+		t.Fatalf("Expected 1 item, got %d", len(items))
+	}
+	if items[0].FullContent != "" {
+		t.Errorf("Expected empty FullContent without includeContent, got %q", items[0].FullContent)
+	}
+	if items[0].HeaderImage != "" {
+		t.Errorf("Expected empty HeaderImage without includeContent, got %q", items[0].HeaderImage)
+	}
+
+	// With includeContent=true — should have full_content
+	items, err = Filter(0, nil, "", false, false, 0, "", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 1 {
+		t.Fatalf("Expected 1 item, got %d", len(items))
+	}
+	if items[0].FullContent == "" {
+		t.Error("Expected FullContent with includeContent=true")
+	}
+	if items[0].HeaderImage == "" {
+		t.Error("Expected HeaderImage with includeContent=true")
+	}
+}
+
+func TestItemByIdIncludesContent(t *testing.T) {
+	setupTestDB(t)
+	feedId := createTestFeed(t)
+
+	i := &Item{
+		Title:       "ById Content",
+		Url:         "https://example.com/byidcontent",
+		Description: "desc",
+		PublishDate: "2024-01-01 00:00:00",
+		FeedId:      feedId,
+	}
+	i.Create()
+	models.DB.Exec("UPDATE item SET full_content=? WHERE id=?", "<p>Article body</p>", i.Id)
+
+	found := ItemById(i.Id)
+	if found == nil {
+		t.Fatal("ItemById should return an item")
+	}
+	if found.FullContent == "" {
+		t.Error("ItemById should include full_content")
+	}
+}
+
+func TestFilterMultipleFeedIds(t *testing.T) {
+	setupTestDB(t)
+
+	res1, _ := models.DB.Exec("INSERT INTO feed(url, title) VALUES(?, ?)", "https://feed1.com", "Feed 1")
+	feedId1, _ := res1.LastInsertId()
+	res2, _ := models.DB.Exec("INSERT INTO feed(url, title) VALUES(?, ?)", "https://feed2.com", "Feed 2")
+	feedId2, _ := res2.LastInsertId()
+	res3, _ := models.DB.Exec("INSERT INTO feed(url, title) VALUES(?, ?)", "https://feed3.com", "Feed 3")
+	feedId3, _ := res3.LastInsertId()
+
+	(&Item{Title: "F1 Item", Url: "https://feed1.com/1", Description: "d", PublishDate: "2024-01-01", FeedId: feedId1}).Create()
+	(&Item{Title: "F2 Item", Url: "https://feed2.com/1", Description: "d", PublishDate: "2024-01-01", FeedId: feedId2}).Create()
+	(&Item{Title: "F3 Item", Url: "https://feed3.com/1", Description: "d", PublishDate: "2024-01-01", FeedId: feedId3}).Create()
+
+	// Filter by feed IDs 1 and 2
+	items, err := Filter(0, []int64{feedId1, feedId2}, "", false, false, 0, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 2 {
+		t.Errorf("Expected 2 items for two feed IDs, got %d", len(items))
+	}
+}
+
 func TestRewriteImagesNoSrc(t *testing.T) {
 	input := `<html><body><img alt="no src"/></body></html>`
 	result := rewriteImages(input)

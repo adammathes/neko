@@ -36,6 +36,13 @@ func TestRouting(t *testing.T) {
 			containsBody:   "<!doctype html>",
 		},
 		{
+			name:           "/v3/ serves v3 UI",
+			path:           "/v3/",
+			method:         "GET",
+			expectedStatus: http.StatusOK,
+			containsBody:   "<!doctype html>",
+		},
+		{
 			name:           "/v1/ redirects unauthenticated",
 			path:           "/v1/",
 			method:         "GET",

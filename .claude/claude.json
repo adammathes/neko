@@ -1,0 +1,1 @@
+{ "hooks": [ { "type": "startup", "matcher": ".*", "action": "run", "command": "test -f ./thicket || (git clone https://github.com/abarth/thicket.git && cd thicket && go build -o thicket ./cmd/thicket && cd ..)" } ] }
