@@ -37,6 +37,7 @@ install: build
 test:
 	${GO} test -cover ./...
 	cd frontend && ${NPM} test -- --run
+	cd frontend-vanilla && ${NPM} test -- --run
 
 test-race:
 	${GO} test -race ./...

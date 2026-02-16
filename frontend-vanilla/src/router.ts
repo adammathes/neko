@@ -1,6 +1,7 @@
 export type Route = {
     path: string;
     params: Record<string, string>;
+    query: URLSearchParams;
 };
 
 export class Router extends EventTarget {
@@ -14,7 +15,8 @@ export class Router extends EventTarget {
     }
 
     getCurrentRoute(): Route {
-        const path = window.location.pathname.replace(/^\/v3\//, '');
+        const url = new URL(window.location.href);
+        const path = url.pathname.replace(/^\/v3\//, '');
         const segments = path.split('/').filter(Boolean);
 
         let routePath = '/';
@@ -25,14 +27,32 @@ export class Router extends EventTarget {
             params.feedId = segments[1];
         } else if (segments[0] === 'tag' && segments[1]) {
             routePath = '/tag';
-            params.tagName = segments[1];
+            params.tagName = decodeURIComponent(segments[1]);
         }
 
-        return { path: routePath, params };
+        return { path: routePath, params, query: url.searchParams };
     }
 
-    navigate(path: string) {
-        window.history.pushState({}, '', `/v3${path}`);
+    navigate(path: string, query?: Record<string, string>) {
+        let url = `/v3${path}`;
+        if (query) {
+            const params = new URLSearchParams(query);
+            url += `?${params.toString()}`;
+        }
+        window.history.pushState({}, '', url);
+        this.handleRouteChange();
+    }
+
+    updateQuery(updates: Record<string, string>) {
+        const url = new URL(window.location.href);
+        for (const [key, value] of Object.entries(updates)) {
+            if (value) {
+                url.searchParams.set(key, value);
+            } else {
+                url.searchParams.delete(key);
+            }
+        }
+        window.history.pushState({}, '', url.toString());
         this.handleRouteChange();
     }
 }

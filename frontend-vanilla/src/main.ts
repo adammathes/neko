@@ -1,8 +1,9 @@
 import './style.css';
 import { apiFetch } from './api';
 import { store } from './store';
+import type { FilterType } from './store';
 import { router } from './router';
-import type { Feed, Item } from './types';
+import type { Feed, Item, Category } from './types';
 import { createFeedItem } from './components/FeedItem';
 
 // Cache elements
@@ -13,9 +14,26 @@ appEl.innerHTML = `
   <div class="layout">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <h2>Neko v3</h2>
+        <h2 onclick="window.app.navigate('/')" style="cursor: pointer">Neko v3</h2>
       </div>
-      <ul id="feed-list" class="feed-list"></ul>
+      <div class="sidebar-scroll">
+        <section class="sidebar-section">
+          <h3>Filters</h3>
+          <ul id="filter-list" class="filter-list">
+            <li class="filter-item" data-filter="unread"><a href="#" onclick="event.preventDefault(); window.app.setFilter('unread')">Unread</a></li>
+            <li class="filter-item" data-filter="all"><a href="#" onclick="event.preventDefault(); window.app.setFilter('all')">All</a></li>
+            <li class="filter-item" data-filter="starred"><a href="#" onclick="event.preventDefault(); window.app.setFilter('starred')">Starred</a></li>
+          </ul>
+        </section>
+        <section class="sidebar-section">
+          <h3>Tags</h3>
+          <ul id="tag-list" class="tag-list"></ul>
+        </section>
+        <section class="sidebar-section">
+          <h3>Feeds</h3>
+          <ul id="feed-list" class="feed-list"></ul>
+        </section>
+      </div>
     </aside>
     <section class="item-list-pane">
       <header class="top-bar">
@@ -32,6 +50,8 @@ appEl.innerHTML = `
 `;
 
 const feedListEl = document.getElementById('feed-list')!;
+const tagListEl = document.getElementById('tag-list')!;
+const filterListEl = document.getElementById('filter-list')!;
 const viewTitleEl = document.getElementById('view-title')!;
 const itemListEl = document.getElementById('item-list-container')!;
 const itemDetailEl = document.getElementById('item-detail-content')!;
@@ -45,10 +65,28 @@ function renderFeeds() {
   ).join('');
 }
 
+function renderTags() {
+  const { tags, activeTagName } = store;
+  tagListEl.innerHTML = tags.map((tag: Category) => `
+    <li class="tag-item ${tag.title === activeTagName ? 'active' : ''}">
+      <a href="/v3/tag/${encodeURIComponent(tag.title)}" class="tag-link" onclick="event.preventDefault(); window.app.navigate('/tag/${encodeURIComponent(tag.title)}')">
+        ${tag.title}
+      </a>
+    </li>
+  `).join('');
+}
+
+function renderFilters() {
+  const { filter } = store;
+  filterListEl.querySelectorAll('.filter-item').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('data-filter') === filter);
+  });
+}
+
 function renderItems() {
   const { items, loading } = store;
 
-  if (loading) {
+  if (loading && items.length === 0) {
     itemListEl.innerHTML = '<p class="loading">Loading items...</p>';
     return;
   }
@@ -67,6 +105,7 @@ function renderItems() {
         </li>
       `).join('')}
     </ul>
+    ${store.hasMore ? '<div id="load-more" class="load-more">Loading more...</div>' : ''}
   `;
 
   // Add click listeners to items
@@ -76,6 +115,17 @@ function renderItems() {
       selectItem(id);
     });
   });
+
+  // Infinite scroll observer
+  const loadMoreEl = document.getElementById('load-more');
+  if (loadMoreEl) {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !store.loading && store.hasMore) {
+        loadMore();
+      }
+    }, { threshold: 0.1 });
+    observer.observe(loadMoreEl);
+  }
 }
 
 async function selectItem(id: number) {
@@ -149,7 +199,18 @@ async function fetchFeeds() {
   }
 }
 
-async function fetchItems(feedId?: string, tagName?: string) {
+async function fetchTags() {
+  try {
+    const res = await apiFetch('/api/tag');
+    if (!res.ok) throw new Error('Failed to fetch tags');
+    const tags = await res.json();
+    store.setTags(tags);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function fetchItems(feedId?: string, tagName?: string, append: boolean = false) {
   store.setLoading(true);
   try {
     let url = '/api/stream';
@@ -157,23 +218,50 @@ async function fetchItems(feedId?: string, tagName?: string) {
     if (feedId) params.append('feed_id', feedId);
     if (tagName) params.append('tag', tagName);
 
+    // Add filter logic
+    if (store.filter === 'unread') params.append('read', 'false');
+    if (store.filter === 'starred') params.append('starred', 'true');
+
+    if (append && store.items.length > 0) {
+      params.append('max_id', String(store.items[store.items.length - 1]._id));
+    }
+
     const res = await apiFetch(`${url}?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch items');
     const items = await res.json();
-    store.setItems(items);
-    itemDetailEl.innerHTML = '<div class="empty-state">Select an item to read</div>';
+
+    store.setHasMore(items.length >= 50); // backend default page size is 50
+    store.setItems(items, append);
+
+    if (!append) {
+      itemDetailEl.innerHTML = '<div class="empty-state">Select an item to read</div>';
+    }
   } catch (err) {
     console.error(err);
-    store.setItems([]);
+    if (!append) store.setItems([]);
   } finally {
     store.setLoading(false);
   }
+}
+
+async function loadMore() {
+  const route = router.getCurrentRoute();
+  fetchItems(route.params.feedId, route.params.tagName, true);
 }
 
 // --- App Logic ---
 
 function handleRoute() {
   const route = router.getCurrentRoute();
+
+  // Update filter from query if present
+  const filterFromQuery = route.query.get('filter') as FilterType;
+  if (filterFromQuery && ['unread', 'all', 'starred'].includes(filterFromQuery)) {
+    store.setFilter(filterFromQuery);
+  } else {
+    // Default to unread if not specified in URL and not already set
+    // But actually, we want the URL to be the source of truth if possible.
+  }
 
   if (route.path === '/feed' && route.params.feedId) {
     const id = parseInt(route.params.feedId);
@@ -182,11 +270,12 @@ function handleRoute() {
     viewTitleEl.textContent = feed ? feed.title : `Feed ${id}`;
     fetchItems(route.params.feedId);
   } else if (route.path === '/tag' && route.params.tagName) {
-    store.setActiveFeed(null);
+    store.setActiveTag(route.params.tagName);
     viewTitleEl.textContent = `Tag: ${route.params.tagName}`;
     fetchItems(undefined, route.params.tagName);
   } else {
     store.setActiveFeed(null);
+    store.setActiveTag(null);
     viewTitleEl.textContent = 'All Items';
     fetchItems();
   }
@@ -194,7 +283,13 @@ function handleRoute() {
 
 // Subscribe to store
 store.on('feeds-updated', renderFeeds);
+store.on('tags-updated', renderTags);
 store.on('active-feed-updated', renderFeeds);
+store.on('active-tag-updated', renderTags);
+store.on('filter-updated', () => {
+  renderFilters();
+  handleRoute();
+});
 store.on('items-updated', renderItems);
 store.on('loading-state-changed', renderItems);
 
@@ -203,7 +298,8 @@ router.addEventListener('route-changed', handleRoute);
 
 // Global app object for inline handlers
 (window as any).app = {
-  navigate: (path: string) => router.navigate(path)
+  navigate: (path: string) => router.navigate(path),
+  setFilter: (filter: FilterType) => router.updateQuery({ filter })
 };
 
 // Start
@@ -214,7 +310,8 @@ async function init() {
     return;
   }
 
-  await fetchFeeds();
+  renderFilters();
+  await Promise.all([fetchFeeds(), fetchTags()]);
   handleRoute(); // handles initial route
 }
 
