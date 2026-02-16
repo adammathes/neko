@@ -35,7 +35,6 @@ export function renderLayout() {
         </div>
         <div class="sidebar-scroll">
           <section class="sidebar-section">
-            <h3>Filters</h3>
             <ul id="filter-list">
               <li class="filter-item" data-filter="unread"><a href="/v3/?filter=unread" data-nav="filter" data-value="unread">Unread</a></li>
               <li class="filter-item" data-filter="all"><a href="/v3/?filter=all" data-nav="filter" data-value="all">All</a></li>
