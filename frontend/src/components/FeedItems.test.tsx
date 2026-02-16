@@ -265,8 +265,13 @@ describe('FeedItems Component', () => {
     });
 
     fireEvent.keyDown(window, { key: 'j' }); // index 0
+    await waitFor(() => expect(document.getElementById('item-0')).toHaveAttribute('data-selected', 'true'));
+
     fireEvent.keyDown(window, { key: 'j' }); // index 1
+    await waitFor(() => expect(document.getElementById('item-1')).toHaveAttribute('data-selected', 'true'));
+
     fireEvent.keyDown(window, { key: 'j' }); // index 2 (last item)
+    await waitFor(() => expect(document.getElementById('item-2')).toHaveAttribute('data-selected', 'true'));
 
     await waitFor(() => {
       expect(screen.getByText('Item 0')).toBeInTheDocument();

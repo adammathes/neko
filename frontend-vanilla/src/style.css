@@ -348,9 +348,20 @@ select:focus {
 }
 
 .feed-item {
-  padding: 1rem 0;
-  margin-top: 5rem;
+  padding: 1rem 0.5rem;
+  margin-top: 2rem;
   border-bottom: none;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.feed-item.selected {
+  background-color: rgba(0, 123, 255, 0.05);
+  box-shadow: inset 4px 0 0 var(--accent-color);
+}
+
+.theme-dark .feed-item.selected {
+  background-color: rgba(33, 136, 255, 0.1);
 }
 
 .item-header {
@@ -452,7 +463,7 @@ select:focus {
   --bg-color: #24292e;
   --text-color: #ffffff;
   --sidebar-bg: #1b1f23;
-  --link-color: rgb(90, 200, 250);
+  --link-color: #5ac8fa;
   --border-color: #444d56;
   --accent-color: #2188ff;
 }

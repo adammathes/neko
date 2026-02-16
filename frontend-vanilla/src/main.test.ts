@@ -347,4 +347,25 @@ describe('main application logic', () => {
         expect(manageSection?.innerHTML).toContain('My Feed');
         expect(document.querySelector('.feed-tag-input')).not.toBeNull();
     });
+
+    it('should navigate items with j/k keys', () => {
+        store.setItems([
+            { _id: 101, title: 'Item 1', publish_date: '2023-01-01', read: false } as any,
+            { _id: 102, title: 'Item 2', publish_date: '2023-01-02', read: false } as any
+        ]);
+        renderLayout();
+        renderItems();
+
+        // 1st press 'j' -> index 0
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'j' }));
+        expect(document.querySelector('.feed-item[data-id="101"]')?.classList.contains('selected')).toBe(true);
+
+        // 2nd press 'j' -> index 1
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'j' }));
+        expect(document.querySelector('.feed-item[data-id="102"]')?.classList.contains('selected')).toBe(true);
+
+        // Press 'k' -> back to index 0
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k' }));
+        expect(document.querySelector('.feed-item[data-id="101"]')?.classList.contains('selected')).toBe(true);
+    });
 });

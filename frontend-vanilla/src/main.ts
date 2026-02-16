@@ -185,6 +185,14 @@ export function attachLayoutListeners() {
     const itemRow = target.closest('.feed-item');
     if (itemRow && !itemTitle) { // Clicking the row itself (but not the link)
       const id = parseInt(itemRow.getAttribute('data-id')!);
+      activeItemId = id;
+
+      // Update visual selection
+      document.querySelectorAll('.feed-item').forEach(el => {
+        const itemId = parseInt(el.getAttribute('data-id') || '0');
+        el.classList.toggle('selected', itemId === activeItemId);
+      });
+
       const item = store.items.find(i => i._id === id);
       if (item && !item.read) {
         updateItem(id, { read: true });
@@ -252,7 +260,7 @@ export function renderItems() {
 
   contentArea.innerHTML = `
     <ul class="item-list">
-      ${items.map((item: Item) => createFeedItem(item)).join('')}
+      ${items.map((item: Item) => createFeedItem(item, item._id === activeItemId)).join('')}
     </ul>
     ${store.hasMore ? '<div id="load-more-sentinel" class="loading-more">Loading more...</div>' : ''}
   `;
@@ -682,19 +690,28 @@ window.addEventListener('keydown', (e) => {
 
 function navigateItems(direction: number) {
   if (store.items.length === 0) return;
-  let index = store.items.findIndex(i => i._id === activeItemId);
-  index += direction;
-  if (index >= 0 && index < store.items.length) {
-    activeItemId = store.items[index]._id;
+  const currentIndex = store.items.findIndex(i => i._id === activeItemId);
+  let nextIndex;
+
+  if (currentIndex === -1) {
+    nextIndex = direction > 0 ? 0 : store.items.length - 1;
+  } else {
+    nextIndex = currentIndex + direction;
+  }
+
+  if (nextIndex >= 0 && nextIndex < store.items.length) {
+    activeItemId = store.items[nextIndex]._id;
+
+    // Update visual selection without full re-render for speed
+    document.querySelectorAll('.feed-item').forEach(el => {
+      const id = parseInt(el.getAttribute('data-id') || '0');
+      el.classList.toggle('selected', id === activeItemId);
+    });
+
     const el = document.querySelector(`.feed-item[data-id="${activeItemId}"]`);
-    if (el) el.scrollIntoView({ block: 'nearest' });
-    // Optional: mark as read when keyboard navigating
-    if (!store.items[index].read) updateItem(activeItemId, { read: true });
-    // Since we are in 2-pane, we just scroll to it.
-  } else if (index === -1) {
-    activeItemId = store.items[0]._id;
-    const el = document.querySelector(`.feed-item[data-id="${activeItemId}"]`);
-    if (el) el.scrollIntoView({ block: 'nearest' });
+    if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+
+    if (!store.items[nextIndex].read) updateItem(activeItemId, { read: true });
   }
 }
 

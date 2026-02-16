@@ -19,6 +19,7 @@ export default function FeedItems() {
   const hasMoreRef = useRef(hasMore);
   const [error, setError] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const selectedIndexRef = useRef(selectedIndex);
 
   // Sync refs
   useEffect(() => {
@@ -32,6 +33,10 @@ export default function FeedItems() {
   useEffect(() => {
     hasMoreRef.current = hasMore;
   }, [hasMore]);
+
+  useEffect(() => {
+    selectedIndexRef.current = selectedIndex;
+  }, [selectedIndex]);
 
   const fetchItems = useCallback((maxId?: string) => {
     if (maxId) {
@@ -156,8 +161,9 @@ export default function FeedItems() {
       if (currentItems.length === 0) return;
 
       if (e.key === 'j') {
-        const nextIndex = Math.min(selectedIndex + 1, currentItems.length - 1);
-        if (nextIndex !== selectedIndex) {
+        const nextIndex = Math.min(selectedIndexRef.current + 1, currentItems.length - 1);
+        if (nextIndex !== selectedIndexRef.current) {
+          selectedIndexRef.current = nextIndex;
           setSelectedIndex(nextIndex);
           const item = currentItems[nextIndex];
           if (!item.read) {
@@ -174,21 +180,22 @@ export default function FeedItems() {
           fetchItems(String(currentItems[currentItems.length - 1]._id));
         }
       } else if (e.key === 'k') {
-        const nextIndex = Math.max(selectedIndex - 1, 0);
-        if (nextIndex !== selectedIndex) {
+        const nextIndex = Math.max(selectedIndexRef.current - 1, 0);
+        if (nextIndex !== selectedIndexRef.current) {
+          selectedIndexRef.current = nextIndex;
           setSelectedIndex(nextIndex);
           scrollToItem(nextIndex);
         }
       } else if (e.key === 's') {
-        if (selectedIndex >= 0 && selectedIndex < currentItems.length) {
-          toggleStar(currentItems[selectedIndex]);
+        if (selectedIndexRef.current >= 0 && selectedIndexRef.current < currentItems.length) {
+          toggleStar(currentItems[selectedIndexRef.current]);
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [markAsRead, scrollToItem, toggleStar, fetchItems, selectedIndex]);
+  }, [markAsRead, scrollToItem, toggleStar, fetchItems]);
 
 
   // Stable Observer
