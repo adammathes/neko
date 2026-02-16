@@ -422,7 +422,7 @@ func TestServeFrontend(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	// Mimic the routing in Serve()
-	handler := http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))
+	handler := http.StripPrefix("/v2/", ServeFrontend("dist/v2"))
 	handler.ServeHTTP(rr, req)
 
 	// We expect 200 if built, or maybe panic if box not found (rice.MustFindBox)
@@ -517,7 +517,7 @@ func TestServeFrontendEdgeCases(t *testing.T) {
 	// 1. Missing file with extension should 404
 	req := httptest.NewRequest("GET", "/v2/missing.js", nil)
 	rr := httptest.NewRecorder()
-	handler := http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))
+	handler := http.StripPrefix("/v2/", ServeFrontend("dist/v2"))
 	handler.ServeHTTP(rr, req)
 	if rr.Code != http.StatusNotFound {
 		t.Errorf("Expected %d for missing asset, got %d", http.StatusNotFound, rr.Code)
@@ -632,7 +632,7 @@ func TestImageProxyHandlerInvalidBase64(t *testing.T) {
 func TestServeFrontendNotFound(t *testing.T) {
 	req := httptest.NewRequest("GET", "/not-actually-a-file", nil)
 	rr := httptest.NewRecorder()
-	ServeFrontend(rr, req)
+	ServeFrontend("dist/v2")(rr, req)
 	// Should fallback to index.html if it's not a dot-extension file
 	if rr.Code != http.StatusOK {
 		t.Errorf("Expected %d (fallback to index.html), got %d", http.StatusOK, rr.Code)
@@ -665,7 +665,7 @@ func TestImageProxyHeaders(t *testing.T) {
 func TestServeFrontendAssetNotFound(t *testing.T) {
 	req := httptest.NewRequest("GET", "/static/missing.js", nil)
 	rr := httptest.NewRecorder()
-	ServeFrontend(rr, req)
+	ServeFrontend("dist/v2")(rr, req)
 	if rr.Code != http.StatusNotFound {
 		t.Errorf("Expected %d for missing asset, got %d", http.StatusNotFound, rr.Code)
 	}

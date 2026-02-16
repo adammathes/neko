@@ -35,7 +35,7 @@ var (
 	//go:embed static/*
 	staticFiles embed.FS
 
-	//go:embed dist/v2/*
+	//go:embed dist/v2/* dist/v3/*
 	frontendFiles embed.FS
 )
 
@@ -225,9 +225,12 @@ func NewRouter(cfg *config.Settings) http.Handler {
 
 	// New Frontend (React/Vite) from web/dist/v2
 	// Default route
-	mux.Handle("/", GzipMiddleware(http.HandlerFunc(ServeFrontend)))
+	mux.Handle("/", GzipMiddleware(ServeFrontend("dist/v2")))
 	// Also keep /v2/ for explicit access
-	mux.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", http.HandlerFunc(ServeFrontend))))
+	mux.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", ServeFrontend("dist/v2"))))
+
+	// Vanilla JS (v3)
+	mux.Handle("/v3/", GzipMiddleware(http.StripPrefix("/v3/", ServeFrontend("dist/v3"))))
 
 	// Legacy UI at /v1/
 	mux.Handle("/v1/", GzipMiddleware(http.StripPrefix("/v1/", AuthWrap(http.HandlerFunc(indexHandler)))))
