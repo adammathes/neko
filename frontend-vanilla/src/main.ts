@@ -128,7 +128,8 @@ export function attachLayoutListeners() {
     } else if (navType === 'feed') {
       e.preventDefault();
       const feedId = link.getAttribute('data-value')!;
-      if (store.activeFeedId === parseInt(feedId)) {
+      const currentRoute = router.getCurrentRoute();
+      if (store.activeFeedId === parseInt(feedId) && currentRoute.path !== '/settings') {
         router.navigate('/', currentQuery);
       } else {
         router.navigate(`/feed/${feedId}`, currentQuery);

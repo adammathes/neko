@@ -321,6 +321,40 @@ describe('main application logic', () => {
         getCurrentRouteSpy.mockRestore();
     });
 
+    it('should navigate to feed when clicking feed from settings page', () => {
+        renderLayout();
+        store.setFeeds([{ _id: 5, title: 'My Feed', url: 'http://test', web_url: 'http://test', category: '' }]);
+        store.setActiveFeed(5); // was viewing this feed before settings
+        renderFeeds();
+
+        const getCurrentRouteSpy = vi.spyOn(router, 'getCurrentRoute').mockReturnValue({ path: '/settings', params: {}, query: new URLSearchParams() });
+        const navigateSpy = vi.spyOn(router, 'navigate');
+
+        const feedLink = document.querySelector('a[data-nav="feed"][data-value="5"]') as HTMLElement;
+        expect(feedLink).not.toBeNull();
+        feedLink.click();
+
+        // Should navigate to feed, not toggle to home (even though feed 5 was active)
+        expect(navigateSpy).toHaveBeenCalledWith('/feed/5', expect.any(Object));
+        getCurrentRouteSpy.mockRestore();
+    });
+
+    it('should navigate to tag when clicking tag from settings page', () => {
+        renderLayout();
+        store.setTags([{ title: 'Tech' } as any]);
+        renderTags();
+
+        const getCurrentRouteSpy = vi.spyOn(router, 'getCurrentRoute').mockReturnValue({ path: '/settings', params: {}, query: new URLSearchParams() });
+        const navigateSpy = vi.spyOn(router, 'navigate');
+
+        const tagLink = document.querySelector('a[data-nav="tag"][data-value="Tech"]') as HTMLElement;
+        expect(tagLink).not.toBeNull();
+        tagLink.click();
+
+        expect(navigateSpy).toHaveBeenCalledWith('/tag/Tech', expect.any(Object));
+        getCurrentRouteSpy.mockRestore();
+    });
+
     it('deleteFeed should call API', async () => {
         vi.mocked(apiFetch).mockResolvedValueOnce({ ok: true } as Response);
         const { deleteFeed } = await import('./main');
