@@ -474,6 +474,65 @@ func TestStreamExcludesFullContent(t *testing.T) {
 	}
 }
 
+func TestStreamReadFilterAll(t *testing.T) {
+	setupTestDB(t)
+	server := newTestServer()
+
+	f := &feed.Feed{Url: "http://example.com/rf", Title: "RF Feed"}
+	f.Create()
+	i := &item.Item{Title: "Read Item", Url: "http://example.com/rf/1", FeedId: f.Id}
+	_ = i.Create()
+	i.ReadState = true
+	i.Save()
+
+	// Default (unread only) should return 0 since item is read
+	req := httptest.NewRequest("GET", "/stream", nil)
+	rr := httptest.NewRecorder()
+	server.HandleStream(rr, req)
+	var items []item.Item
+	json.NewDecoder(rr.Body).Decode(&items)
+	if len(items) != 0 {
+		t.Errorf("Default stream should return 0 read items, got %d", len(items))
+	}
+
+	// read_filter=all should return the read item
+	req = httptest.NewRequest("GET", "/stream?read_filter=all", nil)
+	rr = httptest.NewRecorder()
+	server.HandleStream(rr, req)
+	json.NewDecoder(rr.Body).Decode(&items)
+	if len(items) != 1 {
+		t.Errorf("read_filter=all should return 1 item, got %d", len(items))
+	}
+}
+
+func TestStreamMultipleFeedIds(t *testing.T) {
+	setupTestDB(t)
+	server := newTestServer()
+
+	f1 := &feed.Feed{Url: "http://example.com/mf1", Title: "Feed 1"}
+	f1.Create()
+	f2 := &feed.Feed{Url: "http://example.com/mf2", Title: "Feed 2"}
+	f2.Create()
+	f3 := &feed.Feed{Url: "http://example.com/mf3", Title: "Feed 3"}
+	f3.Create()
+
+	(&item.Item{Title: "F1", Url: "http://example.com/mf1/1", FeedId: f1.Id}).Create()
+	(&item.Item{Title: "F2", Url: "http://example.com/mf2/1", FeedId: f2.Id}).Create()
+	(&item.Item{Title: "F3", Url: "http://example.com/mf3/1", FeedId: f3.Id}).Create()
+
+	// Filter by feed_ids=1,2
+	url := "/stream?feed_ids=" + strconv.FormatInt(f1.Id, 10) + "," + strconv.FormatInt(f2.Id, 10)
+	req := httptest.NewRequest("GET", url, nil)
+	rr := httptest.NewRecorder()
+	server.HandleStream(rr, req)
+
+	var items []item.Item
+	json.NewDecoder(rr.Body).Decode(&items)
+	if len(items) != 2 {
+		t.Errorf("feed_ids filter should return 2 items, got %d", len(items))
+	}
+}
+
 func TestHandleCategorySuccess(t *testing.T) {
 	setupTestDB(t)
 	server := newTestServer()
