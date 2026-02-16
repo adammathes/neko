@@ -32,6 +32,7 @@
       <button class="sidebar-toggle" id="sidebar-toggle-btn" title="Toggle Sidebar">🐱</button>
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
       <aside class="sidebar" id="sidebar">
+        <h1 class="logo" data-nav="home">🐱</h1>
         <div class="sidebar-search">
           <input type="search" id="search-input" placeholder="Search..." value="${i.searchQuery}">
         </div>
@@ -61,7 +62,7 @@
         <div id="content-area"></div>
       </main>
     </div>
-  `,O())}function O(){document.getElementById("search-input")?.addEventListener("input",s=>{const r=s.target.value;o.updateQuery({q:r})}),document.getElementById("logo-link")?.addEventListener("click",()=>o.navigate("/")),document.getElementById("logout-button")?.addEventListener("click",s=>{s.preventDefault(),U()}),document.getElementById("sidebar-toggle-btn")?.addEventListener("click",()=>{i.toggleSidebar()}),document.getElementById("sidebar-backdrop")?.addEventListener("click",()=>{i.setSidebarVisible(!1)}),window.addEventListener("resize",()=>{window.innerWidth>768&&!i.sidebarVisible&&i.setSidebarVisible(!0)}),document.querySelectorAll(".sidebar-section.collapsible h3").forEach(s=>{s.addEventListener("click",()=>{s.parentElement?.classList.toggle("collapsed")})}),document.getElementById("sidebar")?.addEventListener("click",s=>{const d=s.target.closest("a");if(!d)return;const c=d.getAttribute("data-nav"),u=Object.fromEntries(o.getCurrentRoute().query.entries());if(c==="filter"){s.preventDefault();const l=d.getAttribute("data-value");o.getCurrentRoute().path==="/settings"?o.navigate("/",{...u,filter:l}):o.updateQuery({filter:l})}else if(c==="tag"){s.preventDefault();const l=d.getAttribute("data-value");o.navigate(`/tag/${encodeURIComponent(l)}`,u)}else if(c==="feed"){s.preventDefault();const l=d.getAttribute("data-value");i.activeFeedId===parseInt(l)?o.navigate("/",u):o.navigate(`/feed/${l}`,u)}else c==="settings"&&(s.preventDefault(),o.getCurrentRoute().path==="/settings"?o.navigate("/",u):o.navigate("/settings",u));window.innerWidth<=768&&i.setSidebarVisible(!1)}),document.getElementById("content-area")?.addEventListener("click",s=>{const r=s.target,d=r.closest('[data-action="toggle-star"]');if(d){const g=d.closest("[data-id]");if(g){const v=parseInt(g.getAttribute("data-id"));D(v)}return}const c=r.closest('[data-action="scrape"]');if(c){const g=c.closest("[data-id]");if(g){const v=parseInt(g.getAttribute("data-id"));Q(v)}return}const u=r.closest('[data-action="open"]'),l=r.closest(".feed-item");if(l&&!u){const g=parseInt(l.getAttribute("data-id")),v=i.items.find(_=>_._id===g);v&&!v.read&&h(g,{read:!0})}})}function T(){const{feeds:t,activeFeedId:e}=i,a=document.getElementById("feed-list");a&&(a.innerHTML=t.map(n=>`
+  `,O())}function O(){document.getElementById("search-input")?.addEventListener("input",s=>{const r=s.target.value;o.updateQuery({q:r})}),document.getElementById("logo-link")?.addEventListener("click",()=>o.navigate("/")),document.getElementById("logout-button")?.addEventListener("click",s=>{s.preventDefault(),U()}),document.getElementById("sidebar-toggle-btn")?.addEventListener("click",()=>{i.toggleSidebar()}),document.getElementById("sidebar-backdrop")?.addEventListener("click",()=>{i.setSidebarVisible(!1)}),window.addEventListener("resize",()=>{window.innerWidth>768&&!i.sidebarVisible&&i.setSidebarVisible(!0)}),document.querySelectorAll(".sidebar-section.collapsible h3").forEach(s=>{s.addEventListener("click",()=>{s.parentElement?.classList.toggle("collapsed")})}),document.getElementById("sidebar")?.addEventListener("click",s=>{const r=s.target,d=r.closest("a");if(!d){r.classList.contains("logo")&&(s.preventDefault(),o.navigate("/",{}));return}const c=d.getAttribute("data-nav"),u=Object.fromEntries(o.getCurrentRoute().query.entries());if(c==="filter"){s.preventDefault();const l=d.getAttribute("data-value");o.getCurrentRoute().path==="/settings"?o.navigate("/",{...u,filter:l}):o.updateQuery({filter:l})}else if(c==="tag"){s.preventDefault();const l=d.getAttribute("data-value");o.navigate(`/tag/${encodeURIComponent(l)}`,u)}else if(c==="feed"){s.preventDefault();const l=d.getAttribute("data-value");i.activeFeedId===parseInt(l)?o.navigate("/",u):o.navigate(`/feed/${l}`,u)}else c==="settings"&&(s.preventDefault(),o.getCurrentRoute().path==="/settings"?o.navigate("/",u):o.navigate("/settings",u));window.innerWidth<=768&&i.setSidebarVisible(!1)}),document.getElementById("content-area")?.addEventListener("click",s=>{const r=s.target,d=r.closest('[data-action="toggle-star"]');if(d){const g=d.closest("[data-id]");if(g){const v=parseInt(g.getAttribute("data-id"));D(v)}return}const c=r.closest('[data-action="scrape"]');if(c){const g=c.closest("[data-id]");if(g){const v=parseInt(g.getAttribute("data-id"));Q(v)}return}const u=r.closest('[data-action="open"]'),l=r.closest(".feed-item");if(l&&!u){const g=parseInt(l.getAttribute("data-id")),v=i.items.find(_=>_._id===g);v&&!v.read&&h(g,{read:!0})}})}function T(){const{feeds:t,activeFeedId:e}=i,a=document.getElementById("feed-list");a&&(a.innerHTML=t.map(n=>`
     <li class="${n._id===e?"active":""}">
       <a href="/v3/feed/${n._id}" data-nav="feed" data-value="${n._id}">
         ${n.title||n.url}
@@ -114,15 +115,15 @@
         <h3>Manage Feeds</h3>
         <ul class="manage-feed-list" style="list-style: none; padding: 0;">
           ${i.feeds.map(e=>`
-            <li class="manage-feed-item" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 0.5rem;">
+            <li class="manage-feed-item" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.5rem;">
               <div class="feed-info">
                 <div class="feed-title" style="font-weight: bold;">${e.title||e.url}</div>
-                <div class="feed-url" style="font-size: 0.8em; color: #888; overflow: hidden; text-overflow: ellipsis;">${e.url}</div>
+                <div class="feed-url" style="font-size: 0.8em; color: var(--text-color); opacity: 0.6; overflow: hidden; text-overflow: ellipsis;">${e.url}</div>
               </div>
               <div class="feed-actions" style="display: flex; gap: 0.5rem;">
-                <input type="text" class="feed-tag-input" data-id="${e._id}" value="${e.category||""}" placeholder="Tag" style="flex: 1; padding: 0.4rem;">
-                <button class="update-feed-tag-btn" data-id="${e._id}" style="padding: 0.4rem 0.8rem;">Save</button>
-                <button class="delete-feed-btn" data-id="${e._id}" style="padding: 0.4rem 0.8rem; color: red;">Delete</button>
+                <input type="text" class="feed-tag-input" data-id="${e._id}" value="${e.category||""}" placeholder="Tag" style="flex: 1;">
+                <button class="update-feed-tag-btn" data-id="${e._id}">Save</button>
+                <button class="delete-feed-btn" data-id="${e._id}" style="color: var(--error-color, #ff4444);">Delete</button>
               </div>
             </li>
           `).join("")}

@@ -65,8 +65,17 @@ describe('main application logic', () => {
     it('renderLayout should create sidebar and main content', () => {
         renderLayout();
         expect(document.getElementById('sidebar')).not.toBeNull();
+        expect(document.querySelector('.logo')).not.toBeNull();
         expect(document.getElementById('content-area')).not.toBeNull();
         expect(document.getElementById('sidebar-toggle-btn')).not.toBeNull();
+    });
+
+    it('should navigate to home when clicking logo', () => {
+        renderLayout();
+        const logo = document.querySelector('.logo') as HTMLElement;
+        const navigateSpy = vi.spyOn(router, 'navigate');
+        logo.click();
+        expect(navigateSpy).toHaveBeenCalledWith('/', expect.any(Object));
     });
 
     it('renderFeeds should populate feed list', () => {

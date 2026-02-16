@@ -89,9 +89,13 @@ export default function FeedItems() {
         }
         return res.json();
       })
-      .then((data) => {
+      .then((data: Item[]) => {
         if (maxId) {
-          setItems((prev) => [...prev, ...data]);
+          setItems((prev) => {
+            const existingIds = new Set(prev.map(i => i._id));
+            const newItems = data.filter(i => !existingIds.has(i._id));
+            return [...prev, ...newItems];
+          });
         } else {
           setItems(data);
         }
@@ -148,49 +152,43 @@ export default function FeedItems() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Use ref to get latest items without effect re-running
       const currentItems = itemsRef.current;
       if (currentItems.length === 0) return;
 
       if (e.key === 'j') {
-        setSelectedIndex((prev) => {
-          const nextIndex = Math.min(prev + 1, currentItems.length - 1);
-          if (nextIndex !== prev) {
-            const item = currentItems[nextIndex];
-            if (!item.read) {
-              markAsRead(item);
-            }
-            scrollToItem(nextIndex);
+        const nextIndex = Math.min(selectedIndex + 1, currentItems.length - 1);
+        if (nextIndex !== selectedIndex) {
+          setSelectedIndex(nextIndex);
+          const item = currentItems[nextIndex];
+          if (!item.read) {
+            markAsRead(item);
           }
+          scrollToItem(nextIndex);
 
           // Trigger load more if needed
           if (nextIndex === currentItems.length - 1 && hasMoreRef.current && !loadingMoreRef.current) {
             fetchItems(String(currentItems[currentItems.length - 1]._id));
           }
-
-          return nextIndex;
-        });
+        } else if (hasMoreRef.current && !loadingMoreRef.current) {
+          // Already at last item, but more can be loaded
+          fetchItems(String(currentItems[currentItems.length - 1]._id));
+        }
       } else if (e.key === 'k') {
-        setSelectedIndex((prev) => {
-          const nextIndex = Math.max(prev - 1, 0);
-          if (nextIndex !== prev) {
-            scrollToItem(nextIndex);
-          }
-          return nextIndex;
-        });
+        const nextIndex = Math.max(selectedIndex - 1, 0);
+        if (nextIndex !== selectedIndex) {
+          setSelectedIndex(nextIndex);
+          scrollToItem(nextIndex);
+        }
       } else if (e.key === 's') {
-        setSelectedIndex((currentIndex) => {
-          if (currentIndex >= 0 && currentIndex < currentItems.length) {
-            toggleStar(currentItems[currentIndex]);
-          }
-          return currentIndex;
-        });
+        if (selectedIndex >= 0 && selectedIndex < currentItems.length) {
+          toggleStar(currentItems[selectedIndex]);
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [markAsRead, scrollToItem, toggleStar, fetchItems]);
+  }, [markAsRead, scrollToItem, toggleStar, fetchItems, selectedIndex]);
 
 
   // Stable Observer

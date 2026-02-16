@@ -30,6 +30,7 @@ export function renderLayout() {
       <button class="sidebar-toggle" id="sidebar-toggle-btn" title="Toggle Sidebar">🐱</button>
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
       <aside class="sidebar" id="sidebar">
+        <h1 class="logo" data-nav="home">🐱</h1>
         <div class="sidebar-search">
           <input type="search" id="search-input" placeholder="Search..." value="${store.searchQuery}">
         </div>
@@ -105,7 +106,13 @@ export function attachLayoutListeners() {
   sidebar?.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     const link = target.closest('a');
-    if (!link) return;
+    if (!link) {
+      if (target.classList.contains('logo')) {
+        e.preventDefault();
+        router.navigate('/', {});
+      }
+      return;
+    }
 
     const navType = link.getAttribute('data-nav');
     const currentQuery = Object.fromEntries(router.getCurrentRoute().query.entries());
@@ -321,15 +328,15 @@ export function renderSettings() {
         <h3>Manage Feeds</h3>
         <ul class="manage-feed-list" style="list-style: none; padding: 0;">
           ${store.feeds.map(feed => `
-            <li class="manage-feed-item" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 0.5rem;">
+            <li class="manage-feed-item" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.5rem;">
               <div class="feed-info">
                 <div class="feed-title" style="font-weight: bold;">${feed.title || feed.url}</div>
-                <div class="feed-url" style="font-size: 0.8em; color: #888; overflow: hidden; text-overflow: ellipsis;">${feed.url}</div>
+                <div class="feed-url" style="font-size: 0.8em; color: var(--text-color); opacity: 0.6; overflow: hidden; text-overflow: ellipsis;">${feed.url}</div>
               </div>
               <div class="feed-actions" style="display: flex; gap: 0.5rem;">
-                <input type="text" class="feed-tag-input" data-id="${feed._id}" value="${feed.category || ''}" placeholder="Tag" style="flex: 1; padding: 0.4rem;">
-                <button class="update-feed-tag-btn" data-id="${feed._id}" style="padding: 0.4rem 0.8rem;">Save</button>
-                <button class="delete-feed-btn" data-id="${feed._id}" style="padding: 0.4rem 0.8rem; color: red;">Delete</button>
+                <input type="text" class="feed-tag-input" data-id="${feed._id}" value="${feed.category || ''}" placeholder="Tag" style="flex: 1;">
+                <button class="update-feed-tag-btn" data-id="${feed._id}">Save</button>
+                <button class="delete-feed-btn" data-id="${feed._id}" style="color: var(--error-color, #ff4444);">Delete</button>
               </div>
             </li>
           `).join('')}
