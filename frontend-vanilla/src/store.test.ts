@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Store } from './store';
 
 describe('Store', () => {
@@ -104,5 +104,45 @@ describe('Store', () => {
         expect(store.fontTheme).toBe('serif');
         expect(localStorage.getItem('neko-font-theme')).toBe('serif');
         expect(callback).toHaveBeenCalled();
+    });
+
+    describe('sidebar cookie persistence', () => {
+        beforeEach(() => {
+            // Clear sidebar cookie
+            document.cookie = 'neko_sidebar=; path=/; max-age=0';
+        });
+
+        it('should persist sidebar state to cookie', () => {
+            const store = new Store();
+            store.setSidebarVisible(false);
+            expect(document.cookie).toContain('neko_sidebar=0');
+
+            store.setSidebarVisible(true);
+            expect(document.cookie).toContain('neko_sidebar=1');
+        });
+
+        it('should read sidebar state from cookie on init', () => {
+            document.cookie = 'neko_sidebar=1; path=/';
+            const store = new Store();
+            expect(store.sidebarVisible).toBe(true);
+
+            document.cookie = 'neko_sidebar=0; path=/';
+            const store2 = new Store();
+            expect(store2.sidebarVisible).toBe(false);
+        });
+
+        it('should default to closed on tablet/mobile when no cookie', () => {
+            // jsdom defaults innerWidth to 0, which is <= 1024
+            const store = new Store();
+            expect(store.sidebarVisible).toBe(false);
+        });
+
+        it('should emit sidebar-toggle when toggling', () => {
+            const store = new Store();
+            const callback = vi.fn();
+            store.on('sidebar-toggle', callback);
+            store.toggleSidebar();
+            expect(callback).toHaveBeenCalled();
+        });
     });
 });

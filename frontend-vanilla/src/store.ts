@@ -4,6 +4,23 @@ export type StoreEvent = 'feeds-updated' | 'tags-updated' | 'items-updated' | 'a
 
 export type FilterType = 'unread' | 'all' | 'starred';
 
+function getSidebarCookie(): boolean | null {
+    const match = document.cookie.split('; ').find(row => row.startsWith('neko_sidebar='));
+    if (!match) return null;
+    return match.split('=')[1] === '1';
+}
+
+function setSidebarCookie(visible: boolean) {
+    document.cookie = `neko_sidebar=${visible ? '1' : '0'}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
+function getInitialSidebarVisible(): boolean {
+    const saved = getSidebarCookie();
+    if (saved !== null) return saved;
+    // Default: closed on tablet+mobile (<=1024px), open on desktop
+    return window.innerWidth > 1024;
+}
+
 export class Store extends EventTarget {
     feeds: Feed[] = [];
     tags: Category[] = [];
@@ -16,7 +33,7 @@ export class Store extends EventTarget {
     hasMore: boolean = true;
     theme: string = localStorage.getItem('neko-theme') || 'light';
     fontTheme: string = localStorage.getItem('neko-font-theme') || 'default';
-    sidebarVisible: boolean = window.innerWidth > 768;
+    sidebarVisible: boolean = getInitialSidebarVisible();
 
     setFeeds(feeds: Feed[]) {
         this.feeds = feeds;
@@ -86,6 +103,7 @@ export class Store extends EventTarget {
 
     setSidebarVisible(visible: boolean) {
         this.sidebarVisible = visible;
+        setSidebarCookie(visible);
         this.emit('sidebar-toggle');
     }
 

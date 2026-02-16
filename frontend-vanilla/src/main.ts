@@ -87,11 +87,7 @@ export function attachLayoutListeners() {
     store.setSidebarVisible(false);
   });
 
-  window.addEventListener('resize', () => {
-    if (window.innerWidth > 768 && !store.sidebarVisible) {
-      store.setSidebarVisible(true);
-    }
-  });
+  // Sidebar state is persisted via cookie; no auto-open on resize
 
   // Collapsible sections
   document.querySelectorAll('.sidebar-section.collapsible h3').forEach(header => {
