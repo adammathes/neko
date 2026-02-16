@@ -22,7 +22,11 @@ vi.mock('./api', () => ({
 }));
 
 // Mock IntersectionObserver as a constructor
+let observerCallback: IntersectionObserverCallback;
 class MockIntersectionObserver {
+    constructor(callback: IntersectionObserverCallback) {
+        observerCallback = callback;
+    }
     observe = vi.fn();
     unobserve = vi.fn();
     disconnect = vi.fn();
@@ -253,5 +257,40 @@ describe('main application logic', () => {
         const initialVisible = store.sidebarVisible;
         toggleBtn.click();
         expect(store.sidebarVisible).toBe(!initialVisible);
+    });
+
+    it('should mark item as read when scrolled into view', () => {
+        const mockItem = {
+            _id: 123,
+            title: 'Scroll Test Item',
+            read: false,
+            url: 'http://example.com',
+            publish_date: '2023-01-01'
+        } as any;
+
+        store.setItems([mockItem]);
+        renderLayout();
+        renderItems();
+
+        const itemEl = document.querySelector(`.feed-item[data-id="123"]`);
+        expect(itemEl).not.toBeNull();
+
+        vi.mocked(apiFetch).mockResolvedValue({ ok: true } as Response);
+
+        // Simulate intersection
+        const entry = {
+            target: itemEl,
+            isIntersecting: true
+        } as IntersectionObserverEntry;
+
+        // This relies on the LAST created observer's callback being captured. 
+        expect(observerCallback).toBeDefined();
+        // @ts-ignore
+        observerCallback([entry], {} as IntersectionObserver);
+
+        expect(apiFetch).toHaveBeenCalledWith(expect.stringContaining('/api/item/123'), expect.objectContaining({
+            method: 'PUT',
+            body: expect.stringContaining('"read":true')
+        }));
     });
 });

@@ -18,6 +18,7 @@ let activeItemId: number | null = null;
 
 // Cache elements (initialized in renderLayout)
 let appEl: HTMLDivElement | null = null;
+let itemObserver: IntersectionObserver | null = null;
 
 // Initial Layout (v2-style 2-pane)
 export function renderLayout() {
@@ -216,6 +217,11 @@ export function renderFilters() {
 
 export function renderItems() {
   const { items, loading } = store;
+
+  if (itemObserver) {
+    itemObserver.disconnect();
+    itemObserver = null;
+  }
   const contentArea = document.getElementById('content-area');
   if (!contentArea || router.getCurrentRoute().path === '/settings') return;
 
@@ -246,6 +252,25 @@ export function renderItems() {
     }, { threshold: 0.1 });
     observer.observe(sentinel);
   }
+
+  // Setup item observer for marking read
+  itemObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const target = entry.target as HTMLElement;
+        const id = parseInt(target.getAttribute('data-id') || '0');
+        if (id) {
+          const item = store.items.find(i => i._id === id);
+          if (item && !item.read) {
+            updateItem(id, { read: true });
+            itemObserver?.unobserve(target);
+          }
+        }
+      }
+    });
+  }, { threshold: 0.5 });
+
+  contentArea.querySelectorAll('.feed-item').forEach(el => itemObserver!.observe(el));
 }
 
 export function renderSettings() {
@@ -622,7 +647,6 @@ window.app = {
   navigate: (path: string) => router.navigate(path)
 };
 
-// Start
 // Start
 export async function init() {
   const authRes = await apiFetch('/api/auth');
