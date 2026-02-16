@@ -226,9 +226,8 @@ html {
   top: 1rem;
   left: 1rem;
   z-index: 1001;
-  background: var(--sidebar-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
+  background: none;
+  border: none;
   width: 3rem;
   height: 3rem;
   font-size: 1.5rem;
@@ -236,10 +235,7 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .sidebar-toggle:hover {
