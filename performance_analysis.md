@@ -31,5 +31,69 @@ The most effective way to restore "snappiness" is to reduce React's work:
 ### 3. Backend Optimization (Defensive)
 - Even if not the current bottleneck, modifying `item.Filter` to exclude `full_content` on list views is a simple change that prevents future performance regressions.
 
+## Performance Optimizations Implemented (Current Session)
+
+Following the analysis above, the following optimizations have been applied to the React frontend:
+
+### 1. Component Memoization
+- **Change**: `FeedItem` is now wrapped in `React.memo`, and event handlers (`onToggleStar`, `onUpdate`) are memoized with `useCallback`.
+- **Impact**: Previously, clicking an item or pressing 'j'/'k' caused the **entire list** of items to re-render because the parent `FeedItems` state changed. Now, only the specific item being modified re-renders. This transforms interaction complexity from **O(N)** to **O(1)**, significantly improving apparent responsiveness.
+
+### 2. Stable IntersectionObserver
+- **Change**: The `IntersectionObserver` in `FeedItems` now uses a `useRef` to maintain a stable instance. It no longer disconnects and reconnects on every render or state change. The observer now references current state via refs (`itemsRef`, `hasMoreRef`) to avoid stale closures without triggering effect re-execution.
+- **Impact**: Removes the overhead of constantly destroying and recreating overlapping observers. Scrolling performance is smoother, and the "read" marking logic is more reliable and efficient.
+
+### 3. Event Handler Optimization
+- **Change**: Keyboard event handlers now use `refs` to access the latest state (`items`, `hasMore`, `loadingMore`) without needing to be re-attached on every render.
+- **Impact**: Reduces React's internal bookkeeping overhead and prevents event listener churn.
+
+---
+
+## Proposal: "Vanilla JS Optimized" Frontend (Modern Backdrop)
+
+Given your preference for the responsiveness of the legacy Backbone version, a modern Vanilla JS approach could offer the best of both worlds: the raw speed of direct DOM manipulation with the maintainability of modern ES6+ standards.
+
+### Core Philosophy
+**"No Framework, Just Platform."**
+Instead of React's Virtual DOM diffing (which adds overhead), we check state and update *only* the specific DOM nodes that change.
+
+### Architecture Proposal
+
+1.  **State Management**:
+    -   Use a simple **Store Pattern** using ES6 `Proxy` or a lightweight `Pub/Sub` module.
+    -   State changes (e.g., `store.items[0].read = true`) automatically trigger specific DOM updates via subscribers, without re-evaluating a component tree.
+
+2.  **Rendering**:
+    -   **Initial Render**: Use **Tagged Template Literals** (like `lit-html` but simpler) to generate HTML strings efficiently.
+        ```javascript
+        const itemTemplate = (item) => `
+          <li class="feed-item ${item.read ? 'read' : ''}" data-id="${item.id}">
+            ...
+          </li>`;
+        ul.innerHTML = items.map(itemTemplate).join('');
+        ```
+    -   **Updates**: Direct DOM manipulation.
+        ```javascript
+        // When item 101 becomes read:
+        document.querySelector(`li[data-id="101"]`).classList.add('read');
+        ```
+    -   **Benefits**: Zero diffing cost. Instant updates.
+
+3.  **Component Structure**:
+    -   Use **Web Components (Custom Elements)** for encapsulated, reusable UI elements (e.g., `<feed-item>`).
+    -   Native browser support means no framework overhead.
+
+4.  **Routing**:
+    -   Lightweight wrapper around **History API** to handle URL changes and view swapping without full reloads.
+
+5.  **Build Tooling**:
+    -   **Vite** (for dev server/HMR) but configured to bundle vanilla JS.
+    -   **CSS**: Standard CSS variables for theming (already partially in place).
+
+### Why This Beats React for Neko
+-   **Zero Hydration**: The browser parses HTML and executes minimal JS. TTI is effectively immediate.
+-   **Memory Footprint**: No Virtual DOM copies of the tree.
+-   **Predictable Performance**: You control exactly when and how the DOM updates, mirroring the Backbone experience but with cleaner, modern code.
+
 ## Conclusion
-The "sluggishness" is primarily due to React's re-rendering of the entire list on interactions and the initial hydration cost. Implementing **Memoization** and **Virtualization** will bring the responsiveness much closer to the vanilla JS experience.
+The "sluggishness" was primarily due to React's re-rendering of the entire list on interactions and the initial hydration cost. The **Memoization** and **IntersectionObserver** optimizations implemented have significantly reduced the re-rendering overhead, bringing responsiveness closer to the vanilla JS experience. However, a move to a modern Vanilla JS architecture (as proposed) would eliminate the inherent framework overhead entirely.
