@@ -114,7 +114,12 @@ export function attachLayoutListeners() {
     if (navType === 'filter') {
       e.preventDefault();
       const filter = link.getAttribute('data-value') as FilterType;
-      router.updateQuery({ filter });
+      const currentRoute = router.getCurrentRoute();
+      if (currentRoute.path === '/settings') {
+        router.navigate('/', { ...currentQuery, filter });
+      } else {
+        router.updateQuery({ filter });
+      }
     } else if (navType === 'tag') {
       e.preventDefault();
       const tag = link.getAttribute('data-value')!;
@@ -129,7 +134,12 @@ export function attachLayoutListeners() {
       }
     } else if (navType === 'settings') {
       e.preventDefault();
-      router.navigate('/settings', currentQuery);
+      const currentRoute = router.getCurrentRoute();
+      if (currentRoute.path === '/settings') {
+        router.navigate('/', currentQuery);
+      } else {
+        router.navigate('/settings', currentQuery);
+      }
     }
 
     // Auto-close sidebar on mobile after clicking a link

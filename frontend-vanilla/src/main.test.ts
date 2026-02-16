@@ -293,4 +293,31 @@ describe('main application logic', () => {
             body: expect.stringContaining('"read":true')
         }));
     });
+
+    it('should close settings and return to home when clicking settings again', () => {
+        renderLayout();
+        const settingsLink = document.querySelector('[data-nav="settings"]') as HTMLElement;
+        expect(settingsLink).not.toBeNull();
+
+        const getCurrentRouteSpy = vi.spyOn(router, 'getCurrentRoute').mockReturnValue({ path: '/settings', params: {}, query: new URLSearchParams() });
+        const navigateSpy = vi.spyOn(router, 'navigate');
+
+        settingsLink.click();
+
+        expect(navigateSpy).toHaveBeenCalledWith('/', expect.any(Object));
+        getCurrentRouteSpy.mockRestore();
+    });
+
+    it('should navigate to home with filter when clicking filter from settings', () => {
+        renderLayout();
+        const getCurrentRouteSpy = vi.spyOn(router, 'getCurrentRoute').mockReturnValue({ path: '/settings', params: {}, query: new URLSearchParams() });
+        const navigateSpy = vi.spyOn(router, 'navigate');
+
+        const filterLink = document.querySelector('a[data-nav="filter"][data-value="starred"]') as HTMLElement;
+        expect(filterLink).not.toBeNull();
+        filterLink.click();
+
+        expect(navigateSpy).toHaveBeenCalledWith('/', expect.objectContaining({ filter: 'starred' }));
+        getCurrentRouteSpy.mockRestore();
+    });
 });
