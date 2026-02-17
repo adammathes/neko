@@ -1,12 +1,20 @@
 :root {
   /* Font Variables */
   --font-body: Palatino, 'Palatino Linotype', 'Palatino LT STD', 'Book Antiqua', Georgia, serif;
-  --font-heading: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* System/UI Heading Font (Hardcoded) */
+  --font-heading-system: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* Dynamic Heading Font (User Selectable) - default to system */
+  --font-heading: var(--font-heading-system);
+
   --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Monospace Font - Courier New first as requested */
+  --font-mono: 'Courier New', Courier, monospace;
 
   line-height: 1.5;
   font-size: 18px;
-  /* Restored to original base size */
 
   /* Light Mode Defaults */
   --bg-color: #ffffff;
@@ -17,6 +25,16 @@
   --accent-color: #007bff;
 
   color-scheme: light dark;
+}
+
+/* Dark Mode Overrides */
+.theme-dark {
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --sidebar-bg: #2d2d2d;
+  --link-color: #8ab4f8;
+  --border-color: #444;
+  --accent-color: #0056b3;
 }
 
 * {
@@ -524,19 +542,47 @@ select:focus {
 }
 
 .font-sans {
-  --font-body: var(--font-heading);
+  --font-body: var(--font-heading-system);
+  /* Use system sans for body if selected */
   font-family: var(--font-body);
 }
 
 .font-mono {
-  --font-body: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  --font-body: var(--font-mono);
   font-family: var(--font-body);
+}
+
+/* Heading Font Overrides */
+.heading-font-default {
+  --font-heading: var(--font-heading-system);
+}
+
+.heading-font-serif {
+  --font-heading: Georgia, 'Times New Roman', Times, serif;
+}
+
+.heading-font-mono {
+  --font-heading: var(--font-mono);
+}
+
+.heading-font-sans {
+  --font-heading: var(--font-sans);
+}
+
+/* Dark Mode Settings Fix */
+.theme-dark .settings-view,
+.theme-dark .settings-view h2,
+.theme-dark .settings-view h3,
+.theme-dark .settings-group label,
+.theme-dark .data-group label {
+  color: var(--text-color) !important;
 }
 
 /* Settings View */
 .settings-view {
   padding-top: 2rem;
   font-family: var(--font-heading);
+  color: var(--text-color);
 }
 
 .settings-view h2 {

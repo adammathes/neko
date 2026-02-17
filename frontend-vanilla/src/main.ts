@@ -23,7 +23,8 @@ let appEl: HTMLDivElement | null = null;
 export function renderLayout() {
   appEl = document.querySelector<HTMLDivElement>('#app');
   if (!appEl) return;
-  appEl.className = `theme-${store.theme} font-${store.fontTheme}`;
+  // Apply both font themes (font-* for body, heading-font-* for headers)
+  appEl.className = `theme-${store.theme} font-${store.fontTheme} heading-font-${store.headingFontTheme}`;
   appEl.innerHTML = `
     <div class="layout ${store.sidebarVisible ? 'sidebar-visible' : 'sidebar-hidden'}">
       <button class="sidebar-toggle" id="sidebar-toggle-btn" title="Toggle Sidebar">🐱</button>
@@ -394,6 +395,15 @@ export function renderSettings() {
             </div>
           </div>
           <div class="settings-group" style="margin-top: 1rem;">
+            <label>Heading Font</label>
+            <select id="heading-font-selector" style="margin-bottom: 1rem;">
+              <option value="default" ${store.headingFontTheme === 'default' ? 'selected' : ''}>System (Helvetica Neue)</option>
+              <option value="serif" ${store.headingFontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
+              <option value="sans" ${store.headingFontTheme === 'sans' ? 'selected' : ''}>Sans-Serif (Inter/System)</option>
+              <option value="mono" ${store.headingFontTheme === 'mono' ? 'selected' : ''}>Monospace</option>
+            </select>
+
+            <label>Body Font</label>
             <select id="font-selector">
               <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Palatino)</option>
               <option value="serif" ${store.fontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
@@ -444,7 +454,12 @@ export function renderSettings() {
     }
   });
 
-  // Font
+  // Heading Font
+  document.getElementById('heading-font-selector')?.addEventListener('change', (e) => {
+    store.setHeadingFontTheme((e.target as HTMLSelectElement).value);
+  });
+
+  // Body Font
   document.getElementById('font-selector')?.addEventListener('change', (e) => {
     store.setFontTheme((e.target as HTMLSelectElement).value);
   });
@@ -807,7 +822,12 @@ store.on('search-updated', () => {
 store.on('theme-updated', () => {
   if (!appEl) appEl = document.querySelector<HTMLDivElement>('#app');
   if (appEl) {
-    appEl.className = `theme-${store.theme} font-${store.fontTheme}`;
+    // Re-apply classes with proper specificity logic
+    appEl.className = `theme-${store.theme} font-${store.fontTheme} heading-font-${store.headingFontTheme}`;
+  }
+  // Also re-render settings if we are on settings page to update active state of buttons
+  if (router.getCurrentRoute().path === '/settings') {
+    renderSettings();
   }
 });
 

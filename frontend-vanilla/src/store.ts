@@ -33,6 +33,7 @@ export class Store extends EventTarget {
     hasMore: boolean = true;
     theme: string = localStorage.getItem('neko-theme') || 'light';
     fontTheme: string = localStorage.getItem('neko-font-theme') || 'default';
+    headingFontTheme: string = localStorage.getItem('neko-heading-font-theme') || 'default';
     sidebarVisible: boolean = getInitialSidebarVisible();
 
     setFeeds(feeds: Feed[]) {
@@ -98,6 +99,12 @@ export class Store extends EventTarget {
     setFontTheme(fontTheme: string) {
         this.fontTheme = fontTheme;
         localStorage.setItem('neko-font-theme', fontTheme);
+        this.emit('theme-updated');
+    }
+
+    setHeadingFontTheme(theme: string) {
+        this.headingFontTheme = theme;
+        localStorage.setItem('neko-heading-font-theme', theme);
         this.emit('theme-updated');
     }
 
