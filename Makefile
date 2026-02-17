@@ -9,21 +9,17 @@ VERSION=0.3
 BUILD=`git rev-parse HEAD`
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
-.PHONY: default all clean ui build install test test-race test-frontend test-e2e ui-check lint check ci run dev docs install-hooks cover coverage-html bench bench-short stress test-perf
+.PHONY: default all clean build install test test-race test-frontend test-e2e ui-check lint check ci run dev docs install-hooks cover coverage-html bench bench-short stress test-perf
 
 default: build
 
-all: clean ui ui-vanilla build docs
+all: clean ui-vanilla build docs
 
 clean:
 	rm -f ${BINARY}
 	rm -f readme.html
 
-ui:
-	cd frontend && ${NPM} install && ${NPM} run build
-	rm -rf web/dist/v2
-	mkdir -p web/dist/v2
-	cp -r frontend/dist/* web/dist/v2/
+
 
 ui-vanilla:
 	cd frontend-vanilla && ${NPM} install && ${NPM} run build
@@ -52,18 +48,16 @@ coverage-html: cover
 	${GO} tool cover -html=coverage.out
 
 test-frontend:
-	cd frontend && ${NPM} run lint
-	cd frontend && ${NPM} test -- --run
+	cd frontend-vanilla && ${NPM} test -- --run
 
 # test-e2e: build
 # 	./scripts/run_e2e_safe.sh
 
-ui-check: ui
-	git diff --exit-code web/dist/v2/
+ui-check: ui-vanilla
+	git diff --exit-code web/dist/v3/
 
 lint:
 	golangci-lint run
-	cd frontend && ${NPM} run lint
 
 check: lint test
 

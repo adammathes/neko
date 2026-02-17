@@ -78,7 +78,7 @@
       ${t.map(o=>M(o,o._id===f)).join("")}
     </ul>
     ${i.hasMore?'<div id="load-more-sentinel" class="loading-more">Loading more...</div>':""}
-  `;const s=document.getElementById("main-content"),n=document.getElementById("load-more-sentinel");if(n&&new IntersectionObserver(d=>{d[0].isIntersecting&&!i.loading&&i.hasMore&&H()},{root:s,threshold:.1}).observe(n),s){let o=null;const d=()=>{o===null&&(o=window.setTimeout(()=>{const g=s.getBoundingClientRect();i.items.forEach(u=>{if(u.read)return;const l=document.querySelector(`.feed-item[data-id="${u._id}"]`);l&&l.getBoundingClientRect().top<g.top&&h(u._id,{read:!0})}),o=null},250))};s.onscroll=d}}function w(){const t=document.getElementById("content-area");t&&(t.innerHTML=`
+  `;const s=document.getElementById("main-content"),n=document.getElementById("load-more-sentinel");if(n&&new IntersectionObserver(d=>{d[0].isIntersecting&&!i.loading&&i.hasMore&&H()},{root:s,threshold:.1}).observe(n),s){let o=null;const d=()=>{o===null&&(o=window.setTimeout(()=>{const g=s.getBoundingClientRect();i.items.forEach(u=>{if(u.read)return;const l=document.querySelector(`.feed-item[data-id="${u._id}"]`);l&&l.getBoundingClientRect().bottom<g.top&&h(u._id,{read:!0})}),o=null},250))};s.onscroll=d}}function w(){const t=document.getElementById("content-area");t&&(t.innerHTML=`
     <div class="settings-view">
       <h2>Settings</h2>
       
