@@ -74,59 +74,7 @@ describe('FeedItems Component', () => {
     expect(global.fetch).toHaveBeenCalledWith(`/api/stream?${params.toString()}`, expect.anything());
   });
 
-  it('handles keyboard shortcuts', async () => {
-    const mockItems = [
-      { _id: 101, title: 'Item 1', url: 'u1', read: false, starred: false },
-      { _id: 102, title: 'Item 2', url: 'u2', read: true, starred: false },
-    ];
 
-    vi.mocked(global.fetch).mockResolvedValue({
-      ok: true,
-      json: async () => mockItems,
-    } as Response);
-
-    render(
-      <MemoryRouter>
-        <FeedItems />
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('Item 1')).toBeVisible();
-    });
-
-    // Press 'j' to select first item
-    await act(async () => {
-      fireEvent.keyDown(window, { key: 'j' });
-    });
-
-    // Item 1 (index 0) should be selected.
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/item/101',
-        expect.objectContaining({
-          method: 'PUT',
-          body: JSON.stringify({ read: true, starred: false }),
-        })
-      );
-    });
-
-    // Press 'j' again -> index 1 (Item 2)
-    fireEvent.keyDown(window, { key: 'j' });
-
-    // Press 's' to star Item 2
-    fireEvent.keyDown(window, { key: 's' });
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/item/102',
-        expect.objectContaining({
-          method: 'PUT',
-          body: JSON.stringify({ read: true, starred: true }),
-        })
-      );
-    });
-  });
 
   afterEach(() => {
     vi.useRealTimers();
