@@ -454,11 +454,11 @@ select:focus {
 
 /* Themes */
 .theme-dark {
-  --bg-color: #24292e;
+  --bg-color: #000000;
   --text-color: #ffffff;
-  --sidebar-bg: #1b1f23;
+  --sidebar-bg: #000000;
   --link-color: #5ac8fa;
-  --border-color: #444d56;
+  --border-color: #333333;
   --accent-color: #2188ff;
 }
 
@@ -528,9 +528,9 @@ button.active {
 
 .theme-dark input,
 .theme-dark select {
-  background-color: #1b1f23;
+  background-color: #111;
   color: #ffffff;
-  border-color: #444d56;
+  border-color: #333;
 }
 
 .add-feed-form {
