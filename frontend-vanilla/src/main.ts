@@ -552,11 +552,19 @@ export async function deleteFeed(id: number): Promise<boolean> {
 }
 
 export async function updateFeed(id: number, updates: Partial<Feed>): Promise<boolean> {
+  const existing = store.feeds.find(f => f._id === id);
+  if (!existing) {
+    console.error('Feed not found in store', id);
+    return false;
+  }
+
+  const payload = { ...existing, ...updates };
+
   try {
     const res = await apiFetch('/api/feed', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...updates, _id: id })
+      body: JSON.stringify(payload)
     });
     return res.ok;
   } catch (err) {
