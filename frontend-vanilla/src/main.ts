@@ -271,36 +271,38 @@ export function renderItems() {
   if (scrollRoot) {
     let readTimeoutId: number | null = null;
     scrollRoot.onscroll = () => {
-      // Infinite scroll: check immediately on every scroll event (cheap comparison).
-      // Guard: only when content actually overflows the container (scrollHeight > clientHeight).
+      // Infinite scroll check (container only)
       if (!store.loading && store.hasMore && scrollRoot.scrollHeight > scrollRoot.clientHeight) {
         if (scrollRoot.scrollHeight - scrollRoot.scrollTop - scrollRoot.clientHeight < 200) {
           loadMore();
         }
       }
 
-      // Mark-as-read: debounced to avoid excessive DOM queries
+      // Mark-as-read: debounced
       if (readTimeoutId === null) {
         readTimeoutId = window.setTimeout(() => {
-          const containerRect = scrollRoot.getBoundingClientRect();
-
-          store.items.forEach((item) => {
-            if (item.read) return;
-
-            const el = document.querySelector(`.feed-item[data-id="${item._id}"]`);
-            if (el) {
-              const rect = el.getBoundingClientRect();
-              // Mark as read if the bottom of the item is above the top of the container
-              if (rect.bottom < containerRect.top) {
-                updateItem(item._id, { read: true });
-              }
-            }
-          });
+          checkReadItems(scrollRoot);
           readTimeoutId = null;
         }, 250);
       }
     };
   }
+}
+
+function checkReadItems(scrollRoot: HTMLElement) {
+  const containerRect = scrollRoot.getBoundingClientRect();
+  store.items.forEach((item) => {
+    if (item.read) return;
+
+    const el = document.querySelector(`.feed-item[data-id="${item._id}"]`);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      // Mark as read if the bottom of the item is above the top of the container
+      if (rect.bottom < containerRect.top) {
+        updateItem(item._id, { read: true });
+      }
+    }
+  });
 }
 
 // Polling fallback for infinite scroll (matches V1 behavior)
@@ -319,18 +321,8 @@ if (typeof window !== 'undefined') {
     if (store.loading || !store.hasMore) return;
 
     if (scrollRoot) {
-      // DEBUG LOGGING
-      /*
-      console.log('Scroll Poll', { 
-          scrollHeight: scrollRoot.scrollHeight, 
-          scrollTop: scrollRoot.scrollTop, 
-          clientHeight: scrollRoot.clientHeight,
-          offset: scrollRoot.scrollHeight - scrollRoot.scrollTop - scrollRoot.clientHeight,
-          docHeight: document.documentElement.scrollHeight,
-          winHeight: window.innerHeight,
-          winScroll: window.scrollY
-      });
-      */
+      // Check for read items periodically (robustness fallback)
+      checkReadItems(scrollRoot);
 
       // Check container scroll (if container is scrollable)
       if (scrollRoot.scrollHeight > scrollRoot.clientHeight) {

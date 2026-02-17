@@ -167,6 +167,50 @@ describe('Scroll-to-Read Regression Tests', () => {
         // API should NOT be called
         expect(apiFetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/item/888'), expect.anything());
     });
+
+    it('should mark item as read when WINDOW scrolls (robustness fallback)', async () => {
+        vi.useRealTimers();
+        const mockItem = {
+            _id: 12345,
+            title: 'Window Scroll Item',
+            read: false,
+            url: 'http://example.com/window',
+            publish_date: '2023-01-01'
+        } as any;
+
+        store.setItems([mockItem]);
+        renderItems();
+
+        // Setup successful detection scenario
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) {
+            mainContent.getBoundingClientRect = vi.fn(() => ({
+                top: 0, bottom: 800, height: 800, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => { }
+            }));
+        }
+
+        const itemEl = document.querySelector(`.feed-item[data-id="12345"]`);
+        if (itemEl) {
+            // Fully scrolled past
+            itemEl.getBoundingClientRect = vi.fn(() => ({
+                top: -150, bottom: -50, height: 100, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => { }
+            }));
+        }
+
+        vi.mocked(apiFetch).mockResolvedValue({ ok: true } as Response);
+
+        // Dispatch scroll on WINDOW, not mainContent
+        window.dispatchEvent(new Event('scroll'));
+
+        // Wait for potential debounce/poll
+        await new Promise(resolve => setTimeout(resolve, 1100));
+
+        // Expect it to handle it
+        expect(apiFetch).toHaveBeenCalledWith(expect.stringContaining('/api/item/12345'), expect.objectContaining({
+            method: 'PUT',
+            body: expect.stringContaining('"read":true')
+        }));
+    });
 });
 
 // NK-t8qnrh: Links in feed item descriptions should have no underlines (match v1 style)
