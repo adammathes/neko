@@ -466,6 +466,39 @@ select:focus {
   --link-color: #5ac8fa;
   --border-color: #333333;
   --accent-color: #2188ff;
+  --sidebar-text-color: rgba(0, 0, 0, 0.87);
+}
+
+/* Dark mode: sidebar uses grey background with dark text */
+.theme-dark .sidebar {
+  background: rgba(180, 180, 180, 0.85);
+  border-right-color: rgba(0, 0, 0, 0.15);
+}
+
+.theme-dark .sidebar-section li a,
+.theme-dark .sidebar-section h3,
+.theme-dark .sidebar-footer a {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.theme-dark .sidebar-section li.active a {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.theme-dark .sidebar-section li a:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Dark mode: sidebar-toggle button should have no background */
+.theme-dark .sidebar-toggle {
+  background: none;
+}
+
+/* Dark mode: sidebar search input should use light background */
+.theme-dark .sidebar-search input {
+  background: rgba(255, 255, 255, 0.7);
+  color: rgba(0, 0, 0, 0.87);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .font-serif {
