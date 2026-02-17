@@ -217,3 +217,80 @@ func BenchmarkFilter_LargeDataset(b *testing.B) {
 		_, _ = Filter(0, nil, "", false, false, 0, "")
 	}
 }
+
+// realWorldFullContent simulates a realistic scraped article (~10KB of HTML).
+const realWorldFullContent = `<article><h1>Sample Article</h1>` +
+	`<p>This is a realistic full-text article with several paragraphs. ` +
+	`It contains <b>bold text</b>, <i>italic text</i>, and <a href="https://example.com">links</a>. ` +
+	`Real-world scraped content is typically several kilobytes of HTML.</p>` +
+	`<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ` +
+	`Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ` +
+	`Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ` +
+	`Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>` +
+	`<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, ` +
+	`totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. ` +
+	`Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos ` +
+	`qui ratione voluptatem sequi nesciunt.</p>` +
+	`<img src="https://example.com/img1.jpg" alt="Figure 1"><img src="https://example.com/img2.jpg" alt="Figure 2">` +
+	`<p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque ` +
+	`corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa ` +
+	`qui officia deserunt mollitia animi, id est laborum et dolorum fuga.</p></article>`
+
+// seedBenchItemsWithContent inserts items with full_content populated (realistic scraped articles).
+func seedBenchItemsWithContent(b *testing.B, feedID int64, count int) {
+	b.Helper()
+	for i := 0; i < count; i++ {
+		_, err := models.DB.Exec(
+			`INSERT INTO item(title, url, description, publish_date, feed_id, read_state, starred, full_content)
+			 VALUES(?, ?, ?, datetime('now'), ?, 0, 0, ?)`,
+			fmt.Sprintf("Full Content Item %d", i),
+			fmt.Sprintf("https://example.com/full/%d", i),
+			fmt.Sprintf("<p>Summary for item %d</p>", i),
+			feedID,
+			realWorldFullContent,
+		)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkFilter_15Items_WithFullContent measures Filter when items have full_content
+// but it is excluded from list responses (the default). Compares to BenchmarkFilter_15Items.
+func BenchmarkFilter_15Items_WithFullContent(b *testing.B) {
+	setupBenchDB(b)
+	feedID := createBenchFeed(b)
+	seedBenchItemsWithContent(b, feedID, 15)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = Filter(0, nil, "", false, false, 0, "")
+	}
+}
+
+// BenchmarkFilter_15Items_IncludeFullContent measures Filter when full_content IS included
+// (includeContent=true). Compares to BenchmarkFilter_15Items_WithFullContent to show
+// the savings from excluding full_content in list views.
+func BenchmarkFilter_15Items_IncludeFullContent(b *testing.B) {
+	setupBenchDB(b)
+	feedID := createBenchFeed(b)
+	seedBenchItemsWithContent(b, feedID, 15)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = Filter(0, nil, "", false, false, 0, "", true)
+	}
+}
+
+// BenchmarkFilter_LargeDataset_WithFullContent measures Filter with 500 items that
+// have full_content, showing real-world memory allocation for list views.
+func BenchmarkFilter_LargeDataset_WithFullContent(b *testing.B) {
+	setupBenchDB(b)
+	feedID := createBenchFeed(b)
+	seedBenchItemsWithContent(b, feedID, 500)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = Filter(0, nil, "", false, false, 0, "")
+	}
+}
