@@ -363,29 +363,19 @@ export function renderSettings() {
       
       <div class="settings-grid">
         <section class="settings-section">
-          <h3>Add Feed</h3>
-          <div class="add-feed-form">
-            <input type="url" id="new-feed-url" placeholder="https://example.com/rss.xml">
-            <button id="add-feed-btn">Add Feed</button>
-          </div>
-        </section>
-
-        <section class="settings-section">
           <h3>Data</h3>
           <div class="data-group">
-            <label>Export</label>
             <div class="button-group">
-              <a href="/api/export/opml" class="button" target="_blank">OPML</a>
-              <a href="/api/export/text" class="button" target="_blank">TEXT</a>
-              <a href="/api/export/json" class="button" target="_blank">JSON</a>
+              <a href="/api/export/opml" class="button" target="_blank">EXPORT OPML</a>
+              <a href="/api/export/text" class="button" target="_blank">EXPORT TEXT</a>
+              <a href="/api/export/json" class="button" target="_blank">EXPORT JSON</a>
             </div>
           </div>
           <div class="data-group" style="margin-top: 1rem;">
-             <label>Import</label>
              <div class="button-group">
-               <button class="import-btn" data-format="opml">OPML</button>
-               <button class="import-btn" data-format="text">TEXT</button>
-               <button class="import-btn" data-format="json">JSON</button>
+               <button class="import-btn" data-format="opml">IMPORT OPML</button>
+               <button class="import-btn" data-format="text">IMPORT TEXT</button>
+               <button class="import-btn" data-format="json">IMPORT JSON</button>
              </div>
              <input type="file" id="import-file" style="display: none;">
           </div>
@@ -400,7 +390,6 @@ export function renderSettings() {
             </div>
           </div>
           <div class="settings-group" style="margin-top: 1rem;">
-            <label>Font</label>
             <select id="font-selector">
               <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Palatino)</option>
               <option value="serif" ${store.fontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
@@ -413,6 +402,12 @@ export function renderSettings() {
 
       <section class="settings-section manage-feeds-section">
         <h3>Manage Feeds</h3>
+        
+        <div class="add-feed-form" style="margin-bottom: 2rem;">
+            <input type="url" id="new-feed-url" placeholder="https://example.com/rss.xml">
+            <button id="add-feed-btn">ADD FEED</button>
+        </div>
+
         <ul class="manage-feed-list">
           ${store.feeds.map(feed => `
             <li class="manage-feed-item">
@@ -422,8 +417,8 @@ export function renderSettings() {
               </div>
               <div class="feed-actions">
                 <input type="text" class="feed-tag-input" data-id="${feed._id}" value="${feed.category || ''}" placeholder="Tag">
-                <button class="update-feed-tag-btn" data-id="${feed._id}">Save</button>
-                <button class="delete-feed-btn" data-id="${feed._id}">Delete</button>
+                <button class="update-feed-tag-btn" data-id="${feed._id}">SAVE</button>
+                <button class="delete-feed-btn" data-id="${feed._id}">DELETE</button>
               </div>
             </li>
           `).join('')}
