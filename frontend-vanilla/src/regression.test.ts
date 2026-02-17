@@ -258,29 +258,15 @@ describe('NK-z1czaq: Sidebar overlays content, does not shift layout', () => {
     });
 });
 
-// Infinite scroll: sentinel IntersectionObserver must be kept alive via a module-level
-// variable so it isn't garbage-collected between renderItems() calls.
-describe('Infinite scroll: sentinel triggers loadMore when scrolled into view', () => {
-    let capturedCallback: IntersectionObserverCallback | null = null;
-
+// Infinite scroll: uses scroll-position check (like v1) instead of IntersectionObserver.
+// When the user scrolls within 200px of the bottom of #main-content, loadMore fires.
+describe('Infinite scroll: scroll near bottom triggers loadMore', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="app"><div id="main-content"><div id="content-area"></div></div></div>';
         Element.prototype.scrollIntoView = vi.fn();
-        capturedCallback = null;
         vi.clearAllMocks();
         store.setItems([]);
         store.setHasMore(true);
-
-        // Override IntersectionObserver to capture the callback passed by renderItems.
-        // Must use a class (not an arrow function) because the code calls it with `new`.
-        vi.stubGlobal('IntersectionObserver', class {
-            constructor(cb: IntersectionObserverCallback) {
-                capturedCallback = cb;
-            }
-            observe = vi.fn();
-            disconnect = vi.fn();
-            unobserve = vi.fn();
-        });
 
         vi.mocked(apiFetch).mockResolvedValue({
             ok: true,
@@ -289,7 +275,24 @@ describe('Infinite scroll: sentinel triggers loadMore when scrolled into view', 
         } as Response);
     });
 
-    it('should call loadMore (apiFetch /api/stream) when sentinel fires isIntersecting=true', () => {
+    function simulateScrollNearBottom(mainContent: HTMLElement) {
+        // Simulate: scrollHeight=2000, clientHeight=800, scrollTop=1050
+        // remaining = 2000 - 1050 - 800 = 150 < 200 → should trigger loadMore
+        Object.defineProperty(mainContent, 'scrollHeight', { value: 2000, configurable: true });
+        Object.defineProperty(mainContent, 'clientHeight', { value: 800, configurable: true });
+        mainContent.scrollTop = 1050;
+        mainContent.dispatchEvent(new Event('scroll'));
+    }
+
+    function simulateScrollFarFromBottom(mainContent: HTMLElement) {
+        // remaining = 2000 - 200 - 800 = 1000 > 200 → should NOT trigger
+        Object.defineProperty(mainContent, 'scrollHeight', { value: 2000, configurable: true });
+        Object.defineProperty(mainContent, 'clientHeight', { value: 800, configurable: true });
+        mainContent.scrollTop = 200;
+        mainContent.dispatchEvent(new Event('scroll'));
+    }
+
+    it('should call loadMore (apiFetch /api/stream) when scrolled near the bottom', () => {
         const items = Array.from({ length: 50 }, (_, i) => ({
             _id: i + 1,
             title: `Item ${i + 1}`,
@@ -297,16 +300,33 @@ describe('Infinite scroll: sentinel triggers loadMore when scrolled into view', 
             read: false,
             publish_date: '2024-01-01',
         }));
-        // setItems emits items-updated → renderItems() sets up itemObserver
         store.setItems(items as any);
+        vi.clearAllMocks();
 
-        expect(document.getElementById('load-more-sentinel')).not.toBeNull();
-        expect(capturedCallback).not.toBeNull();
-
-        // Simulate the sentinel scrolling into the scroll container's viewport
-        capturedCallback!([{ isIntersecting: true }] as any, null as any);
+        const mainContent = document.getElementById('main-content')!;
+        // renderItems sets onscroll on main-content; fire the scroll event
+        simulateScrollNearBottom(mainContent);
 
         expect(apiFetch).toHaveBeenCalledWith(
+            expect.stringContaining('/api/stream'),
+        );
+    });
+
+    it('should NOT call loadMore when scrolled far from the bottom', () => {
+        const items = Array.from({ length: 50 }, (_, i) => ({
+            _id: i + 1,
+            title: `Item ${i + 1}`,
+            url: `http://example.com/${i + 1}`,
+            read: false,
+            publish_date: '2024-01-01',
+        }));
+        store.setItems(items as any);
+        vi.clearAllMocks();
+
+        const mainContent = document.getElementById('main-content')!;
+        simulateScrollFarFromBottom(mainContent);
+
+        expect(apiFetch).not.toHaveBeenCalledWith(
             expect.stringContaining('/api/stream'),
         );
     });
@@ -319,13 +339,12 @@ describe('Infinite scroll: sentinel triggers loadMore when scrolled into view', 
             read: false,
             publish_date: '2024-01-01',
         }));
-        store.setItems(items as any); // renderItems() called, capturedCallback set
-        vi.clearAllMocks();           // reset apiFetch call count
-
-        // Directly mutate loading without emitting (avoids another renderItems cycle)
+        store.setItems(items as any);
+        vi.clearAllMocks();
         store.loading = true;
 
-        capturedCallback!([{ isIntersecting: true }] as any, null as any);
+        const mainContent = document.getElementById('main-content')!;
+        simulateScrollNearBottom(mainContent);
 
         expect(apiFetch).not.toHaveBeenCalledWith(
             expect.stringContaining('/api/stream'),
@@ -344,11 +363,5 @@ describe('Infinite scroll: sentinel triggers loadMore when scrolled into view', 
         store.setItems(items as any);
 
         expect(document.getElementById('load-more-sentinel')).toBeNull();
-        // No IntersectionObserver was set up for a sentinel that doesn't exist
-        // (capturedCallback may have been set for a previous render, not this one)
-        // Just verify nothing was loaded
-        expect(apiFetch).not.toHaveBeenCalledWith(
-            expect.stringContaining('/api/stream'),
-        );
     });
 });
