@@ -35,7 +35,7 @@ var (
 	//go:embed static/*
 	staticFiles embed.FS
 
-	//go:embed dist/v2/* dist/v3/*
+	//go:embed dist/v3/*
 	frontendFiles embed.FS
 )
 

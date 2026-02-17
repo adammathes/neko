@@ -632,7 +632,7 @@ func TestImageProxyHandlerInvalidBase64(t *testing.T) {
 func TestServeFrontendNotFound(t *testing.T) {
 	req := httptest.NewRequest("GET", "/not-actually-a-file", nil)
 	rr := httptest.NewRecorder()
-	ServeFrontend("dist/v2")(rr, req)
+	ServeFrontend("dist/v3")(rr, req)
 	// Should fallback to index.html if it's not a dot-extension file
 	if rr.Code != http.StatusOK {
 		t.Errorf("Expected %d (fallback to index.html), got %d", http.StatusOK, rr.Code)

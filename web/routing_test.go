@@ -22,19 +22,13 @@ func TestRouting(t *testing.T) {
 		containsBody   string
 	}{
 		{
-			name:           "Root serves new UI",
+			name:           "Root serves V3 UI",
 			path:           "/",
 			method:         "GET",
 			expectedStatus: http.StatusOK,
-			containsBody:   "<!doctype html>", // from React dist/v2
+			containsBody:   "<!doctype html>", // from V3 dist/v3
 		},
-		{
-			name:           "/v2/ serves new UI",
-			path:           "/v2/",
-			method:         "GET",
-			expectedStatus: http.StatusOK,
-			containsBody:   "<!doctype html>",
-		},
+
 		{
 			name:           "/v3/ serves v3 UI",
 			path:           "/v3/",
