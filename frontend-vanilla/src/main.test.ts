@@ -22,10 +22,9 @@ vi.mock('./api', () => ({
 }));
 
 // Mock IntersectionObserver as a constructor
-let observerCallback: IntersectionObserverCallback;
 class MockIntersectionObserver {
     constructor(callback: IntersectionObserverCallback) {
-        observerCallback = callback;
+        // unused
     }
     observe = vi.fn();
     unobserve = vi.fn();
@@ -259,7 +258,8 @@ describe('main application logic', () => {
         expect(store.sidebarVisible).toBe(!initialVisible);
     });
 
-    it('should mark item as read when scrolled past', () => {
+    it('should mark item as read when scrolled past', async () => {
+        vi.useRealTimers();
         const mockItem = {
             _id: 123,
             title: 'Scroll Test Item',
@@ -277,18 +277,25 @@ describe('main application logic', () => {
 
         vi.mocked(apiFetch).mockResolvedValue({ ok: true } as Response);
 
-        // Simulate item scrolled above viewport (no longer intersecting, bottom above root top)
-        const entry = {
-            target: itemEl,
-            isIntersecting: false,
-            boundingClientRect: { bottom: -10 } as DOMRectReadOnly,
-            rootBounds: { top: 0 } as DOMRectReadOnly,
-        } as IntersectionObserverEntry;
+        // Mock getBoundingClientRect
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) {
+            mainContent.getBoundingClientRect = vi.fn(() => ({
+                top: 0, bottom: 500, height: 500, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => { }
+            }));
+        }
 
-        // This relies on the LAST created observer's callback being captured.
-        expect(observerCallback).toBeDefined();
-        // @ts-ignore
-        observerCallback([entry], {} as IntersectionObserver);
+        if (itemEl) {
+            itemEl.getBoundingClientRect = vi.fn(() => ({
+                top: -50, bottom: 50, height: 100, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => { }
+            }));
+        }
+
+        // Trigger scroll
+        mainContent?.dispatchEvent(new Event('scroll'));
+
+        // Wait for throttle (250ms)
+        await new Promise(resolve => setTimeout(resolve, 300));
 
         expect(apiFetch).toHaveBeenCalledWith(expect.stringContaining('/api/item/123'), expect.objectContaining({
             method: 'PUT',

@@ -2,7 +2,7 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import FeedItems from './FeedItems';
 
 describe('FeedItems Component', () => {
@@ -126,6 +126,11 @@ describe('FeedItems Component', () => {
     });
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
   it('marks items as read when scrolled past', async () => {
     const mockItems = [{ _id: 101, title: 'Item 1', url: 'u1', read: false, starred: false }];
     vi.mocked(global.fetch).mockResolvedValue({
@@ -133,43 +138,52 @@ describe('FeedItems Component', () => {
       json: async () => mockItems,
     } as Response);
 
-    const observerCallbacks: IntersectionObserverCallback[] = [];
-    class MockIntersectionObserver {
-      constructor(callback: IntersectionObserverCallback) {
-        observerCallbacks.push(callback);
+    // Mock getBoundingClientRect
+    const getBoundingClientRectMock = vi.spyOn(Element.prototype, 'getBoundingClientRect');
+    getBoundingClientRectMock.mockImplementation(function (this: Element) {
+      if (this.classList && this.classList.contains('dashboard-main')) {
+        return {
+          top: 0, bottom: 500, height: 500, left: 0, right: 1000, width: 1000, x: 0, y: 0,
+          toJSON: () => { }
+        } as DOMRect;
       }
-      observe = vi.fn();
-      unobserve = vi.fn();
-      disconnect = vi.fn();
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    window.IntersectionObserver = MockIntersectionObserver as any;
+      if (this.id && this.id.startsWith('item-')) {
+        // Item top is -50 (above container top 0)
+        return {
+          top: -50, bottom: 50, height: 100, left: 0, right: 1000, width: 1000, x: 0, y: 0,
+          toJSON: () => { }
+        } as DOMRect;
+      }
+      return {
+        top: 0, bottom: 0, height: 0, left: 0, right: 0, width: 0, x: 0, y: 0,
+        toJSON: () => { }
+      } as DOMRect;
+    });
 
     render(
       <MemoryRouter>
-        <FeedItems />
+        <div className="dashboard-main">
+          <FeedItems />
+        </div>
       </MemoryRouter>
     );
 
+    // Initial load fetch
     await waitFor(() => {
       expect(screen.getByText('Item 1')).toBeVisible();
     });
 
-    // Simulate item leaving viewport
-    const entry = {
-      isIntersecting: false,
-      boundingClientRect: { top: -50 } as DOMRectReadOnly,
-      target: { getAttribute: () => '0' } as unknown as Element, // data-index="0"
-      intersectionRatio: 0,
-      time: 0,
-      rootBounds: null,
-      intersectionRect: {} as DOMRectReadOnly,
-    } as IntersectionObserverEntry;
+    // Trigger scroll
+    const container = document.querySelector('.dashboard-main');
+    expect(container).not.toBeNull();
 
     act(() => {
-      // Trigger ALL registered observers
-      observerCallbacks.forEach(cb => cb([entry], {} as IntersectionObserver));
+      // Dispatch scroll event
+      fireEvent.scroll(container!);
     });
+
+    // Wait for throttle (500ms) + buffer
+    await new Promise(r => setTimeout(r, 600));
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(

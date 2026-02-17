@@ -198,39 +198,62 @@ export default function FeedItems() {
   }, [markAsRead, scrollToItem, toggleStar, fetchItems]);
 
 
-  // Stable Observer
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  // Scroll listener to mark items as read
   const sentinelObserverRef = useRef<IntersectionObserver | null>(null);
 
-  useEffect(() => {
-    if (observerRef.current) observerRef.current.disconnect();
+  const checkReadStatus = useCallback(() => {
+    const container = document.querySelector('.dashboard-main');
+    if (!container) return;
 
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
-            const index = Number(entry.target.getAttribute('data-index'));
-            const currentItems = itemsRef.current;
-            if (!isNaN(index) && index >= 0 && index < currentItems.length) {
-              const item = currentItems[index];
-              if (!item.read) {
-                markAsRead(item);
-              }
-            }
-          }
-        });
-      },
-      { root: null, threshold: 0 }
-    );
-
+    const containerRect = container.getBoundingClientRect();
     const currentItems = itemsRef.current;
-    currentItems.forEach((_, index) => {
-      const el = document.getElementById(`item-${index}`);
-      if (el) observerRef.current?.observe(el);
-    });
 
-    return () => observerRef.current?.disconnect();
-  }, [items.length, markAsRead]); // Only re-setup if item count changes
+    currentItems.forEach((item, index) => {
+      if (item.read) return;
+
+      const el = document.getElementById(`item-${index}`);
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
+
+      // Mark as read if the top of the item is above the top of the container
+      if (rect.top < containerRect.top) {
+        markAsRead(item);
+      }
+    });
+  }, [markAsRead]);
+
+  // Setup scroll listener
+  useEffect(() => {
+    const container = document.querySelector('.dashboard-main');
+    if (!container) return;
+
+    let timeoutId: number | null = null;
+    const onScroll = () => {
+      if (timeoutId === null) {
+        timeoutId = window.setTimeout(() => {
+          checkReadStatus();
+          timeoutId = null;
+        }, 250);
+      }
+    };
+
+    container.addEventListener('scroll', onScroll);
+
+    // Initial check
+    checkReadStatus();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      container.removeEventListener('scroll', onScroll);
+    };
+  }, [checkReadStatus]);
+
+  // Re-check when items change (e.g. initial load or load more)
+  useEffect(() => {
+    checkReadStatus();
+  }, [items, checkReadStatus]);
+
 
 
   useEffect(() => {

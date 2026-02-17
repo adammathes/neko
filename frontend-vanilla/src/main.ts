@@ -276,24 +276,40 @@ export function renderItems() {
     observer.observe(sentinel);
   }
 
-  // Setup item observer for marking read when items scroll past (above viewport)
-  itemObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting && entry.boundingClientRect.bottom < (entry.rootBounds?.top ?? 0)) {
-        const target = entry.target as HTMLElement;
-        const id = parseInt(target.getAttribute('data-id') || '0');
-        if (id) {
-          const item = store.items.find(i => i._id === id);
-          if (item && !item.read) {
-            updateItem(id, { read: true });
-            itemObserver?.unobserve(target);
-          }
-        }
-      }
-    });
-  }, { root: scrollRoot, threshold: 0 });
+  // Scroll listener for reading items
+  // We attach this to the scrollable container: #main-content
+  if (scrollRoot) {
+    let timeoutId: number | null = null;
+    const onScroll = () => {
+      if (timeoutId === null) {
+        timeoutId = window.setTimeout(() => {
+          const containerRect = scrollRoot.getBoundingClientRect();
 
-  contentArea.querySelectorAll('.feed-item').forEach(el => itemObserver!.observe(el));
+          store.items.forEach((item) => {
+            if (item.read) return;
+
+            const el = document.querySelector(`.feed-item[data-id="${item._id}"]`);
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              // Mark as read if the top of the item is above the top of the container
+              if (rect.top < containerRect.top) {
+                updateItem(item._id, { read: true });
+              }
+            }
+          });
+          timeoutId = null;
+        }, 250);
+      }
+    };
+    // Remove existing listener if any (simplistic approach, ideally we track and remove)
+    // Since renderItems is called multiple times, we might be adding multiple listeners?
+    // attachLayoutListeners is called once, but renderItems is called on updates.
+    // We should probably attaching the scroll listener in the layout setup, NOT here.
+    // But we need access to 'items' which is in store.
+    // Let's attach it here but be careful.
+    // Actually, attaching to 'onscroll' property handles replacement automatically.
+    scrollRoot.onscroll = onScroll;
+  }
 }
 
 export function renderSettings() {
