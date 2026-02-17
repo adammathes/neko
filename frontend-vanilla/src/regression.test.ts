@@ -257,3 +257,98 @@ describe('NK-z1czaq: Sidebar overlays content, does not shift layout', () => {
         expect(mainContent!.parentElement?.classList.contains('layout')).toBe(true);
     });
 });
+
+// Infinite scroll: sentinel IntersectionObserver must be kept alive via a module-level
+// variable so it isn't garbage-collected between renderItems() calls.
+describe('Infinite scroll: sentinel triggers loadMore when scrolled into view', () => {
+    let capturedCallback: IntersectionObserverCallback | null = null;
+
+    beforeEach(() => {
+        document.body.innerHTML = '<div id="app"><div id="main-content"><div id="content-area"></div></div></div>';
+        Element.prototype.scrollIntoView = vi.fn();
+        capturedCallback = null;
+        vi.clearAllMocks();
+        store.setItems([]);
+        store.setHasMore(true);
+
+        // Override IntersectionObserver to capture the callback passed by renderItems.
+        // Must use a class (not an arrow function) because the code calls it with `new`.
+        vi.stubGlobal('IntersectionObserver', class {
+            constructor(cb: IntersectionObserverCallback) {
+                capturedCallback = cb;
+            }
+            observe = vi.fn();
+            disconnect = vi.fn();
+            unobserve = vi.fn();
+        });
+
+        vi.mocked(apiFetch).mockResolvedValue({
+            ok: true,
+            status: 200,
+            json: async () => [],
+        } as Response);
+    });
+
+    it('should call loadMore (apiFetch /api/stream) when sentinel fires isIntersecting=true', () => {
+        const items = Array.from({ length: 50 }, (_, i) => ({
+            _id: i + 1,
+            title: `Item ${i + 1}`,
+            url: `http://example.com/${i + 1}`,
+            read: false,
+            publish_date: '2024-01-01',
+        }));
+        // setItems emits items-updated → renderItems() sets up itemObserver
+        store.setItems(items as any);
+
+        expect(document.getElementById('load-more-sentinel')).not.toBeNull();
+        expect(capturedCallback).not.toBeNull();
+
+        // Simulate the sentinel scrolling into the scroll container's viewport
+        capturedCallback!([{ isIntersecting: true }] as any, null as any);
+
+        expect(apiFetch).toHaveBeenCalledWith(
+            expect.stringContaining('/api/stream'),
+        );
+    });
+
+    it('should NOT call loadMore when store.loading is true', () => {
+        const items = Array.from({ length: 50 }, (_, i) => ({
+            _id: i + 1,
+            title: `Item ${i + 1}`,
+            url: `http://example.com/${i + 1}`,
+            read: false,
+            publish_date: '2024-01-01',
+        }));
+        store.setItems(items as any); // renderItems() called, capturedCallback set
+        vi.clearAllMocks();           // reset apiFetch call count
+
+        // Directly mutate loading without emitting (avoids another renderItems cycle)
+        store.loading = true;
+
+        capturedCallback!([{ isIntersecting: true }] as any, null as any);
+
+        expect(apiFetch).not.toHaveBeenCalledWith(
+            expect.stringContaining('/api/stream'),
+        );
+    });
+
+    it('should NOT render sentinel (or call loadMore) when hasMore is false', () => {
+        const items = Array.from({ length: 10 }, (_, i) => ({
+            _id: i + 1,
+            title: `Item ${i + 1}`,
+            url: `http://example.com/${i + 1}`,
+            read: false,
+            publish_date: '2024-01-01',
+        }));
+        store.setHasMore(false);
+        store.setItems(items as any);
+
+        expect(document.getElementById('load-more-sentinel')).toBeNull();
+        // No IntersectionObserver was set up for a sentinel that doesn't exist
+        // (capturedCallback may have been set for a previous render, not this one)
+        // Just verify nothing was loaded
+        expect(apiFetch).not.toHaveBeenCalledWith(
+            expect.stringContaining('/api/stream'),
+        );
+    });
+});

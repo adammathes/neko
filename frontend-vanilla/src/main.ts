@@ -270,15 +270,15 @@ export function renderItems() {
   // Use the actual scroll container as IntersectionObserver root
   const scrollRoot = document.getElementById('main-content');
 
-  // Setup infinite scroll
+  // Setup infinite scroll — stored in itemObserver so it has a GC root and won't be collected
   const sentinel = document.getElementById('load-more-sentinel');
   if (sentinel) {
-    const observer = new IntersectionObserver((entries) => {
+    itemObserver = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !store.loading && store.hasMore) {
         loadMore();
       }
     }, { root: scrollRoot, threshold: 0.1 });
-    observer.observe(sentinel);
+    itemObserver.observe(sentinel);
   }
 
   // Scroll listener for reading items
