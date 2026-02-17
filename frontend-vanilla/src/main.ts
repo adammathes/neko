@@ -291,8 +291,8 @@ export function renderItems() {
             const el = document.querySelector(`.feed-item[data-id="${item._id}"]`);
             if (el) {
               const rect = el.getBoundingClientRect();
-              // Mark as read if the top of the item is above the top of the container
-              if (rect.top < containerRect.top) {
+              // Mark as read if the bottom of the item is above the top of the container
+              if (rect.bottom < containerRect.top) {
                 updateItem(item._id, { read: true });
               }
             }

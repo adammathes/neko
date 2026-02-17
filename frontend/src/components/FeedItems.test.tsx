@@ -96,7 +96,9 @@ describe('FeedItems Component', () => {
     });
 
     // Press 'j' to select first item
-    fireEvent.keyDown(window, { key: 'j' });
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'j' });
+    });
 
     // Item 1 (index 0) should be selected.
     await waitFor(() => {
@@ -150,7 +152,7 @@ describe('FeedItems Component', () => {
       if (this.id && this.id.startsWith('item-')) {
         // Item top is -50 (above container top 0)
         return {
-          top: -50, bottom: 50, height: 100, left: 0, right: 1000, width: 1000, x: 0, y: 0,
+          top: -150, bottom: -50, height: 100, left: 0, right: 1000, width: 1000, x: 0, y: 0,
           toJSON: () => { }
         } as DOMRect;
       }

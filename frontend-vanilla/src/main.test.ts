@@ -287,7 +287,7 @@ describe('main application logic', () => {
 
         if (itemEl) {
             itemEl.getBoundingClientRect = vi.fn(() => ({
-                top: -50, bottom: 50, height: 100, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => { }
+                top: -150, bottom: -50, height: 100, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => { }
             }));
         }
 

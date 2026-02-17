@@ -216,8 +216,8 @@ export default function FeedItems() {
 
       const rect = el.getBoundingClientRect();
 
-      // Mark as read if the top of the item is above the top of the container
-      if (rect.top < containerRect.top) {
+      // Mark as read if the bottom of the item is above the top of the container
+      if (rect.bottom < containerRect.top) {
         markAsRead(item);
       }
     });
