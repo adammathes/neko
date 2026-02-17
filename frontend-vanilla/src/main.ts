@@ -416,8 +416,10 @@ export function renderSettings() {
                 <div class="feed-url">${feed.url}</div>
               </div>
               <div class="feed-actions">
+                <!-- FIXME: Tags feature is broken/unused in V3. Soft deprecated for now.
                 <input type="text" class="feed-tag-input" data-id="${feed._id}" value="${feed.category || ''}" placeholder="Tag">
                 <button class="update-feed-tag-btn" data-id="${feed._id}">SAVE</button>
+                -->
                 <button class="delete-feed-btn" data-id="${feed._id}">DELETE</button>
               </div>
             </li>
@@ -494,6 +496,7 @@ export function renderSettings() {
     });
   });
 
+  /* Soft deprecated.
   document.querySelectorAll('.update-feed-tag-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const id = parseInt((e.target as HTMLElement).getAttribute('data-id')!);
@@ -505,6 +508,7 @@ export function renderSettings() {
       alert('Feed updated');
     });
   });
+  */
 }
 
 async function addFeed(url: string): Promise<boolean> {
