@@ -422,6 +422,11 @@ select:focus {
   word-break: break-word;
 }
 
+.item-description a {
+  text-decoration: none;
+  color: var(--link-color);
+}
+
 .item-description img,
 .item-description video,
 .item-description pre {

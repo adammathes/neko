@@ -80,6 +80,7 @@ func NewSafeClient(timeout time.Duration) *http.Client {
 
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.DialContext = SafeDialer(dialer)
+	transport.Proxy = nil // Disable proxy to ensure SSRF checks are not bypassed
 
 	return &http.Client{
 		Timeout:   timeout,
