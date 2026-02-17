@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,6 +113,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-card">
         <h1>Welcome Back</h1>
@@ -127,13 +129,11 @@
             </div>
             <button type="submit">Sign In</button>
         </form>
-        <script>
-            var match = document.cookie.split('; ').find(function(row) { return row.startsWith('csrf_token='); });
-            if (match) document.getElementById('csrf_token').value = match.split('=')[1];
-        </script>
+        <script src="/static/login_script.js"></script>
         <div class="footer">
             Neko RSS Reader
         </div>
     </div>
 </body>
+
 </html>
