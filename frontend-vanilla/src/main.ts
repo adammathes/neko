@@ -3,7 +3,7 @@ import { apiFetch } from './api';
 import { store } from './store';
 import type { FilterType } from './store';
 import { router } from './router';
-import type { Feed, Item, Category } from './types';
+import type { Feed, Item } from './types';
 import { createFeedItem } from './components/FeedItem';
 
 // Extend Window interface for app object (keeping for compatibility if needed, but removing inline dependencies)
@@ -49,10 +49,12 @@ export function renderLayout() {
             <h3>Feeds <span class="caret">▶</span></h3>
             <ul id="feed-list"></ul>
           </section>
+          <!-- FIXME: Tags feature soft-deprecated 
           <section class="sidebar-section collapsible collapsed" id="section-tags">
             <h3>Tags <span class="caret">▶</span></h3>
             <ul id="tag-list"></ul>
           </section>
+          -->
         </div>
         <div class="sidebar-footer">
           <a href="/v3/settings" data-nav="settings">Settings</a>
@@ -218,16 +220,18 @@ export function renderFeeds() {
 }
 
 export function renderTags() {
+  /* Soft deprecated.
+  const tagList = document.getElementById('tag-list');
+  if (!tagList) return;
+
   const { tags, activeTagName } = store;
-  const tagListEl = document.getElementById('tag-list');
-  if (!tagListEl) return;
-  tagListEl.innerHTML = tags.map((tag: Category) => `
-    <li class="${tag.title === activeTagName ? 'active' : ''}">
-      <a href="/v3/tag/${encodeURIComponent(tag.title)}" data-nav="tag" data-value="${tag.title}">
-        ${tag.title}
-      </a>
-    </li>
-  `).join('');
+  tagList.innerHTML = tags.map(tag => {
+      const isActive = activeTagName === tag.title;
+      return `<li class="tag-item ${isActive ? 'active' : ''}">
+                <a href="/tag/${encodeURIComponent(tag.title)}" data-nav="tag" data-value="${tag.title}">${tag.title}</a>
+              </li>`;
+  }).join('');
+  */
 }
 
 export function renderFilters() {
@@ -503,7 +507,7 @@ export function renderSettings() {
       const input = document.querySelector(`.feed-tag-input[data-id="${id}"]`) as HTMLInputElement;
       await updateFeed(id, { category: input.value.trim() });
       await fetchFeeds();
-      await fetchTags();
+      // await fetchTags();
       renderSettings();
       alert('Feed updated');
     });
