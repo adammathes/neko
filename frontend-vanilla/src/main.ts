@@ -18,7 +18,6 @@ let activeItemId: number | null = null;
 
 // Cache elements (initialized in renderLayout)
 let appEl: HTMLDivElement | null = null;
-let itemObserver: IntersectionObserver | null = null;
 
 // Initial Layout (v2-style 2-pane)
 export function renderLayout() {
@@ -243,10 +242,6 @@ export function renderFilters() {
 export function renderItems() {
   const { items, loading } = store;
 
-  if (itemObserver) {
-    itemObserver.disconnect();
-    itemObserver = null;
-  }
   const contentArea = document.getElementById('content-area');
   if (!contentArea || router.getCurrentRoute().path === '/settings') return;
 
@@ -267,27 +262,26 @@ export function renderItems() {
     ${store.hasMore ? '<div id="load-more-sentinel" class="loading-more">Loading more...</div>' : ''}
   `;
 
-  // Use the actual scroll container as IntersectionObserver root
+  // Scroll listener on the scrollable container (#main-content) handles both:
+  //   1. Infinite scroll — load more when near the bottom (like v1's proven approach)
+  //   2. Mark-as-read — mark items read when scrolled past
+  // Using onscroll assignment (not addEventListener) so each renderItems() call
+  // replaces the previous handler without accumulating listeners.
   const scrollRoot = document.getElementById('main-content');
-
-  // Setup infinite scroll — stored in itemObserver so it has a GC root and won't be collected
-  const sentinel = document.getElementById('load-more-sentinel');
-  if (sentinel) {
-    itemObserver = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && !store.loading && store.hasMore) {
-        loadMore();
-      }
-    }, { root: scrollRoot, threshold: 0.1 });
-    itemObserver.observe(sentinel);
-  }
-
-  // Scroll listener for reading items
-  // We attach this to the scrollable container: #main-content
   if (scrollRoot) {
-    let timeoutId: number | null = null;
-    const onScroll = () => {
-      if (timeoutId === null) {
-        timeoutId = window.setTimeout(() => {
+    let readTimeoutId: number | null = null;
+    scrollRoot.onscroll = () => {
+      // Infinite scroll: check immediately on every scroll event (cheap comparison).
+      // Guard: only when content actually overflows the container (scrollHeight > clientHeight).
+      if (!store.loading && store.hasMore && scrollRoot.scrollHeight > scrollRoot.clientHeight) {
+        if (scrollRoot.scrollHeight - scrollRoot.scrollTop - scrollRoot.clientHeight < 200) {
+          loadMore();
+        }
+      }
+
+      // Mark-as-read: debounced to avoid excessive DOM queries
+      if (readTimeoutId === null) {
+        readTimeoutId = window.setTimeout(() => {
           const containerRect = scrollRoot.getBoundingClientRect();
 
           store.items.forEach((item) => {
@@ -302,18 +296,10 @@ export function renderItems() {
               }
             }
           });
-          timeoutId = null;
+          readTimeoutId = null;
         }, 250);
       }
     };
-    // Remove existing listener if any (simplistic approach, ideally we track and remove)
-    // Since renderItems is called multiple times, we might be adding multiple listeners?
-    // attachLayoutListeners is called once, but renderItems is called on updates.
-    // We should probably attaching the scroll listener in the layout setup, NOT here.
-    // But we need access to 'items' which is in store.
-    // Let's attach it here but be careful.
-    // Actually, attaching to 'onscroll' property handles replacement automatically.
-    scrollRoot.onscroll = onScroll;
   }
 }
 
