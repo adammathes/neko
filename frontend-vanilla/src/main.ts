@@ -395,7 +395,7 @@ export function renderSettings() {
             </div>
           </div>
           <div class="settings-group" style="margin-top: 1rem;">
-            <label>Heading Font</label>
+            <label>System & headings</label>
             <select id="heading-font-selector" style="margin-bottom: 1rem;">
               <option value="default" ${store.headingFontTheme === 'default' ? 'selected' : ''}>System (Helvetica Neue)</option>
               <option value="serif" ${store.headingFontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
@@ -403,7 +403,7 @@ export function renderSettings() {
               <option value="mono" ${store.headingFontTheme === 'mono' ? 'selected' : ''}>Monospace</option>
             </select>
 
-            <label>Body Font</label>
+            <label>article body</label>
             <select id="font-selector">
               <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Palatino)</option>
               <option value="serif" ${store.fontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>

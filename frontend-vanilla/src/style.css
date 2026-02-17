@@ -117,7 +117,7 @@ html {
 }
 
 .sidebar-section h3 {
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
   font-size: 0.7rem;
   /* Slightly smaller */
   text-transform: uppercase;
@@ -174,7 +174,7 @@ html {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
 }
 
 .sidebar-section li a:hover {
@@ -207,7 +207,7 @@ html {
   text-decoration: none;
   color: var(--text-color);
   font-size: 0.9rem;
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
 }
 
 .sidebar-footer a:hover {
