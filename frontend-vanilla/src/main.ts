@@ -349,93 +349,111 @@ if (typeof window !== 'undefined') {
   }, 1000);
 }
 
+// ... (add this variable at module level or inside renderSettings if possible, but module level is safer for persistence across clicks if renderSettings re-runs? No, event flow is synchronous: click button -> click file input. User selects file. Change event fires.
+// Actually, file input click is async in terms of user action. renderSettings won't run in between unless something else triggers it.
+// But to be safe, I'll update the function signature of importOPML to importData.
+
 export function renderSettings() {
   const contentArea = document.getElementById('content-area');
   if (!contentArea) return;
+
   contentArea.innerHTML = `
     <div class="settings-view">
       <h2>Settings</h2>
       
-      <section class="settings-section">
-        <h3>Add Feed</h3>
-        <div class="add-feed-form">
-          <input type="url" id="new-feed-url" placeholder="https://example.com/rss.xml">
-          <button id="add-feed-btn">Add Feed</button>
-        </div>
-      </section>
-
-      <section class="settings-section">
-        <h3>Appearance</h3>
-        <div class="settings-group">
-          <label>Theme</label>
-          <div class="theme-options" id="theme-options">
-            <button class="${store.theme === 'light' ? 'active' : ''}" data-theme="light">Light</button>
-            <button class="${store.theme === 'dark' ? 'active' : ''}" data-theme="dark">Dark</button>
+      <div class="settings-grid">
+        <section class="settings-section">
+          <h3>Add Feed</h3>
+          <div class="add-feed-form">
+            <input type="url" id="new-feed-url" placeholder="https://example.com/rss.xml">
+            <button id="add-feed-btn">Add Feed</button>
           </div>
-        </div>
-        <div class="settings-group" style="margin-top: 1rem;">
-          <label>Font</label>
-          <select id="font-selector">
-            <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Palatino)</option>
-            <option value="serif" ${store.fontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
-            <option value="sans" ${store.fontTheme === 'sans' ? 'selected' : ''}>Sans-Serif (Helvetica)</option>
-            <option value="mono" ${store.fontTheme === 'mono' ? 'selected' : ''}>Monospace</option>
-          </select>
-        </div>
-      </section>
+        </section>
+
+        <section class="settings-section">
+          <h3>Data</h3>
+          <div class="data-group">
+            <label>Export</label>
+            <div class="button-group">
+              <a href="/api/export/opml" class="button" target="_blank">OPML</a>
+              <a href="/api/export/text" class="button" target="_blank">TEXT</a>
+              <a href="/api/export/json" class="button" target="_blank">JSON</a>
+            </div>
+          </div>
+          <div class="data-group" style="margin-top: 1rem;">
+             <label>Import</label>
+             <div class="button-group">
+               <button class="import-btn" data-format="opml">OPML</button>
+               <button class="import-btn" data-format="text">TEXT</button>
+               <button class="import-btn" data-format="json">JSON</button>
+             </div>
+             <input type="file" id="import-file" style="display: none;">
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3>Theme</h3>
+          <div class="settings-group">
+            <div class="theme-options" id="theme-options">
+              <button class="${store.theme === 'light' ? 'active' : ''}" data-theme="light">Light</button>
+              <button class="${store.theme === 'dark' ? 'active' : ''}" data-theme="dark">Dark</button>
+            </div>
+          </div>
+          <div class="settings-group" style="margin-top: 1rem;">
+            <label>Font</label>
+            <select id="font-selector">
+              <option value="default" ${store.fontTheme === 'default' ? 'selected' : ''}>Default (Palatino)</option>
+              <option value="serif" ${store.fontTheme === 'serif' ? 'selected' : ''}>Serif (Georgia)</option>
+              <option value="sans" ${store.fontTheme === 'sans' ? 'selected' : ''}>Sans-Serif (Helvetica)</option>
+              <option value="mono" ${store.fontTheme === 'mono' ? 'selected' : ''}>Monospace</option>
+            </select>
+          </div>
+        </section>
+      </div>
 
       <section class="settings-section manage-feeds-section">
         <h3>Manage Feeds</h3>
-        <ul class="manage-feed-list" style="list-style: none; padding: 0;">
+        <ul class="manage-feed-list">
           ${store.feeds.map(feed => `
-            <li class="manage-feed-item" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.5rem;">
+            <li class="manage-feed-item">
               <div class="feed-info">
-                <div class="feed-title" style="font-weight: bold;">${feed.title || feed.url}</div>
-                <div class="feed-url" style="font-size: 0.8em; color: var(--text-color); opacity: 0.6; overflow: hidden; text-overflow: ellipsis;">${feed.url}</div>
+                <div class="feed-title">${feed.title || feed.url}</div>
+                <div class="feed-url">${feed.url}</div>
               </div>
-              <div class="feed-actions" style="display: flex; gap: 0.5rem;">
-                <input type="text" class="feed-tag-input" data-id="${feed._id}" value="${feed.category || ''}" placeholder="Tag" style="flex: 1;">
+              <div class="feed-actions">
+                <input type="text" class="feed-tag-input" data-id="${feed._id}" value="${feed.category || ''}" placeholder="Tag">
                 <button class="update-feed-tag-btn" data-id="${feed._id}">Save</button>
-                <button class="delete-feed-btn" data-id="${feed._id}" style="color: var(--error-color, #ff4444);">Delete</button>
+                <button class="delete-feed-btn" data-id="${feed._id}">Delete</button>
               </div>
             </li>
           `).join('')}
         </ul>
       </section>
-
-      <section class="settings-section">
-        <h3>Data Management</h3>
-        <div class="data-actions">
-          <button id="export-opml-btn">Export OPML</button>
-          <div class="import-section" style="margin-top: 1rem;">
-            <label for="import-opml-file" class="button">Import OPML</label>
-            <input type="file" id="import-opml-file" accept=".opml,.xml" style="display: none;">
-          </div>
-        </div>
-      </section>
     </div>
   `;
 
-  // Attach settings listeners
+  // --- Listeners ---
+
+  // Theme
   document.getElementById('theme-options')?.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest('button');
     if (btn) {
-      const theme = btn.getAttribute('data-theme')!;
-      store.setTheme(theme);
+      store.setTheme(btn.getAttribute('data-theme')!);
       renderSettings();
     }
   });
 
+  // Font
   document.getElementById('font-selector')?.addEventListener('change', (e) => {
     store.setFontTheme((e.target as HTMLSelectElement).value);
   });
 
+  // Add Feed
   document.getElementById('add-feed-btn')?.addEventListener('click', async () => {
     const input = document.getElementById('new-feed-url') as HTMLInputElement;
     const url = input.value.trim();
     if (url) {
-      const success = await addFeed(url);
-      if (success) {
+      if (await addFeed(url)) {
         input.value = '';
         alert('Feed added successfully!');
         fetchFeeds();
@@ -445,40 +463,36 @@ export function renderSettings() {
     }
   });
 
-  document.getElementById('export-opml-btn')?.addEventListener('click', () => {
-    window.location.href = '/api/export/opml';
+  // Import Logic
+  let pendingImportFormat = 'opml';
+  const fileInput = document.getElementById('import-file') as HTMLInputElement;
+
+  document.querySelectorAll('.import-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      pendingImportFormat = (e.currentTarget as HTMLElement).getAttribute('data-format') || 'opml';
+      fileInput.click();
+    });
   });
 
-  document.getElementById('import-opml-file')?.addEventListener('change', async (e) => {
+  fileInput?.addEventListener('change', async (e) => {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (file) {
-      const success = await importOPML(file);
-      if (success) {
-        alert('OPML imported successfully! Crawling started.');
+      if (await importData(file, pendingImportFormat)) {
+        alert(`Import (${pendingImportFormat}) started! check logs.`);
         fetchFeeds();
       } else {
-        alert('Failed to import OPML.');
+        alert('Failed to import.');
       }
     }
+    fileInput.value = ''; // Reset
   });
 
-  // Feed Management Listeners
+  // Manage Feeds
   document.querySelectorAll('.delete-feed-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const id = parseInt((e.target as HTMLElement).getAttribute('data-id')!);
-      if (confirm('Are you sure you want to delete this feed?')) {
+      if (confirm('Delete this feed?')) {
         await deleteFeed(id);
-        fetchFeeds();
-        // re-render settings to remove the deleted feed from list
-        // delay slightly to allow feed fetch? No, fetchFeeds is async.
-        // We should await fetchFeeds before re-rendering?
-        // But fetchFeeds updates store, and store emits 'feeds-updated'.
-        // Does 'feeds-updated' re-render settings?
-        // No, 'feeds-updated' calls renderFeeds (the sidebar list).
-        // So we need to explicitly call renderSettings() to update the management list.
-        // But we should wait for fetchFeeds() to complete so store is updated.
-        // wait... fetchFeeds() is async but we don't await result in the listener above?
-        // Ah, fetchFeeds() returns Promise.
         await fetchFeeds();
         renderSettings();
       }
@@ -489,12 +503,10 @@ export function renderSettings() {
     btn.addEventListener('click', async (e) => {
       const id = parseInt((e.target as HTMLElement).getAttribute('data-id')!);
       const input = document.querySelector(`.feed-tag-input[data-id="${id}"]`) as HTMLInputElement;
-      const category = input.value.trim();
-      await updateFeed(id, { category });
-      // updateFeed returns boolean, assuming success
+      await updateFeed(id, { category: input.value.trim() });
       await fetchFeeds();
       await fetchTags();
-      renderSettings(); // Update list to show persistence
+      renderSettings();
       alert('Feed updated');
     });
   });
@@ -514,25 +526,22 @@ async function addFeed(url: string): Promise<boolean> {
   }
 }
 
-async function importOPML(file: File): Promise<boolean> {
+async function importData(file: File, format: string): Promise<boolean> {
   try {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('format', 'opml');
+    formData.append('format', format);
 
-    // We need to handle CSRF manually since apiFetch expects JSON or simple body
     const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrf_token='))?.split('=')[1];
 
     const res = await fetch('/api/import', {
       method: 'POST',
-      headers: {
-        'X-CSRF-Token': csrfToken || ''
-      },
+      headers: { 'X-CSRF-Token': csrfToken || '' },
       body: formData
     });
     return res.ok;
   } catch (err) {
-    console.error('Failed to import OPML', err);
+    console.error('Failed to import', err);
     return false;
   }
 }
