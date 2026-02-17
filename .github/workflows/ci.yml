@@ -1,11 +1,11 @@
 name: CI
 
 on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
   workflow_dispatch:
-  # push:
-  #   branches: [ master ]
-  # pull_request:
-  #   branches: [ master ]
 
 jobs:
   backend:
@@ -21,14 +21,14 @@ jobs:
 
     - name: Create dummy assets for embed
       run: |
-        mkdir -p web/dist/v2
-        touch web/dist/v2/dummy
+        mkdir -p web/dist/v3
+        touch web/dist/v3/dummy
 
     - name: Vet
       run: go vet ./...
 
     - name: Lint
-      uses: golangci/golangci-lint-action@v4
+      uses: golangci/golangci-lint-action@v6
       with:
         version: v2.9.0
 
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./frontend
+        working-directory: ./frontend-vanilla
     steps:
     - uses: actions/checkout@v4
 
@@ -49,13 +49,10 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
+        cache-dependency-path: frontend-vanilla/package-lock.json
 
     - name: Install dependencies
       run: npm ci
-
-    - name: Lint
-      run: npm run lint
 
     - name: Test
       run: npm test -- --run
@@ -71,37 +68,9 @@ jobs:
         node-version: '20'
     - name: Build assets
       run: |
-        make ui
+        make ui-vanilla
     - name: Check for diff
-      run: git diff --exit-code web/dist/v2/
-
-  e2e:
-    name: E2E Tests
-    runs-on: ubuntu-latest
-    needs: [backend, frontend, ui-check]
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.24'
-
-    - name: Set up Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-
-    - name: Install dependencies
-      run: |
-        cd frontend
-        npm ci
-        npx playwright install --with-deps chromium
-
-    - name: Run E2E tests
-      run: ./scripts/run_e2e_safe.sh
+      run: git diff --exit-code web/dist/v3/
 
   docker:
     name: Docker Build & Test

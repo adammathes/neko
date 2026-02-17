@@ -32,9 +32,6 @@
       <button class="sidebar-toggle" id="sidebar-toggle-btn" title="Toggle Sidebar">🐱</button>
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
       <aside class="sidebar" id="sidebar">
-        <div class="sidebar-search">
-          <input type="search" id="search-input" placeholder="Search..." value="${i.searchQuery}">
-        </div>
         <div class="sidebar-scroll">
           <section class="sidebar-section">
             <ul id="filter-list">
@@ -43,13 +40,21 @@
               <li class="filter-item" data-filter="starred"><a href="/v3/?filter=starred" data-nav="filter" data-value="starred">Starred</a></li>
             </ul>
           </section>
-          <section class="sidebar-section collapsible collapsed" id="section-tags">
-            <h3>Tags <span class="caret">▶</span></h3>
-            <ul id="tag-list"></ul>
+          <div class="sidebar-search">
+            <input type="search" id="search-input" placeholder="Search..." value="${i.searchQuery}">
+          </div>
+          <section class="sidebar-section">
+            <ul>
+              <li><a href="/v3/settings" data-nav="settings" class="new-feed-link">+ new</a></li>
+            </ul>
           </section>
           <section class="sidebar-section collapsible collapsed" id="section-feeds">
             <h3>Feeds <span class="caret">▶</span></h3>
             <ul id="feed-list"></ul>
+          </section>
+          <section class="sidebar-section collapsible collapsed" id="section-tags">
+            <h3>Tags <span class="caret">▶</span></h3>
+            <ul id="tag-list"></ul>
           </section>
         </div>
         <div class="sidebar-footer">

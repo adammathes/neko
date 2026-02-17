@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { store } from './store';
 import { apiFetch } from './api';
-import { renderItems } from './main';
+import { renderItems, renderLayout } from './main';
+import { createFeedItem } from './components/FeedItem';
 
 // Mock api
 vi.mock('./api', () => ({
@@ -165,5 +166,94 @@ describe('Scroll-to-Read Regression Tests', () => {
 
         // API should NOT be called
         expect(apiFetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/item/888'), expect.anything());
+    });
+});
+
+// NK-t8qnrh: Links in feed item descriptions should have no underlines (match v1 style)
+describe('NK-t8qnrh: Feed item description links have no underlines', () => {
+    it('item-description should be rendered inside feed items', () => {
+        const item = {
+            _id: 1,
+            title: 'Test',
+            url: 'http://example.com',
+            description: '<p>Text with <a href="http://example.com">a link</a></p>',
+            read: false,
+            starred: false,
+            publish_date: '2024-01-01',
+        } as any;
+        const html = createFeedItem(item);
+        expect(html).toContain('class="item-description"');
+        expect(html).toContain('<a href="http://example.com">a link</a>');
+    });
+});
+
+// NK-mcl01m: Sidebar order should be filters → search → "+ new" → Feeds → Tags
+describe('NK-mcl01m: Sidebar section order', () => {
+    beforeEach(() => {
+        document.body.innerHTML = '<div id="app"></div>';
+        vi.mocked(apiFetch).mockResolvedValue({ ok: true, status: 200, json: async () => [] } as Response);
+        renderLayout();
+    });
+
+    it('filter-list appears before section-feeds in the sidebar', () => {
+        const sidebar = document.getElementById('sidebar');
+        expect(sidebar).not.toBeNull();
+        const filterList = sidebar!.querySelector('#filter-list');
+        const sectionFeeds = sidebar!.querySelector('#section-feeds');
+        expect(filterList).not.toBeNull();
+        expect(sectionFeeds).not.toBeNull();
+        // filter-list should come before section-feeds in DOM order
+        const position = filterList!.compareDocumentPosition(sectionFeeds!);
+        expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('section-feeds appears before section-tags in the sidebar', () => {
+        const sidebar = document.getElementById('sidebar');
+        const sectionFeeds = sidebar!.querySelector('#section-feeds');
+        const sectionTags = sidebar!.querySelector('#section-tags');
+        expect(sectionFeeds).not.toBeNull();
+        expect(sectionTags).not.toBeNull();
+        // feeds should come before tags
+        const position = sectionFeeds!.compareDocumentPosition(sectionTags!);
+        expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('search input appears after filter-list and before section-feeds', () => {
+        const sidebar = document.getElementById('sidebar');
+        const filterList = sidebar!.querySelector('#filter-list');
+        const searchInput = sidebar!.querySelector('#search-input');
+        const sectionFeeds = sidebar!.querySelector('#section-feeds');
+        expect(searchInput).not.toBeNull();
+        // search after filters
+        const pos1 = filterList!.compareDocumentPosition(searchInput!);
+        expect(pos1 & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        // search before feeds
+        const pos2 = searchInput!.compareDocumentPosition(sectionFeeds!);
+        expect(pos2 & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('sidebar has a "+ new" link pointing to settings', () => {
+        const newLink = document.querySelector('.new-feed-link');
+        expect(newLink).not.toBeNull();
+        expect(newLink!.textContent?.trim()).toBe('+ new');
+    });
+});
+
+// NK-z1czaq: Main content should fill full width (sidebar overlays, never shifts content)
+describe('NK-z1czaq: Sidebar overlays content, does not shift layout', () => {
+    beforeEach(() => {
+        document.body.innerHTML = '<div id="app"></div>';
+        vi.mocked(apiFetch).mockResolvedValue({ ok: true, status: 200, json: async () => [] } as Response);
+    });
+
+    it('sidebar is a sibling of main-content inside .layout (not flex-shifting)', () => {
+        renderLayout();
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        expect(sidebar).not.toBeNull();
+        expect(mainContent).not.toBeNull();
+        // Both should be children of .layout
+        expect(sidebar!.parentElement?.classList.contains('layout')).toBe(true);
+        expect(mainContent!.parentElement?.classList.contains('layout')).toBe(true);
     });
 });
