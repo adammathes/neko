@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { store } from './store';
 import { apiFetch } from './api';
-import { updateItem, fetchItems, renderItems } from './main';
+import { renderItems } from './main';
 
 // Mock api
 vi.mock('./api', () => ({

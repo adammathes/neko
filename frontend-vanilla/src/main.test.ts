@@ -23,7 +23,7 @@ vi.mock('./api', () => ({
 
 // Mock IntersectionObserver as a constructor
 class MockIntersectionObserver {
-    constructor(callback: IntersectionObserverCallback) {
+    constructor() {
         // unused
     }
     observe = vi.fn();
