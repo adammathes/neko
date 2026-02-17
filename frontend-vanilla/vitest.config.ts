@@ -6,5 +6,8 @@ export default defineConfig({
         environment: 'jsdom',
         globals: true,
         setupFiles: ['./src/setupTests.ts'],
+        // Limit concurrency to avoid resource exhaustion on the VM
+        fileParallelism: false,
+        pool: 'threads',
     },
 });
