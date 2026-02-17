@@ -303,6 +303,60 @@ export function renderItems() {
   }
 }
 
+// Polling fallback for infinite scroll (matches V1 behavior)
+// This ensures that even if scroll events are missed or layout shifts occur without scroll,
+// we still load more items when near the bottom.
+if (typeof window !== 'undefined') {
+  setInterval(() => {
+    // We need to check if we are scrolling the window or an element.
+    // In V3 layout, .main-content handles the scroll if it's overflow-y: auto.
+    // But if .main-content is behaving like the body, we might need to check window.innerHeight.
+
+    // Let's check the container first
+    const scrollRoot = document.getElementById('main-content');
+    // console.log('Polling...', { scrollRoot: !!scrollRoot, loading: store.loading, hasMore: store.hasMore });
+
+    if (store.loading || !store.hasMore) return;
+
+    if (scrollRoot) {
+      // DEBUG LOGGING
+      /*
+      console.log('Scroll Poll', { 
+          scrollHeight: scrollRoot.scrollHeight, 
+          scrollTop: scrollRoot.scrollTop, 
+          clientHeight: scrollRoot.clientHeight,
+          offset: scrollRoot.scrollHeight - scrollRoot.scrollTop - scrollRoot.clientHeight,
+          docHeight: document.documentElement.scrollHeight,
+          winHeight: window.innerHeight,
+          winScroll: window.scrollY
+      });
+      */
+
+      // Check container scroll (if container is scrollable)
+      if (scrollRoot.scrollHeight > scrollRoot.clientHeight) {
+        if (scrollRoot.scrollHeight - scrollRoot.scrollTop - scrollRoot.clientHeight < 200) {
+          loadMore();
+          return;
+        }
+      }
+    }
+
+    // Fallback: Check window scroll (if main-content isn't the scroller)
+    // This matches V1 logic: $(document).height() - $(window).height() - $(window).scrollTop()
+    const docHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+    const winHeight = window.innerHeight;
+    const winScroll = window.scrollY || document.documentElement.scrollTop;
+
+    // Only if document is actually scrollable
+    if (docHeight > winHeight) {
+      if (docHeight - winHeight - winScroll < 200) {
+        loadMore();
+      }
+    }
+
+  }, 1000);
+}
+
 export function renderSettings() {
   const contentArea = document.getElementById('content-area');
   if (!contentArea) return;
@@ -613,7 +667,10 @@ export async function fetchItems(feedId?: string, tagName?: string, append: bool
     const res = await apiFetch(`/api/stream?${params.toString()}`);
     if (res.ok) {
       const items = await res.json();
-      store.setHasMore(items.length >= 50);
+      // V1 logic: keep loading as long as we get results.
+      // Backend limit is currently 15, so checking >= 50 caused premature stop.
+      // We accept one extra empty fetch at the end to be robust against page size changes.
+      store.setHasMore(items.length > 0);
       store.setItems(items, append);
     }
   } finally {
