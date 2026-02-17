@@ -1,0 +1,265 @@
+/*
+ * Refined Theme
+ * A careful refinement of the default aesthetic.
+ * Fixes spacing inconsistencies, improves typographic rhythm,
+ * and adds subtle polish while preserving the original character.
+ */
+
+/* ---- Typographic Scale & Rhythm ---- */
+/* Base unit: 0.5rem. All spacing aligns to this grid. */
+
+:root {
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+}
+
+/* Slightly refined base typography */
+body {
+  font-size: 18px;
+  line-height: 1.6;
+  letter-spacing: 0.005em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---- Sidebar Refinements ---- */
+
+.sidebar {
+  padding: var(--spacing-lg);
+  padding-top: 5rem;
+}
+
+.sidebar-section h3 {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-sm);
+}
+
+.sidebar-section li a {
+  padding: 0.35rem 0.75rem;
+  margin: 2px 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+  border-radius: 6px;
+}
+
+.sidebar-section li.active a {
+  border-radius: 6px;
+}
+
+.sidebar-footer {
+  padding-top: var(--spacing-lg);
+}
+
+.sidebar-footer a {
+  font-size: 0.82rem;
+  padding: 0.4rem 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Main Content Refinements ---- */
+
+.main-content {
+  padding: var(--spacing-xl) var(--spacing-xl);
+}
+
+@media (max-width: 1024px) {
+  .main-content {
+    padding: var(--spacing-md);
+    padding-top: 4rem;
+  }
+}
+
+/* ---- Feed Item Refinements ---- */
+
+.feed-item {
+  padding: var(--spacing-md) var(--spacing-sm);
+  margin-top: var(--spacing-xl);
+}
+
+.item-title {
+  font-size: 1.7rem;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+.item-header {
+  margin-bottom: var(--spacing-sm);
+}
+
+.dateline {
+  font-size: 0.72em;
+  letter-spacing: 0.02em;
+  margin-bottom: var(--spacing-md);
+}
+
+.item-description {
+  line-height: 1.6;
+  margin-top: var(--spacing-md);
+}
+
+.item-description p {
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+}
+
+.item-description p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- Settings Page Refinements ---- */
+/* This is where the biggest improvements are needed */
+
+.settings-view {
+  padding-top: var(--spacing-xl);
+}
+
+.settings-view h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-2xl);
+  letter-spacing: -0.025em;
+}
+
+.settings-grid {
+  gap: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.settings-section {
+  margin: 0;
+  padding: 0;
+}
+
+.settings-section h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-group,
+.data-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.settings-group label,
+.data-group label {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--spacing-sm);
+}
+
+.theme-options {
+  gap: var(--spacing-sm);
+}
+
+/* Consistent button sizing */
+button,
+.button {
+  height: 2.2rem;
+  padding: 0 var(--spacing-md);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  border-radius: 5px;
+}
+
+/* Add feed form alignment */
+.add-feed-form {
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+.add-feed-form input {
+  height: 2.2rem;
+}
+
+/* Manage feeds list consistency */
+.manage-feeds-section {
+  margin-top: var(--spacing-2xl);
+}
+
+.manage-feed-item {
+  padding: var(--spacing-md) 0;
+  gap: var(--spacing-md);
+}
+
+.feed-title {
+  font-size: 0.95rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.feed-url {
+  font-size: 0.8rem;
+}
+
+/* Select inputs consistent with buttons */
+select {
+  height: 2.2rem;
+  font-size: 0.85rem;
+}
+
+/* ---- Subtle Polish ---- */
+
+/* Slightly softer selection highlight */
+.feed-item.selected {
+  border-radius: 6px;
+}
+
+/* Smoother scrollbar (webkit) */
+.sidebar-scroll::-webkit-scrollbar,
+.main-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb,
+.main-content::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 3px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover,
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.5);
+}
+
+/* Refined focus states */
+input:focus,
+select:focus {
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+/* Cleaner star button */
+.star-btn {
+  font-size: 1.1rem;
+  padding: 0 0 0 0.75rem;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.star-btn.is-unstarred {
+  opacity: 0.2;
+}
+
+.star-btn.is-unstarred:hover {
+  opacity: 0.5;
+}
+
+/* Import/export button groups: consistent spacing */
+.data-group .button-group {
+  gap: var(--spacing-sm);
+}
+
+/* Better scrape button */
+.scrape-btn {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}

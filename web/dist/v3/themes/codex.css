@@ -1,0 +1,451 @@
+/*
+ * Codex Theme
+ * The book as interface. Tufte, Bringhurst, and the long tradition
+ * of typographic craft applied to the screen.
+ * Warm, readable, unhurried. Content is sovereign.
+ */
+
+/* ---- Color System ---- */
+:root {
+  --bg-color: #faf8f4;
+  --text-color: #2c2c2c;
+  --sidebar-bg: #f0ece4;
+  --link-color: #8b4513;
+  --border-color: #d4cfc6;
+  --accent-color: #8b4513;
+
+  --codex-paper: #faf8f4;
+  --codex-ink: #2c2c2c;
+  --codex-sienna: #8b4513;
+  --codex-muted: #8a8478;
+  --codex-rule: #d4cfc6;
+
+  color-scheme: light;
+}
+
+/* Dark mode adaptation -- parchment by candlelight */
+.theme-dark {
+  --bg-color: #1c1a17;
+  --text-color: #d4cfc6;
+  --sidebar-bg: #23211d;
+  --link-color: #c9956b;
+  --border-color: #3a3630;
+  --accent-color: #c9956b;
+
+  --codex-paper: #1c1a17;
+  --codex-ink: #d4cfc6;
+  --codex-sienna: #c9956b;
+  --codex-muted: #8a8478;
+  --codex-rule: #3a3630;
+}
+
+/* ---- Typography ---- */
+
+body {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', 'Crimson Text', Georgia, serif;
+  font-size: 19px;
+  line-height: 1.7;
+  letter-spacing: 0.005em;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'liga' 1, 'kern' 1, 'onum' 1;
+}
+
+/* ---- Sidebar: Table of Contents ---- */
+
+.sidebar {
+  background: var(--sidebar-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-right: 1px solid var(--codex-rule);
+  font-family: 'Iowan Old Style', Palatino, Georgia, serif;
+}
+
+.theme-dark .sidebar {
+  background: var(--sidebar-bg);
+  border-right-color: var(--codex-rule);
+}
+
+.sidebar-section h3 {
+  font-family: 'Iowan Old Style', Palatino, Georgia, serif;
+  font-size: 0.7rem;
+  font-weight: 400;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.15em;
+  color: var(--codex-muted);
+  opacity: 1;
+}
+
+.theme-dark .sidebar-section h3 {
+  color: var(--codex-muted);
+}
+
+.sidebar-section li a {
+  font-family: 'Iowan Old Style', Palatino, Georgia, serif;
+  color: var(--text-color);
+  font-size: 0.85rem;
+  border-radius: 3px;
+  font-weight: 400;
+}
+
+.theme-dark .sidebar-section li a {
+  color: var(--text-color);
+}
+
+.sidebar-section li a:hover {
+  background: rgba(139, 69, 19, 0.06);
+  color: var(--codex-sienna);
+  transform: none;
+}
+
+.theme-dark .sidebar-section li a:hover {
+  background: rgba(201, 149, 107, 0.08);
+  color: var(--codex-sienna);
+}
+
+.sidebar-section li.active a {
+  background: rgba(139, 69, 19, 0.08);
+  color: var(--codex-sienna);
+  box-shadow: none;
+  border: none;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.theme-dark .sidebar-section li.active a {
+  background: rgba(201, 149, 107, 0.1);
+  color: var(--codex-sienna);
+}
+
+.sidebar-footer {
+  border-top-color: var(--codex-rule);
+}
+
+.sidebar-footer a {
+  font-family: 'Iowan Old Style', Palatino, Georgia, serif;
+  color: var(--text-color);
+  opacity: 0.5;
+  font-size: 0.85rem;
+}
+
+.theme-dark .sidebar-footer a {
+  color: var(--text-color);
+}
+
+/* Search */
+.sidebar-search input {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--codex-rule);
+  border-radius: 3px;
+  color: var(--text-color);
+  font-family: inherit;
+}
+
+.theme-dark .sidebar-search input {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+  border-color: var(--codex-rule);
+}
+
+.sidebar-search input:focus {
+  border-color: var(--codex-sienna);
+  box-shadow: none;
+}
+
+/* ---- Toggle ---- */
+.theme-dark .sidebar-toggle {
+  background: none;
+}
+
+/* ---- Main Content ---- */
+
+.main-content {
+  background-color: var(--bg-color);
+  padding: 2.5rem 2rem;
+}
+
+.main-content > * {
+  max-width: 33em;
+}
+
+/* ---- Feed Items: The Reading Experience ---- */
+
+.feed-item {
+  padding: 0;
+  margin-top: 2.5rem;
+  border-radius: 0;
+  padding-bottom: 2.5rem;
+  border-bottom: none;
+}
+
+/* Decorative separator between items -- a subtle fleuron */
+.feed-item + .feed-item::before {
+  content: '\2766';
+  display: block;
+  text-align: center;
+  font-size: 1rem;
+  color: var(--codex-rule);
+  margin-bottom: 2.5rem;
+  margin-top: -2.5rem;
+}
+
+.feed-item.selected {
+  background: none;
+  box-shadow: inset 3px 0 0 var(--codex-sienna);
+  padding-left: 1rem;
+  border-radius: 0;
+}
+
+.theme-dark .feed-item.selected {
+  background: none;
+}
+
+.item-title {
+  font-family: 'Iowan Old Style', Palatino, Georgia, serif;
+  font-size: 1.65rem;
+  line-height: 1.3;
+  font-weight: 400;
+  color: var(--codex-sienna);
+  letter-spacing: -0.005em;
+}
+
+.item-title:hover {
+  color: var(--codex-ink);
+  text-decoration: none;
+}
+
+.dateline {
+  font-family: 'Iowan Old Style', Palatino, Georgia, serif;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  font-size: 0.78em;
+  letter-spacing: 0.06em;
+  color: var(--codex-muted);
+  margin-bottom: 1.2rem;
+}
+
+.dateline a {
+  color: var(--codex-muted);
+}
+
+.item-description {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text-color);
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+.item-description a {
+  color: var(--codex-sienna);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(139, 69, 19, 0.3);
+}
+
+.item-description a:hover {
+  border-bottom-color: var(--codex-sienna);
+}
+
+.item-description blockquote {
+  border-left: 3px solid var(--codex-rule);
+  margin-left: 0;
+  padding-left: 1.5em;
+  font-style: italic;
+  color: var(--codex-muted);
+}
+
+.item-description pre {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--codex-rule);
+  border-radius: 2px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.88em;
+}
+
+.item-description img {
+  border-radius: 2px;
+}
+
+/* Star */
+.star-btn.is-starred {
+  color: var(--codex-sienna);
+}
+
+.star-btn.is-unstarred {
+  color: var(--codex-muted);
+  opacity: 0.25;
+}
+
+/* Scrape */
+.scrape-btn {
+  font-family: inherit;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.06em;
+  color: var(--codex-sienna);
+  border-color: var(--codex-rule);
+  background: transparent;
+  border-radius: 2px;
+  font-weight: 400;
+}
+
+/* ---- Buttons ---- */
+
+button,
+.button {
+  font-family: 'Iowan Old Style', Palatino, Georgia, serif;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.06em;
+  border-radius: 3px;
+  border-color: var(--codex-rule);
+  background: transparent;
+  color: var(--text-color);
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+button:hover,
+.button:hover {
+  border-color: var(--codex-sienna);
+  color: var(--codex-sienna);
+  background: rgba(139, 69, 19, 0.04);
+}
+
+.theme-dark button,
+.theme-dark .button {
+  background: transparent;
+  color: var(--text-color);
+  border-color: var(--codex-rule);
+}
+
+.theme-dark button:hover,
+.theme-dark .button:hover {
+  border-color: var(--codex-sienna);
+  color: var(--codex-sienna);
+  background: rgba(201, 149, 107, 0.08);
+}
+
+button.active,
+.theme-dark button.active {
+  background: var(--codex-sienna);
+  color: var(--codex-paper);
+  border-color: var(--codex-sienna);
+}
+
+/* ---- Settings ---- */
+
+.settings-view {
+  font-family: 'Iowan Old Style', Palatino, Georgia, serif;
+}
+
+.settings-view h2 {
+  font-weight: 400;
+  font-size: 1.8rem;
+  letter-spacing: -0.01em;
+}
+
+.settings-section h3 {
+  font-family: inherit;
+  font-weight: 400;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  font-size: 1.15rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--codex-rule);
+}
+
+.settings-group label,
+.data-group label {
+  font-family: inherit;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+  font-weight: 400;
+  opacity: 0.65;
+}
+
+.theme-dark .settings-view,
+.theme-dark .settings-view h2,
+.theme-dark .settings-view h3,
+.theme-dark .settings-group label,
+.theme-dark .data-group label {
+  color: var(--text-color) !important;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="url"],
+input[type="search"],
+select {
+  font-family: inherit;
+  background: transparent;
+  border: 1px solid var(--codex-rule);
+  border-radius: 3px;
+  color: var(--text-color);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--codex-sienna);
+  box-shadow: none;
+}
+
+/* Feed list */
+.manage-feed-list {
+  border-top-color: var(--codex-rule);
+}
+
+.manage-feed-item {
+  border-bottom-color: var(--codex-rule);
+}
+
+.feed-title {
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.feed-url {
+  font-family: inherit;
+}
+
+.delete-feed-btn {
+  color: #a0522d !important;
+  border-color: rgba(160, 82, 45, 0.3) !important;
+}
+
+.delete-feed-btn:hover {
+  background: rgba(160, 82, 45, 0.06) !important;
+  border-color: #a0522d !important;
+}
+
+/* ---- Scrollbars ---- */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--codex-rule);
+  border-radius: 3px;
+}
+
+/* ---- Backdrop ---- */
+.sidebar-backdrop {
+  background: rgba(250, 248, 244, 0.6);
+  backdrop-filter: blur(3px);
+}
+
+.theme-dark .sidebar-backdrop {
+  background: rgba(28, 26, 23, 0.6);
+}

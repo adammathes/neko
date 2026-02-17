@@ -13,6 +13,24 @@ declare global {
   }
 }
 
+// Style theme management: load/unload CSS files
+const STYLE_THEMES = ['default', 'refined', 'terminal', 'codex', 'sakura'] as const;
+
+function loadStyleTheme(theme: string) {
+  // Remove any existing theme stylesheet
+  const existing = document.getElementById('style-theme-link');
+  if (existing) existing.remove();
+
+  // 'default' means no extra stylesheet
+  if (theme === 'default') return;
+
+  const link = document.createElement('link');
+  link.id = 'style-theme-link';
+  link.rel = 'stylesheet';
+  link.href = `/v3/themes/${theme}.css`;
+  document.head.appendChild(link);
+}
+
 // Global App State
 let activeItemId: number | null = null;
 
@@ -394,7 +412,20 @@ export function renderSettings() {
               <button class="${store.theme === 'dark' ? 'active' : ''}" data-theme="dark">Dark</button>
             </div>
           </div>
-          <div class="settings-group" style="margin-top: 1rem;">
+        </section>
+
+        <section class="settings-section">
+          <h3>Style</h3>
+          <div class="settings-group">
+            <div class="theme-options" id="style-theme-options">
+              ${STYLE_THEMES.map(t => `<button class="${store.styleTheme === t ? 'active' : ''}" data-style-theme="${t}">${t.charAt(0).toUpperCase() + t.slice(1)}</button>`).join('\n              ')}
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3>Fonts</h3>
+          <div class="settings-group">
             <label>System & headings</label>
             <select id="heading-font-selector" style="margin-bottom: 1rem;">
               <option value="default" ${store.headingFontTheme === 'default' ? 'selected' : ''}>System (Helvetica Neue)</option>
@@ -445,12 +476,20 @@ export function renderSettings() {
 
   // --- Listeners ---
 
-  // Theme
+  // Theme (light/dark)
   document.getElementById('theme-options')?.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest('button');
     if (btn) {
       store.setTheme(btn.getAttribute('data-theme')!);
       renderSettings();
+    }
+  });
+
+  // Style Theme
+  document.getElementById('style-theme-options')?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (btn) {
+      store.setStyleTheme(btn.getAttribute('data-style-theme')!);
     }
   });
 
@@ -844,6 +883,14 @@ store.on('sidebar-toggle', () => {
   }
 });
 
+store.on('style-theme-updated', () => {
+  loadStyleTheme(store.styleTheme);
+  // Re-render settings if on settings page to update active state
+  if (router.getCurrentRoute().path === '/settings') {
+    renderSettings();
+  }
+});
+
 store.on('items-updated', renderItems);
 store.on('loading-state-changed', renderItems);
 
@@ -864,6 +911,7 @@ export async function init() {
   }
 
   renderLayout();
+  loadStyleTheme(store.styleTheme);
   renderFilters();
   try {
     await Promise.all([fetchFeeds(), fetchTags()]);

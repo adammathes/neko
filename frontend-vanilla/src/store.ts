@@ -1,6 +1,6 @@
 import type { Feed, Item, Category } from './types.ts';
 
-export type StoreEvent = 'feeds-updated' | 'tags-updated' | 'items-updated' | 'active-feed-updated' | 'active-tag-updated' | 'loading-state-changed' | 'filter-updated' | 'search-updated' | 'theme-updated' | 'sidebar-toggle';
+export type StoreEvent = 'feeds-updated' | 'tags-updated' | 'items-updated' | 'active-feed-updated' | 'active-tag-updated' | 'loading-state-changed' | 'filter-updated' | 'search-updated' | 'theme-updated' | 'sidebar-toggle' | 'style-theme-updated';
 
 export type FilterType = 'unread' | 'all' | 'starred';
 
@@ -34,6 +34,7 @@ export class Store extends EventTarget {
     theme: string = localStorage.getItem('neko-theme') || 'light';
     fontTheme: string = localStorage.getItem('neko-font-theme') || 'default';
     headingFontTheme: string = localStorage.getItem('neko-heading-font-theme') || 'default';
+    styleTheme: string = localStorage.getItem('neko-style-theme') || 'default';
     sidebarVisible: boolean = getInitialSidebarVisible();
 
     setFeeds(feeds: Feed[]) {
@@ -106,6 +107,12 @@ export class Store extends EventTarget {
         this.headingFontTheme = theme;
         localStorage.setItem('neko-heading-font-theme', theme);
         this.emit('theme-updated');
+    }
+
+    setStyleTheme(styleTheme: string) {
+        this.styleTheme = styleTheme;
+        localStorage.setItem('neko-style-theme', styleTheme);
+        this.emit('style-theme-updated');
     }
 
     setSidebarVisible(visible: boolean) {
