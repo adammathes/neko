@@ -14,9 +14,8 @@
 ### Summary
 The `make check` workflow consists of:
 1. `golangci-lint run` (Backend)
-2. `npm run lint` (Frontend)
-3. `go test -cover ./...` (Backend)
-4. `npm test -- --run` (Frontend)
+2. `go test -cover ./...` (Backend)
+3. `npm test -- --run` (Frontend - frontend-vanilla)
 
 The goal of keeping the check under 15 seconds for a fast local feedback loop has been achieved.
 
@@ -24,65 +23,75 @@ The goal of keeping the check under 15 seconds for a fast local feedback loop ha
 
 ## Go Backend Benchmarks
 
-**Environment:** Linux arm64, Go, SQLite
-**Date:** 2026-02-16
-**Methodology:** `go test -bench=. -benchmem -count=3`
+**Environment:** Linux amd64, Intel(R) Xeon(R) Platinum 8581C @ 2.10GHz, Go 1.24, SQLite
+**Date:** 2026-02-17
+**Methodology:** `go test -bench=. -benchmem -count=3 -run='^$'`
 
 ### API Handlers (`api/`)
 
-| Benchmark | ops | ns/op | B/op | allocs/op |
-|---|---|---|---|---|
-| HandleStream | 6,664 | 168,344 | 380,350 | 1,423 |
-| HandleStreamWithSearch | 6,200 | 192,454 | 381,033 | 1,432 |
-| HandleItemUpdate | 24,469 | 48,513 | 8,597 | 46 |
-| HandleFeedList | 51,320 | 22,846 | 10,308 | 117 |
+| Benchmark | ns/op | B/op | allocs/op |
+|---|---|---|---|
+| HandleStream | 780,000 | 379,930 | 1,419 |
+| HandleStreamWithSearch | 942,618 | 380,511 | 1,428 |
+| HandleItemUpdate | 6,228,144 | 8,556 | 46 |
+| HandleFeedList | 295,920 | 10,327 | 117 |
 
-**Findings:** Stream endpoints (~170us) are dominated by SQLite query + JSON serialization. Search adds ~14% overhead via FTS. Item updates and feed listing are fast (~48us and ~23us respectively). The ~380KB/op allocation for stream is from serializing item content; this could be reduced by excluding `full_content` in list views.
+**Findings:** Stream endpoints (~780µs) are dominated by SQLite query + JSON serialization. Search adds ~21% overhead via FTS. Item updates (~6.2ms) include a full DB write cycle. Feed listing is fast (~296µs). The ~380KB/op allocation for stream comes from serializing item descriptions; the `full_content` field is already excluded from list views (see item model benchmarks for full_content savings data).
 
 ### Crawler (`internal/crawler/`)
 
-| Benchmark | ops | ns/op | B/op | allocs/op |
-|---|---|---|---|---|
-| ParseFeed | 12,157 | 98,513 | 92,216 | 1,643 |
-| CrawlFeedMocked | 1,497 | 782,713 | 169,491 | 2,233 |
-| GetFeedContent | 9,720 | 122,448 | 46,986 | 190 |
+| Benchmark | ns/op | B/op | allocs/op |
+|---|---|---|---|
+| ParseFeed | 220,619 | 92,292 | 1,643 |
+| CrawlFeedMocked | 3,034,479 | 170,857 | 2,236 |
+| GetFeedContent | 1,150,492 | 46,547 | 190 |
 
-**Findings:** Feed parsing (~98us) is fast. Full crawl cycle (~783us mocked) is dominated by HTTP round-trip + DB write. Content fetching (~122us) includes HTTP + HTML sanitization.
+**Findings:** Feed parsing (~221µs) is fast. Full crawl cycle (~3ms mocked) is dominated by HTTP round-trip + DB write. Content fetching (~1.15ms) includes HTTP + HTML sanitization.
 
 ### Item Model (`models/item/`)
 
-| Benchmark | ops | ns/op | B/op | allocs/op |
-|---|---|---|---|---|
-| ItemCreate | 21,397 | 55,924 | 1,415 | 22 |
-| ItemCreateBatch100 | 216 | 5,574,677 | 139,213 | 2,100 |
-| Filter_Empty | 62,834 | 19,005 | 13,096 | 82 |
-| Filter_15Items | 7,429 | 159,417 | 373,392 | 1,771 |
-| Filter_WithFTS | 6,406 | 184,237 | 374,120 | 1,779 |
-| Filter_WithImageProxy | 5,348 | 216,287 | 496,533 | 2,491 |
-| FilterPolicy | 104,919 | 11,444 | 17,768 | 150 |
-| RewriteImages | 182,242 | 6,453 | 11,048 | 97 |
-| ItemSave | 28,552 | 41,641 | 592 | 11 |
-| Filter_LargeDataset | 8,623 | 139,067 | 361,769 | 1,186 |
+| Benchmark | ns/op | B/op | allocs/op |
+|---|---|---|---|
+| ItemCreate | 6,816,479 | 1,388 | 21 |
+| ItemCreateBatch100 | 717,721,761 | 138,539 | 2,102 |
+| Filter_Empty | 291,475 | 13,209 | 82 |
+| Filter_15Items | 799,494 | 373,444 | 1,767 |
+| Filter_WithFTS | 850,579 | 374,073 | 1,775 |
+| Filter_WithImageProxy | 1,014,302 | 496,582 | 2,487 |
+| FilterPolicy | 25,979 | 17,768 | 150 |
+| RewriteImages | 17,331 | 11,048 | 97 |
+| ItemSave | 6,076,841 | 592 | 11 |
+| Filter_LargeDataset | 771,772 | 361,818 | 1,182 |
+| **Filter_15Items_WithFullContent** | **798,356** | **362,778** | **1,167** |
+| **Filter_15Items_IncludeFullContent** | **1,322,135** | **594,842** | **4,054** |
+| **Filter_LargeDataset_WithFullContent** | **772,676** | **363,001** | **1,182** |
 
-**Findings:** Image proxy adds ~35% overhead to filtering (216us vs 159us) due to URL rewriting of `<img>` tags. Batch inserts scale linearly (~56us/item). The `FilterPolicy` HTML sanitizer is fast at ~11us. Full-text search adds minimal overhead (~15%) to filtering.
+**Key Finding – full_content exclusion savings:**
+When items have scraped `full_content` (~2KB each), excluding it from list responses (default behavior) vs including it:
+- **Memory**: 363KB/op vs 595KB/op — **39% reduction** in allocations
+- **Speed**: 798µs vs 1,322µs — **40% faster**
+
+This confirms the value of the full_content exclusion from list views (implemented in NK-k9otuy). The `Filter_LargeDataset_WithFullContent` benchmark (500 items with full_content, excluded from response) shows only 363KB/op — nearly identical to the no-content baseline — demonstrating that the exclusion scales well.
+
+**Other Findings:** Image proxy adds ~27% overhead to filtering (1014µs vs 799µs) due to URL rewriting of `<img>` tags. Batch inserts scale linearly. HTML sanitizer (`FilterPolicy`) is fast at ~26µs.
 
 ### Web Middleware (`web/`)
 
-| Benchmark | ops | ns/op | B/op | allocs/op |
-|---|---|---|---|---|
-| GzipMiddleware | 100,623 | 11,881 | 11,999 | 25 |
-| SecurityHeaders | 484,862 | 2,402 | 6,185 | 22 |
-| CSRFMiddleware | 495,804 | 2,395 | 6,028 | 23 |
-| FullMiddlewareStack | 362,329 | 3,237 | 8,745 | 34 |
+| Benchmark | ns/op | B/op | allocs/op |
+|---|---|---|---|
+| GzipMiddleware | 22,287 | 12,945 | 25 |
+| SecurityHeaders | 7,081 | 6,190 | 22 |
+| CSRFMiddleware | 7,250 | 6,037 | 23 |
+| FullMiddlewareStack | 14,886 | 9,377 | 34 |
 
-**Findings:** The full middleware stack adds only ~3.2us per request. Gzip compression is the most expensive middleware (~12us) due to compression work, but is only applied to compressible responses. CSRF and security headers are near-zero cost (~2.4us each).
+**Findings:** The full middleware stack adds only ~15µs per request. Gzip compression is the most expensive middleware (~22µs) due to compression work, but is only applied to compressible responses. CSRF and security headers are near-zero cost (~7µs each).
 
 ---
 
 ## Frontend Performance Tests (Vanilla JS / v3)
 
-**Environment:** Vitest + jsdom
-**Date:** 2026-02-16
+**Environment:** Vitest + jsdom, Node.js 20
+**Date:** 2026-02-17
 
 ### Store Operations
 
@@ -103,18 +112,28 @@ The goal of keeping the check under 15 seconds for a fast local feedback loop ha
 | createFeedItem (500 items) | < 200ms | PASS |
 | createFeedItem (1000 items) | < 100ms | PASS |
 | DOM insertion (100 items) | < 200ms | PASS |
-| DOM insertion (500 items) | < 500ms | PASS |
+| DOM insertion (500 items) | < 500ms | PASS (~324ms) |
 
-**Findings:** All frontend performance tests pass well within their thresholds. The vanilla JS approach with direct DOM manipulation and simple event emitter pattern keeps operations fast. Store updates with 500+ items and event dispatch remain under 10ms.
+**Findings:** All frontend performance tests pass well within their thresholds. The vanilla JS approach with direct DOM manipulation and simple event emitter pattern keeps operations fast. Store updates with 500+ items and event dispatch remain under 10ms. DOM insertion of 500 items takes ~324ms, comfortably within the 500ms threshold.
+
+---
+
+## Notable Changes Since Last Benchmark (2026-02-16)
+
+1. **New full_content benchmarks** (NK-ekxfvv): Three new benchmarks quantify the memory savings from excluding `full_content` in list responses. The 39% memory reduction and 40% speed improvement are now measured with realistic ~2KB article content.
+
+2. **safehttp SSRF fix**: HTTP proxy bypass bug fixed — safe client now uses `Proxy: nil` to prevent proxy environment variables from bypassing the private IP check.
+
+3. **Environment**: These benchmarks were run on amd64 Intel Xeon @ 2.10GHz vs previous arm64. Raw times are not directly comparable between runs due to architecture differences.
 
 ---
 
 ## Potential Improvements
 
-1. **Stream endpoint allocations**: The ~380KB/op for stream could be reduced by excluding `full_content` from list views and only fetching it on demand (already partially implemented via the scrape endpoint).
+1. **Stream endpoint allocations**: The ~380KB/op for stream comes from description serialization. With full_content properly excluded, the main remaining allocation is in description strings. Further reduction possible with response streaming.
 
-2. **Image proxy overhead**: The 35% filtering overhead from image rewriting could be cached or deferred to the client side.
+2. **Image proxy overhead**: The ~27% filtering overhead from image rewriting could be cached or pre-processed at ingest time.
 
 3. **Batch operations**: The item batch insert benchmark shows good linear scaling; could be leveraged for bulk import operations.
 
-4. **Gzip middleware**: At ~12us, it's the most expensive middleware. Consider pre-compressing static assets and only applying runtime gzip to API responses.
+4. **Gzip middleware**: At ~22µs, it's the most expensive middleware. Consider pre-compressing static assets and only applying runtime gzip to API responses.
