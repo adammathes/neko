@@ -215,63 +215,72 @@ html {
   opacity: 1;
 }
 
-/* Quick controls row in sidebar footer */
+/* Quick controls block in sidebar footer */
 .sidebar-quick-controls {
   display: flex;
-  align-items: center;
-  gap: 0.15rem;
-  margin-bottom: 0.25rem;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 0.5rem;
 }
 
-.sidebar-controls-divider {
-  width: 1px;
-  height: 1rem;
-  background: rgba(128, 128, 128, 0.25);
-  margin: 0 0.25rem;
+.sidebar-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.sidebar-controls-rule {
+  border: none;
+  border-top: 1px solid rgba(128, 128, 128, 0.2);
+  margin: 0.35rem 0;
 }
 
 .sidebar-icon-btn {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.8rem;
-  padding: 0.25rem 0.35rem;
-  border-radius: 4px;
+  font-size: 1rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 5px;
   color: var(--text-color);
-  opacity: 0.35;
+  opacity: 0.4;
   transition: opacity 0.15s, background 0.15s;
   font-family: inherit;
   text-transform: none;
   font-weight: 400;
   height: auto;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sidebar-icon-btn:hover {
-  opacity: 0.8;
-  background: rgba(255, 255, 255, 0.08);
+  opacity: 0.85;
+  background: rgba(128, 128, 128, 0.12);
   border: none;
 }
 
 .sidebar-icon-btn.active {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--text-color);
+  background: rgba(128, 128, 128, 0.18);
 }
 
+/* Dark mode sidebar has a grey background with dark text.
+   Explicitly set dark ink so icons are legible. */
 .theme-dark .sidebar-icon-btn {
-  color: rgba(0, 0, 0, 0.87);
-  border: none;
+  color: rgba(0, 0, 0, 0.75);
   background: none;
+  border: none;
 }
 
 .theme-dark .sidebar-icon-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.1);
   border: none;
 }
 
 .theme-dark .sidebar-icon-btn.active {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 /* Main Content area - always fills full width (sidebar overlays) */
