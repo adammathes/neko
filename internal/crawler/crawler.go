@@ -15,6 +15,7 @@ import (
 )
 
 const MAX_CRAWLERS = 5
+const MAX_FEED_SIZE = 10 * 1024 * 1024 // 10MB
 
 func Crawl() {
 	crawlJobs := make(chan *feed.Feed, 100)
@@ -88,7 +89,7 @@ func GetFeedContent(feedURL string) string {
 		return ""
 	}
 
-	bodyBytes, err := io.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, MAX_FEED_SIZE))
 	if err != nil {
 		return ""
 	}
