@@ -49,81 +49,15 @@
 
 It should just work with a modern `go` installation. If not, file a bug!
 
-## Install 
+## Via Go 
 
 The easiest way to install is via `go install`
 
 ```bash
 go install adammathes.com/neko/cmd/neko@latest
 ```
- 
-## Build and Run From Source
 
-### Docker
-
-You can run neko using using Docker and Docker Compose from the included Dockerfile.
-
-Clone this repo then:
-
-1. **Build and Start**:
-   ```bash
-   docker-compose up -d
-   ```
-
-2. **Access**:
-   The web interface will be available at `http://localhost:8080`.
-
-Data is persisted in a Docker volume named `neko-data` (mapping to `/app/data/neko.db` inside the container).
-
-### Build from Source
-
-Neko is designed for easy building. Static assets for the frontends are pre-built and checked into the repository in the `web/dist/` directory, so a standard Go build is all that's required for most users.
-
-1. **Standard Build**:
-   ```bash
-   # Uses existing assets in web/dist/ and web/static/ via Go embed
-   make build
-   ```
-   A `neko` binary will be created in the root directory.
-
-2. **Full Rebuild (including UI)**:
-   If you modify the React or Vanilla frontends, you'll need to rebuild them. This requires Node.js.
-   ```bash
-   # Rebuilds everything: cleans, builds UIs, and builds binary
-   make all
-   ```
-
-3. **Updating UI Assets Only**:
-   If you want to update the frontends without a full clean:
-   ```bash
-   make ui           # Rebuild React frontend
-   make build        # Build final binary
-   ```
-
-
-# Configuration
-
-Everything can configured with a few command line flags. You shouldn't need to change the defaults most of the time.
-
-You can also set options using a configuration file [`yaml`](http://yaml.org), described at the end of this README (but you probably don't need to, other than setting a password.)
-
-## Storage
-
-By default `neko` will create the file `neko.db` in the current directory for storage.
-
-You can override the location of this database file with the `--database` command line option or `-d` short option.
-
-    $ neko --database=/var/db/neko.db --add=http://trenchant.org/rss.xml
-
-which is equivalent to --
-
-    $ neko -d /var/db/neko.db --add=http://trenchant.org/rss.xml
-
-For expert users -- this is a [SQLite](https://sqlite.org/) database and can be manipulated with standard sqlite commands --
-
-    $ sqlite3 neko.db .schema
-    
--- will print out the database schema.
+You can also build from source if or use a docker-compose.yaml file if you're into that sort of thing.
 
 # Usage
 
@@ -137,9 +71,8 @@ You can do most of what you need to do with `neko` from the web interface, which
 
 Neko currently bundles three versions of the web interface for different preferences:
 
-*   **v3 (Vanilla)**: Default at / and at `/v3/`. A high-performance, zero-dependency version built for speed and simplicity. 
-*   **v2 (Modern React)**: Available at `/` (default) and `/v2/`. This was a mistake.
-*   **v1 (Legacy Backbone)**: Available at `/v1/`. The original classic interface I wrote before AI and before I understood Javascript. It uses backbone and is included for historical record, I guess.
+*   **v3 (Vanilla javascripit)**: Default at / and at `/v3/`. A high-performance, zero-dependency version built for speed and simplicity. 
+*   **v1 (Legacy Backbone)**: Available at `/v1/`. The original classic interface I wrote before AI. It uses backbone and is included for historical record, I guess.
 
 You can specify a different port using the `--http` option.
 
@@ -199,6 +132,56 @@ To include **unread** items in the purge:
 
 **Note:** Starred items are never deleted.
 
+# Configuration
+
+Everything can configured with a few command line flags. You shouldn't need to change the defaults most of the time.
+
+You can also set options using a configuration file [`yaml`](http://yaml.org), described at the end of this README (but you probably don't need to, other than setting a password.)
+
+## Configuration File
+
+For convenience, you can specify options in a configuration file.
+
+    $ neko -c /etc/neko.conf
+
+A subset of the command line options are supported in the configuration file, with the same semantics --
+
+   * database
+   * http
+   * imageproxy
+   * minutes
+   * password
+   * secure_cookies
+
+For example --
+
+```
+database: /var/db/neko.db
+http: 9001
+imageproxy: true
+minutes: 90
+password: VeryLongRandomStringBecauseSecurityIsFun
+# secure_cookies: true  # Set to true when using HTTPS in production
+
+```
+## Storage
+
+By default `neko` will create the file `neko.db` in the current directory for storage.
+
+You can override the location of this database file with the `--database` command line option or `-d` short option.
+
+    $ neko --database=/var/db/neko.db --add=http://trenchant.org/rss.xml
+
+which is equivalent to --
+
+    $ neko -d /var/db/neko.db --add=http://trenchant.org/rss.xml
+
+For expert users -- this is a [SQLite](https://sqlite.org/) database and can be manipulated with standard sqlite commands --
+
+    $ sqlite3 neko.db .schema
+    
+-- will print out the database schema.
+
 # All Command Line Options
 
 View all command line options with `-h` or `--help`
@@ -237,7 +220,6 @@ Usage of neko:
   -v, --verbose
     	verbose output
 ```        
-
 These are POSIX style flags so --
 
     $ neko --minutes=120
@@ -246,32 +228,48 @@ is equivalent to
 
     $ neko -m 120
 
-# Configuration File
+# Building
 
-For convenience, you can specify options in a configuration file.
+## Docker
 
-    $ neko -c /etc/neko.conf
+You can build and run neko using using Docker and Docker Compose from the included Dockerfile.
 
-A subset of the command line options are supported in the configuration file, with the same semantics --
+Clone this repo then:
 
-   * database
-   * http
-   * imageproxy
-   * minutes
-   * password
-   * secure_cookies
+1. **Build and Start**:
+   ```bash
+   docker-compose up -d
+   ```
 
-For example --
+2. **Access**:
+   The web interface will be available at `http://localhost:8080`.
 
-```
-database: /var/db/neko.db
-http: 9001
-imageproxy: true
-minutes: 90
-password: VeryLongRandomStringBecauseSecurityIsFun
-# secure_cookies: true  # Set to true when using HTTPS in production
+Data is persisted in a Docker volume named `neko-data` (mapping to `/app/data/neko.db` inside the container).
 
-```
+## Build from Source
+
+Neko is designed for easy building. Static assets for the frontends are pre-built and checked into the repository in the `web/dist/` directory, so a standard Go build is all that's required for most users.
+
+1. **Standard Build**:
+   ```bash
+   # Uses existing assets in web/dist/ and web/static/ via Go embed
+   make build
+   ```
+   A `neko` binary will be created in the root directory.
+
+2. **Full Rebuild (including UI)**:
+   If you modify the React or Vanilla frontends, you'll need to rebuild them. This requires Node.js.
+   ```bash
+   # Rebuilds everything: cleans, builds UIs, and builds binary
+   make all
+   ```
+
+3. **Updating UI Assets Only**:
+   If you want to update the frontends without a full clean:
+   ```bash
+   make ui           # Rebuild React frontend
+   make build        # Build final binary
+   ```
 
 # History
 
@@ -325,7 +323,6 @@ make all      # Clean, rebuild UIs, build binary, and generate docs
 make test     # Run all backend and frontend tests
 make check    # Run linting and tests
 ```
-
 
 ## Development with Containers
 
