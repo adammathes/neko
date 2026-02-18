@@ -1,6 +1,9 @@
 version: "2"
 run:
   tests: true
+  # Limit concurrency and timeout to avoid crashing constrained environments (like local VMs)
+  concurrency: 2
+  timeout: 5m
 linters:
   default: none
   enable:
