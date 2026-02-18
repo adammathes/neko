@@ -31,6 +31,8 @@ var gzPool = sync.Pool{
 	},
 }
 
+const maxImageProxySize = 10 * 1024 * 1024 // 10 MB
+
 var (
 	//go:embed static/*
 	staticFiles embed.FS
@@ -89,7 +91,7 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bts, err := io.ReadAll(resp.Body)
+	bts, err := io.ReadAll(io.LimitReader(resp.Body, maxImageProxySize))
 	if err != nil {
 		http.Error(w, "failed to read proxy image", http.StatusNotFound)
 		return
