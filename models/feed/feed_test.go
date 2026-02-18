@@ -346,7 +346,7 @@ func TestFilterByCategory(t *testing.T) {
 	f2.Update()
 
 	// Filter by "tech" category using proper WHERE clause
-	feeds, err := filter("WHERE category='tech'")
+	feeds, err := filter("WHERE category=?", "tech")
 	if err != nil {
 		t.Fatalf("filter with category should not error: %v", err)
 	}
