@@ -78,7 +78,12 @@ export function renderLayout() {
         <div class="sidebar-footer">
           <div class="sidebar-quick-controls">
             <button id="sidebar-theme-toggle" class="sidebar-icon-btn" title="${store.theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}">${store.theme === 'light' ? '☽' : '☀'}</button>
-            <button id="sidebar-style-cycle" class="sidebar-icon-btn" title="Style: ${store.styleTheme}">${store.styleTheme === 'default' ? '◯' : '◉'} ${store.styleTheme}</button>
+            <span class="sidebar-controls-divider"></span>
+            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'default' ? 'active' : ''}" data-style-theme="default" title="Default">○</button>
+            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'refined' ? 'active' : ''}" data-style-theme="refined" title="Refined">◆</button>
+            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'terminal' ? 'active' : ''}" data-style-theme="terminal" title="Terminal">▮</button>
+            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'codex' ? 'active' : ''}" data-style-theme="codex" title="Codex">❧</button>
+            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'sakura' ? 'active' : ''}" data-style-theme="sakura" title="Sakura">❀</button>
           </div>
           <a href="/v3/settings" data-nav="settings">Settings</a>
           <a href="#" id="logout-button">Logout</a>
@@ -113,11 +118,12 @@ export function attachLayoutListeners() {
     store.setTheme(store.theme === 'light' ? 'dark' : 'light');
   });
 
-  // Sidebar quick controls: cycle style theme
-  document.getElementById('sidebar-style-cycle')?.addEventListener('click', () => {
-    const idx = STYLE_THEMES.indexOf(store.styleTheme as typeof STYLE_THEMES[number]);
-    const next = STYLE_THEMES[(idx + 1) % STYLE_THEMES.length];
-    store.setStyleTheme(next);
+  // Sidebar quick controls: style theme emoji buttons
+  document.querySelectorAll('.sidebar-style-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.getAttribute('data-style-theme');
+      if (theme) store.setStyleTheme(theme);
+    });
   });
 
   document.getElementById('sidebar-toggle-btn')?.addEventListener('click', () => {
@@ -907,12 +913,10 @@ store.on('sidebar-toggle', () => {
 
 store.on('style-theme-updated', () => {
   loadStyleTheme(store.styleTheme);
-  // Update sidebar style cycle button
-  const cycleBtn = document.getElementById('sidebar-style-cycle');
-  if (cycleBtn) {
-    cycleBtn.textContent = `${store.styleTheme === 'default' ? '◯' : '◉'} ${store.styleTheme}`;
-    cycleBtn.title = `Style: ${store.styleTheme}`;
-  }
+  // Update sidebar style emoji buttons
+  document.querySelectorAll('.sidebar-style-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-style-theme') === store.styleTheme);
+  });
   // Re-render settings if on settings page to update active state
   if (router.getCurrentRoute().path === '/settings') {
     renderSettings();
