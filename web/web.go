@@ -47,6 +47,27 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	serveBoxedFile(w, r, "ui.html")
 }
 
+// maxImageSize is the maximum response body size we'll proxy (25 MB).
+const maxImageSize = 25 << 20
+
+// imageProxyTimeout is the timeout for fetching remote images.
+const imageProxyTimeout = 30 * time.Second
+
+// allowedImageTypes are Content-Type prefixes we allow through the proxy.
+var allowedImageTypes = []string{
+	"image/",
+}
+
+func isAllowedImageType(contentType string) bool {
+	ct := strings.ToLower(contentType)
+	for _, prefix := range allowedImageTypes {
+		if strings.HasPrefix(ct, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
 func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	imgURL := strings.TrimPrefix(r.URL.Path, "/")
 	if imgURL == "" {
@@ -56,49 +77,67 @@ func imageProxyHandler(w http.ResponseWriter, r *http.Request) {
 
 	decodedURL, err := base64.URLEncoding.DecodeString(imgURL)
 	if err != nil {
-		http.Error(w, "invalid image url", http.StatusNotFound)
+		http.Error(w, "invalid image url", http.StatusBadRequest)
 		return
 	}
 
-	// pseudo-caching
-	if r.Header.Get("If-None-Match") == string(decodedURL) {
+	// ETag-based cache validation. We use the base64-encoded URL as
+	// a stable ETag so browsers can cache and revalidate.
+	etag := `"` + imgURL + `"`
+	if match := r.Header.Get("If-None-Match"); match == etag {
 		w.WriteHeader(http.StatusNotModified)
 		return
 	}
 
-	if r.Header.Get("Etag") == string(decodedURL) {
-		w.WriteHeader(http.StatusNotModified)
-		return
-	}
-
-	// grab the img
-	c := safehttp.NewSafeClient(5 * time.Second)
-
-	request, err := http.NewRequest("GET", string(decodedURL), nil)
+	// Use the request context so client disconnection cancels the fetch.
+	c := safehttp.NewSafeClient(imageProxyTimeout)
+	request, err := http.NewRequestWithContext(r.Context(), "GET", string(decodedURL), nil)
 	if err != nil {
-		http.Error(w, "failed to proxy image", http.StatusNotFound)
+		http.Error(w, "invalid image url", http.StatusBadRequest)
 		return
 	}
 
-	userAgent := "neko RSS Reader Image Proxy +https://github.com/adammathes/neko"
-	request.Header.Set("User-Agent", userAgent)
+	request.Header.Set("User-Agent", "neko RSS Reader Image Proxy +https://github.com/adammathes/neko")
 	resp, err := c.Do(request)
-
 	if err != nil {
-		http.Error(w, "failed to proxy image", http.StatusNotFound)
+		http.Error(w, "failed to fetch image", http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check upstream status.
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		http.Error(w, "upstream error", http.StatusBadGateway)
 		return
 	}
 
-	bts, err := io.ReadAll(resp.Body)
-	if err != nil {
-		http.Error(w, "failed to read proxy image", http.StatusNotFound)
+	// Validate Content-Type is an image.
+	contentType := resp.Header.Get("Content-Type")
+	if contentType != "" && !isAllowedImageType(contentType) {
+		http.Error(w, "not an image", http.StatusForbidden)
 		return
 	}
 
-	w.Header().Set("ETag", string(decodedURL))
-	w.Header().Set("Cache-Control", "public")
+	// Set response headers before streaming.
+	w.Header().Set("ETag", etag)
+	w.Header().Set("Cache-Control", "public, max-age=172800")
 	w.Header().Set("Expires", time.Now().Add(48*time.Hour).Format(time.RFC1123))
-	_, _ = w.Write(bts)
+	if contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+	}
+	if resp.ContentLength > 0 && resp.ContentLength <= maxImageSize {
+		w.Header().Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
+	}
+
+	// Stream with a size limit to prevent memory exhaustion.
+	limited := io.LimitReader(resp.Body, maxImageSize+1)
+	n, _ := io.Copy(w, limited)
+	if n > maxImageSize {
+		// We already started writing, so we can't change the status code.
+		// The response will be truncated, which is the correct behavior
+		// for an oversized image.
+		return
+	}
 }
 
 var AuthCookie = "auth"
