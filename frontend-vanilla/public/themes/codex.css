@@ -49,8 +49,11 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  font-feature-settings: 'liga' 1, 'kern' 1, 'onum' 1;
+  /* text-rendering: optimizeLegibility triggers expensive kerning/ligature
+     computation on all text. On mobile with long feed content this causes
+     significant layout slowdowns during scroll. The default 'auto' lets
+     the browser optimize per-element. font-feature-settings similarly
+     forces the shaper to run on every glyph. Removed for performance. */
 }
 
 /* ---- Sidebar: Table of Contents ---- */
@@ -236,8 +239,8 @@ body {
   font-size: 1rem;
   line-height: 1.75;
   color: var(--text-color);
-  hyphens: auto;
-  -webkit-hyphens: auto;
+  /* hyphens: auto removed -- requires dictionary lookups during layout for
+     every line break, expensive with long feed content during scroll. */
 }
 
 .item-description a {

@@ -57,7 +57,8 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  /* text-rendering: optimizeLegibility removed -- causes expensive text
+     shaping on all content, leading to scroll jank on mobile. */
 }
 
 /* ---- Sidebar ---- */

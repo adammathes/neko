@@ -340,18 +340,20 @@ export function renderItems() {
 
 function checkReadItems(scrollRoot: HTMLElement) {
   const containerRect = scrollRoot.getBoundingClientRect();
-  store.items.forEach((item) => {
-    if (item.read) return;
+  // Batch DOM query: select all feed items at once instead of O(n) individual
+  // querySelector calls with attribute selectors per scroll tick.
+  const allItems = scrollRoot.querySelectorAll('.feed-item');
+  for (const el of allItems) {
+    const id = parseInt(el.getAttribute('data-id')!);
+    const item = store.items.find(i => i._id === id);
+    if (!item || item.read) continue;
 
-    const el = document.querySelector(`.feed-item[data-id="${item._id}"]`);
-    if (el) {
-      const rect = el.getBoundingClientRect();
-      // Mark as read if the bottom of the item is above the top of the container
-      if (rect.bottom < containerRect.top) {
-        updateItem(item._id, { read: true });
-      }
+    const rect = el.getBoundingClientRect();
+    // Mark as read if the bottom of the item is above the top of the container
+    if (rect.bottom < containerRect.top) {
+      updateItem(item._id, { read: true });
     }
-  });
+  }
 }
 
 // Polling fallback for infinite scroll (matches V1 behavior)
