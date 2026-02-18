@@ -30,7 +30,6 @@ RUN groupadd -r neko && useradd -r -g neko neko
 
 WORKDIR /app
 COPY --from=backend-builder /app/neko .
-COPY --from=backend-builder /app/static ./static
 
 # Ensure data directory exists and set permissions
 RUN mkdir -p /app/data && chown -R neko:neko /app/data
