@@ -122,3 +122,57 @@ func TestRunNoArgs(t *testing.T) {
 		t.Errorf("Run with no args failed: %v", err)
 	}
 }
+
+func TestRunPurge(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "test_purge.db")
+	err := Run([]string{"-d", dbPath, "-purge", "30"})
+	if err != nil {
+		t.Errorf("Run -purge should succeed, got %v", err)
+	}
+}
+
+func TestRunPurgeUnread(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "test_purge_unread.db")
+	err := Run([]string{"-d", dbPath, "-purge", "30", "-purge-unread"})
+	if err != nil {
+		t.Errorf("Run -purge -purge-unread should succeed, got %v", err)
+	}
+}
+
+func TestRunSecureCookies(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "test_secure.db")
+	config.Config.Port = -1
+	err := Run([]string{"-d", dbPath, "-secure-cookies"})
+	if err != nil {
+		t.Errorf("Run -secure-cookies should succeed, got %v", err)
+	}
+	if !config.Config.SecureCookies {
+		t.Error("Expected SecureCookies to be true")
+	}
+}
+
+func TestRunMinutesFlag(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "test_minutes.db")
+	config.Config.Port = -1
+	err := Run([]string{"-d", dbPath, "-m", "30"})
+	if err != nil {
+		t.Errorf("Run -m 30 should succeed, got %v", err)
+	}
+	if config.Config.CrawlMinutes != 30 {
+		t.Errorf("Expected CrawlMinutes=30, got %d", config.Config.CrawlMinutes)
+	}
+}
+
+func TestRunAllowLocal(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "test_local.db")
+	config.Config.Port = -1
+	err := Run([]string{"-d", dbPath, "-allow-local"})
+	if err != nil {
+		t.Errorf("Run -allow-local should succeed, got %v", err)
+	}
+}
+
+func TestBackgroundCrawlNegative(_ *testing.T) {
+	// Negative minutes should return immediately
+	backgroundCrawl(-1)
+}

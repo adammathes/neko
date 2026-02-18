@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -545,4 +546,232 @@ func TestHandleCategorySuccess(t *testing.T) {
 	if rr.Code != http.StatusOK {
 		t.Errorf("Expected %d, got %d", http.StatusOK, rr.Code)
 	}
+}
+
+func TestHandleImportOPML(t *testing.T) {
+	setupTestDB(t)
+	server := newTestServer()
+
+	opmlContent := `<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head><title>test</title></head>
+  <body>
+    <outline type="rss" text="Test Feed" title="Test Feed" xmlUrl="https://example.com/feed" htmlUrl="https://example.com"/>
+  </body>
+</opml>`
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", "feeds.opml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	part.Write([]byte(opmlContent))
+	writer.Close()
+
+	req := httptest.NewRequest("POST", "/import", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	rr := httptest.NewRecorder()
+	server.HandleImport(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	var resp map[string]string
+	json.NewDecoder(rr.Body).Decode(&resp)
+	if resp["status"] != "ok" {
+		t.Errorf("expected status ok, got %q", resp["status"])
+	}
+
+	// Verify the feed was imported
+	feeds, _ := feed.All()
+	if len(feeds) != 1 {
+		t.Errorf("expected 1 feed after import, got %d", len(feeds))
+	}
+
+	time.Sleep(100 * time.Millisecond) // let goroutine settle
+}
+
+func TestHandleImportText(t *testing.T) {
+	setupTestDB(t)
+	server := newTestServer()
+
+	textContent := "https://example.com/feed1\nhttps://example.com/feed2\n"
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", "feeds.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	part.Write([]byte(textContent))
+	writer.WriteField("format", "text")
+	writer.Close()
+
+	req := httptest.NewRequest("POST", "/import?format=text", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	rr := httptest.NewRecorder()
+	server.HandleImport(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	feeds, _ := feed.All()
+	if len(feeds) != 2 {
+		t.Errorf("expected 2 feeds after text import, got %d", len(feeds))
+	}
+
+	time.Sleep(100 * time.Millisecond)
+}
+
+func TestHandleImportMethodNotAllowed(t *testing.T) {
+	server := newTestServer()
+
+	req := httptest.NewRequest("GET", "/import", nil)
+	rr := httptest.NewRecorder()
+	server.HandleImport(rr, req)
+
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
+}
+
+func TestHandleImportNoFile(t *testing.T) {
+	setupTestDB(t)
+	server := newTestServer()
+
+	req := httptest.NewRequest("POST", "/import", nil)
+	rr := httptest.NewRecorder()
+	server.HandleImport(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("expected %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+}
+
+func TestHandleImportUnsupportedFormat(t *testing.T) {
+	setupTestDB(t)
+	server := newTestServer()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("file", "feeds.csv")
+	part.Write([]byte("some data"))
+	writer.Close()
+
+	req := httptest.NewRequest("POST", "/import?format=csv", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	rr := httptest.NewRecorder()
+	server.HandleImport(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected %d for unsupported format, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestHandleImportInvalidOPML(t *testing.T) {
+	setupTestDB(t)
+	server := newTestServer()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("file", "bad.opml")
+	part.Write([]byte("not valid xml at all"))
+	writer.Close()
+
+	req := httptest.NewRequest("POST", "/import?format=opml", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	rr := httptest.NewRecorder()
+	server.HandleImport(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected %d for invalid OPML, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestHandleStreamErrorOnClosedDB(t *testing.T) {
+	setupTestDB(t)
+	seedData(t)
+	server := newTestServer()
+
+	// Close the DB to force an error
+	models.DB.Close()
+
+	req := httptest.NewRequest("GET", "/stream", nil)
+	rr := httptest.NewRecorder()
+	server.HandleStream(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected %d for closed DB, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestHandleItemInvalidJSON(t *testing.T) {
+	setupTestDB(t)
+	seedData(t)
+	server := newTestServer()
+
+	req := httptest.NewRequest("PUT", "/item/1", strings.NewReader("not json"))
+	rr := httptest.NewRecorder()
+	server.HandleItem(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("expected %d for invalid JSON, got %d", http.StatusBadRequest, rr.Code)
+	}
+}
+
+func TestHandleExportContentTypes(t *testing.T) {
+	setupTestDB(t)
+	seedData(t)
+	server := newTestServer()
+
+	testCases := []struct {
+		format      string
+		contentType string
+		disposition string
+	}{
+		{"text", "text/plain", "neko_export.txt"},
+		{"opml", "application/xml", "neko_export.opml"},
+		{"json", "application/json", "neko_export.json"},
+		{"html", "text/html", "neko_export.html"},
+	}
+
+	for _, tc := range testCases {
+		req := httptest.NewRequest("GET", "/export/"+tc.format, nil)
+		rr := httptest.NewRecorder()
+		server.HandleExport(rr, req)
+
+		if ct := rr.Header().Get("Content-Type"); ct != tc.contentType {
+			t.Errorf("export/%s: expected Content-Type %q, got %q", tc.format, tc.contentType, ct)
+		}
+		if cd := rr.Header().Get("Content-Disposition"); !strings.Contains(cd, tc.disposition) {
+			t.Errorf("export/%s: expected Content-Disposition containing %q, got %q", tc.format, tc.disposition, cd)
+		}
+	}
+}
+
+func TestHandleImportJSON(t *testing.T) {
+	setupTestDB(t)
+	server := newTestServer()
+
+	jsonContent := `{"title":"Article 1","url":"https://example.com/1","description":"desc","read":false,"starred":false,"date":{"$date":"2024-01-01"},"feed":{"url":"https://example.com/feed","title":"Feed 1"}}`
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("file", "items.json")
+	part.Write([]byte(jsonContent))
+	writer.Close()
+
+	req := httptest.NewRequest("POST", "/import?format=json", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	rr := httptest.NewRecorder()
+	server.HandleImport(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	time.Sleep(100 * time.Millisecond)
 }
