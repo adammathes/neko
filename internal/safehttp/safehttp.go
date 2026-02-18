@@ -2,7 +2,6 @@ package safehttp
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -82,11 +81,6 @@ func NewSafeClient(timeout time.Duration) *http.Client {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.DialContext = SafeDialer(dialer)
 	transport.Proxy = nil // Disable proxy to ensure SSRF checks are not bypassed
-
-	// Disable HTTP/2 to avoid "unhandled response frame type" errors from servers with
-	// non-standard HTTP/2 implementations, which is common among various RSS feed hosts.
-	transport.ForceAttemptHTTP2 = false
-	transport.TLSNextProto = make(map[string]func(string, *tls.Conn) http.RoundTripper)
 
 	return &http.Client{
 		Timeout:   timeout,
