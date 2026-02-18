@@ -13,6 +13,24 @@ declare global {
   }
 }
 
+// Style theme management: load/unload CSS files
+const STYLE_THEMES = ['default', 'refined', 'terminal', 'codex', 'sakura'] as const;
+
+function loadStyleTheme(theme: string) {
+  // Remove any existing theme stylesheet
+  const existing = document.getElementById('style-theme-link');
+  if (existing) existing.remove();
+
+  // 'default' means no extra stylesheet
+  if (theme === 'default') return;
+
+  const link = document.createElement('link');
+  link.id = 'style-theme-link';
+  link.rel = 'stylesheet';
+  link.href = `/v3/themes/${theme}.css`;
+  document.head.appendChild(link);
+}
+
 // Global App State
 let activeItemId: number | null = null;
 
@@ -58,6 +76,15 @@ export function renderLayout() {
           -->
         </div>
         <div class="sidebar-footer">
+          <div class="sidebar-quick-controls">
+            <button id="sidebar-theme-toggle" class="sidebar-icon-btn" title="${store.theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}">${store.theme === 'light' ? '☽' : '☀'}</button>
+            <span class="sidebar-controls-divider"></span>
+            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'default' ? 'active' : ''}" data-style-theme="default" title="Default">○</button>
+            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'refined' ? 'active' : ''}" data-style-theme="refined" title="Refined">◆</button>
+            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'terminal' ? 'active' : ''}" data-style-theme="terminal" title="Terminal">▮</button>
+            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'codex' ? 'active' : ''}" data-style-theme="codex" title="Codex">❧</button>
+            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'sakura' ? 'active' : ''}" data-style-theme="sakura" title="Sakura">❀</button>
+          </div>
           <a href="/v3/settings" data-nav="settings">Settings</a>
           <a href="#" id="logout-button">Logout</a>
         </div>
@@ -84,6 +111,19 @@ export function attachLayoutListeners() {
   document.getElementById('logout-button')?.addEventListener('click', (e) => {
     e.preventDefault();
     logout();
+  });
+
+  // Sidebar quick controls: light/dark toggle
+  document.getElementById('sidebar-theme-toggle')?.addEventListener('click', () => {
+    store.setTheme(store.theme === 'light' ? 'dark' : 'light');
+  });
+
+  // Sidebar quick controls: style theme emoji buttons
+  document.querySelectorAll('.sidebar-style-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.getAttribute('data-style-theme');
+      if (theme) store.setStyleTheme(theme);
+    });
   });
 
   document.getElementById('sidebar-toggle-btn')?.addEventListener('click', () => {
@@ -394,7 +434,20 @@ export function renderSettings() {
               <button class="${store.theme === 'dark' ? 'active' : ''}" data-theme="dark">Dark</button>
             </div>
           </div>
-          <div class="settings-group" style="margin-top: 1rem;">
+        </section>
+
+        <section class="settings-section">
+          <h3>Style</h3>
+          <div class="settings-group">
+            <div class="theme-options" id="style-theme-options">
+              ${STYLE_THEMES.map(t => `<button class="${store.styleTheme === t ? 'active' : ''}" data-style-theme="${t}">${t.charAt(0).toUpperCase() + t.slice(1)}</button>`).join('\n              ')}
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3>Fonts</h3>
+          <div class="settings-group">
             <label>System & headings</label>
             <select id="heading-font-selector" style="margin-bottom: 1rem;">
               <option value="default" ${store.headingFontTheme === 'default' ? 'selected' : ''}>System (Helvetica Neue)</option>
@@ -445,12 +498,20 @@ export function renderSettings() {
 
   // --- Listeners ---
 
-  // Theme
+  // Theme (light/dark)
   document.getElementById('theme-options')?.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest('button');
     if (btn) {
       store.setTheme(btn.getAttribute('data-theme')!);
       renderSettings();
+    }
+  });
+
+  // Style Theme
+  document.getElementById('style-theme-options')?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (btn) {
+      store.setStyleTheme(btn.getAttribute('data-style-theme')!);
     }
   });
 
@@ -825,6 +886,12 @@ store.on('theme-updated', () => {
     // Re-apply classes with proper specificity logic
     appEl.className = `theme-${store.theme} font-${store.fontTheme} heading-font-${store.headingFontTheme}`;
   }
+  // Update sidebar toggle icon
+  const toggleBtn = document.getElementById('sidebar-theme-toggle');
+  if (toggleBtn) {
+    toggleBtn.textContent = store.theme === 'light' ? '☽' : '☀';
+    toggleBtn.title = store.theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode';
+  }
   // Also re-render settings if we are on settings page to update active state of buttons
   if (router.getCurrentRoute().path === '/settings') {
     renderSettings();
@@ -841,6 +908,18 @@ store.on('sidebar-toggle', () => {
       layout.classList.remove('sidebar-visible');
       layout.classList.add('sidebar-hidden');
     }
+  }
+});
+
+store.on('style-theme-updated', () => {
+  loadStyleTheme(store.styleTheme);
+  // Update sidebar style emoji buttons
+  document.querySelectorAll('.sidebar-style-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-style-theme') === store.styleTheme);
+  });
+  // Re-render settings if on settings page to update active state
+  if (router.getCurrentRoute().path === '/settings') {
+    renderSettings();
   }
 });
 
@@ -864,6 +943,7 @@ export async function init() {
   }
 
   renderLayout();
+  loadStyleTheme(store.styleTheme);
   renderFilters();
   try {
     await Promise.all([fetchFeeds(), fetchTags()]);

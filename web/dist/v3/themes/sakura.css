@@ -1,0 +1,466 @@
+/*
+ * Sakura Theme  --  Claude's Choice
+ * Named for the app: neko is Japanese for cat.
+ * A theme inspired by the quiet beauty of Japanese graphic design.
+ * Ma (negative space), wabi-sabi (beauty in imperfection),
+ * and the restrained palette of ukiyo-e woodblock prints.
+ * Warm grays, muted pinks, deliberate whitespace, and a sense of calm.
+ */
+
+/* ---- Color System ---- */
+:root {
+  --bg-color: #fafaf8;
+  --text-color: #373737;
+  --sidebar-bg: #f2f0ec;
+  --link-color: #c45b78;
+  --border-color: #e0ddd6;
+  --accent-color: #c45b78;
+
+  --sakura-blossom: #c45b78;
+  --sakura-petal: #f0c4cf;
+  --sakura-stone: #8c8a85;
+  --sakura-ink: #373737;
+  --sakura-paper: #fafaf8;
+  --sakura-cloud: #f2f0ec;
+  --sakura-shadow: #e0ddd6;
+  --sakura-indigo: #4a5568;
+
+  color-scheme: light;
+}
+
+/* Dark: Evening in Kyoto */
+.theme-dark {
+  --bg-color: #1a1a1e;
+  --text-color: #d5d3ce;
+  --sidebar-bg: #222226;
+  --link-color: #e8879e;
+  --border-color: #3a3a3e;
+  --accent-color: #e8879e;
+
+  --sakura-blossom: #e8879e;
+  --sakura-petal: #5c3a45;
+  --sakura-stone: #8c8a85;
+  --sakura-ink: #d5d3ce;
+  --sakura-paper: #1a1a1e;
+  --sakura-cloud: #222226;
+  --sakura-shadow: #3a3a3e;
+  --sakura-indigo: #a0aec0;
+}
+
+/* ---- Typography ---- */
+
+body {
+  font-family: 'Hiragino Mincho ProN', 'Noto Serif', 'Iowan Old Style', Palatino, Georgia, serif;
+  font-size: 18px;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---- Sidebar ---- */
+
+.sidebar {
+  background: var(--sakura-cloud);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-right: 1px solid var(--sakura-shadow);
+  padding: 1.5rem;
+  padding-top: 5rem;
+}
+
+.theme-dark .sidebar {
+  background: var(--sakura-cloud);
+  border-right-color: var(--sakura-shadow);
+}
+
+.sidebar-section h3 {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--sakura-stone);
+  opacity: 1;
+}
+
+.theme-dark .sidebar-section h3 {
+  color: var(--sakura-stone);
+}
+
+.sidebar-section li a {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Helvetica Neue', Helvetica, sans-serif;
+  color: var(--text-color);
+  font-size: 0.82rem;
+  border-radius: 4px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.theme-dark .sidebar-section li a {
+  color: var(--text-color);
+}
+
+.sidebar-section li a:hover {
+  background: rgba(196, 91, 120, 0.06);
+  color: var(--sakura-blossom);
+  transform: none;
+}
+
+.theme-dark .sidebar-section li a:hover {
+  background: rgba(232, 135, 158, 0.08);
+  color: var(--sakura-blossom);
+}
+
+.sidebar-section li.active a {
+  background: rgba(196, 91, 120, 0.08);
+  color: var(--sakura-blossom);
+  box-shadow: none;
+  border: none;
+  border-left: 2px solid var(--sakura-blossom);
+  border-radius: 0 4px 4px 0;
+  padding-left: calc(0.8rem - 2px);
+  font-weight: 600;
+}
+
+.theme-dark .sidebar-section li.active a {
+  background: rgba(232, 135, 158, 0.1);
+  color: var(--sakura-blossom);
+}
+
+.sidebar-footer {
+  border-top: 1px solid var(--sakura-shadow);
+}
+
+.sidebar-footer a {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Helvetica Neue', Helvetica, sans-serif;
+  color: var(--text-color);
+  opacity: 0.45;
+  font-size: 0.82rem;
+}
+
+.theme-dark .sidebar-footer a {
+  color: var(--text-color);
+}
+
+.sidebar-footer a:hover {
+  opacity: 1;
+  color: var(--sakura-blossom);
+  background: rgba(196, 91, 120, 0.04);
+}
+
+/* Search */
+.sidebar-search input {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--sakura-shadow);
+  border-radius: 4px;
+  color: var(--text-color);
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+}
+
+.theme-dark .sidebar-search input {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-color);
+  border-color: var(--sakura-shadow);
+}
+
+.sidebar-search input:focus {
+  border-color: var(--sakura-blossom);
+  box-shadow: 0 0 0 2px rgba(196, 91, 120, 0.1);
+}
+
+/* ---- Toggle ---- */
+.theme-dark .sidebar-toggle {
+  background: none;
+}
+
+/* ---- Main Content ---- */
+
+.main-content {
+  background-color: var(--bg-color);
+  padding: 2.5rem 2rem;
+}
+
+.main-content > * {
+  max-width: 34em;
+}
+
+/* ---- Feed Items ---- */
+
+.feed-item {
+  padding: 0.5rem 0;
+  margin-top: 2.5rem;
+  border-radius: 0;
+  border-bottom: none;
+}
+
+/* Subtle separator -- a single thin rule, Japanese-style restraint */
+.feed-item + .feed-item {
+  border-top: 1px solid var(--sakura-shadow);
+  padding-top: 2.5rem;
+}
+
+.feed-item.selected {
+  background: rgba(196, 91, 120, 0.03);
+  box-shadow: inset 3px 0 0 var(--sakura-blossom);
+  padding-left: 1rem;
+  border-radius: 0;
+}
+
+.theme-dark .feed-item.selected {
+  background: rgba(232, 135, 158, 0.04);
+}
+
+.item-title {
+  font-family: 'Hiragino Mincho ProN', 'Noto Serif', Palatino, Georgia, serif;
+  font-size: 1.55rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--sakura-ink);
+  letter-spacing: 0;
+}
+
+.theme-dark .item-title {
+  color: var(--text-color);
+}
+
+.item-title:hover {
+  color: var(--sakura-blossom);
+  text-decoration: none;
+}
+
+.dateline {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Helvetica Neue', sans-serif;
+  font-size: 0.72em;
+  letter-spacing: 0.03em;
+  color: var(--sakura-stone);
+  margin-bottom: 1rem;
+}
+
+.dateline a {
+  color: var(--sakura-stone);
+}
+
+.dateline a:hover {
+  color: var(--sakura-blossom);
+}
+
+.item-description {
+  font-family: 'Hiragino Mincho ProN', 'Noto Serif', 'Iowan Old Style', Palatino, Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--text-color);
+}
+
+.item-description a {
+  color: var(--sakura-blossom);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(196, 91, 120, 0.25);
+}
+
+.item-description a:hover {
+  border-bottom-color: var(--sakura-blossom);
+}
+
+.item-description blockquote {
+  border-left: 2px solid var(--sakura-petal);
+  margin-left: 0;
+  padding-left: 1.25em;
+  color: var(--sakura-stone);
+}
+
+.item-description pre {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--sakura-shadow);
+  border-radius: 3px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.88em;
+}
+
+.item-description img {
+  border-radius: 3px;
+}
+
+/* Star -- blossom colored when starred */
+.star-btn.is-starred {
+  color: var(--sakura-blossom);
+}
+
+.star-btn.is-unstarred {
+  color: var(--sakura-stone);
+  opacity: 0.2;
+}
+
+/* Scrape */
+.scrape-btn {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  color: var(--sakura-blossom);
+  border-color: var(--sakura-shadow);
+  background: transparent;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+/* ---- Buttons ---- */
+
+button,
+.button {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Helvetica Neue', sans-serif;
+  border-radius: 4px;
+  border-color: var(--sakura-shadow);
+  background: transparent;
+  color: var(--text-color);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+button:hover,
+.button:hover {
+  border-color: var(--sakura-blossom);
+  color: var(--sakura-blossom);
+  background: rgba(196, 91, 120, 0.04);
+}
+
+.theme-dark button,
+.theme-dark .button {
+  background: transparent;
+  color: var(--text-color);
+  border-color: var(--sakura-shadow);
+}
+
+.theme-dark button:hover,
+.theme-dark .button:hover {
+  border-color: var(--sakura-blossom);
+  color: var(--sakura-blossom);
+  background: rgba(232, 135, 158, 0.06);
+}
+
+button.active,
+.theme-dark button.active {
+  background: var(--sakura-blossom);
+  color: #ffffff;
+  border-color: var(--sakura-blossom);
+}
+
+/* ---- Settings ---- */
+
+.settings-view {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Helvetica Neue', sans-serif;
+}
+
+.settings-view h2 {
+  font-family: 'Hiragino Mincho ProN', 'Noto Serif', Palatino, Georgia, serif;
+  font-weight: 400;
+  font-size: 1.8rem;
+  letter-spacing: 0.02em;
+}
+
+.settings-section h3 {
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--sakura-shadow);
+}
+
+.settings-group label,
+.data-group label {
+  font-family: inherit;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.theme-dark .settings-view,
+.theme-dark .settings-view h2,
+.theme-dark .settings-view h3,
+.theme-dark .settings-group label,
+.theme-dark .data-group label {
+  color: var(--text-color) !important;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="url"],
+input[type="search"],
+select {
+  font-family: inherit;
+  background: transparent;
+  border: 1px solid var(--sakura-shadow);
+  border-radius: 4px;
+  color: var(--text-color);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--sakura-blossom);
+  box-shadow: 0 0 0 2px rgba(196, 91, 120, 0.1);
+}
+
+/* Feed list */
+.manage-feed-list {
+  border-top-color: var(--sakura-shadow);
+}
+
+.manage-feed-item {
+  border-bottom-color: var(--sakura-shadow);
+}
+
+.feed-title {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  font-weight: 600;
+}
+
+.feed-url {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+}
+
+.delete-feed-btn {
+  color: #c45b78 !important;
+  border-color: rgba(196, 91, 120, 0.3) !important;
+}
+
+.delete-feed-btn:hover {
+  background: rgba(196, 91, 120, 0.06) !important;
+  border-color: var(--sakura-blossom) !important;
+}
+
+/* ---- Scrollbars ---- */
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sakura-shadow);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sakura-stone);
+}
+
+/* ---- Backdrop ---- */
+.sidebar-backdrop {
+  background: rgba(250, 250, 248, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.theme-dark .sidebar-backdrop {
+  background: rgba(26, 26, 30, 0.5);
+}
+
+/* ---- Loading/Empty ---- */
+.loading, .empty {
+  color: var(--sakura-stone);
+}
