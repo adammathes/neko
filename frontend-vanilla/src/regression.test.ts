@@ -202,8 +202,8 @@ describe('Scroll-to-Read Regression Tests', () => {
         // Dispatch scroll on WINDOW, not mainContent
         window.dispatchEvent(new Event('scroll'));
 
-        // Wait for potential debounce/poll
-        await new Promise(resolve => setTimeout(resolve, 1100));
+        // Wait for potential debounce/poll (3000ms interval + buffer)
+        await new Promise(resolve => setTimeout(resolve, 3100));
 
         // Expect it to handle it
         expect(apiFetch).toHaveBeenCalledWith(expect.stringContaining('/api/item/12345'), expect.objectContaining({
