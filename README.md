@@ -307,6 +307,26 @@ The project underwent a significant modernization phase with the help of Google 
 
 # Development and Testing
 
+## Local Development Setup
+
+To contribute to Neko or run the full test suite locally, you will need the following tools:
+
+- **Go (1.24+)**: For backend development and running tests.
+- **Node.js (20+) & npm**: For frontend development and building UI assets.
+- **Docker**: For containerized development and verifying the Docker build.
+- **SQLite3**: For direct database manipulation and debugging.
+- **Pandoc**: Required for `make docs` to generate `readme.html`.
+- **golangci-lint**: Required for `make lint` to run static analysis.
+
+### Quick Start for Developers
+
+```bash
+make all      # Clean, rebuild UIs, build binary, and generate docs
+make test     # Run all backend and frontend tests
+make check    # Run linting and tests
+```
+
+
 ## Development with Containers
 
 If you don't have Go or Node installed locally, or prefer an isolated environment, you can use the provided `docker-compose.dev.yaml`.

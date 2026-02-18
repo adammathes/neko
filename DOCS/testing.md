@@ -2,6 +2,16 @@
 
 This document outlines the testing procedures for Neko, both locally and in Continuous Integration (CI).
 
+## Prerequisites
+
+To run the full test suite locally, ensure you have the following installed:
+
+- **Go (1.24+)**
+- **Node.js (20+) & npm**
+- **Docker**
+- **golangci-lint**
+
+
 ## Local Development
 
 Developers should run tests locally before pushing changes. The `Makefile` provides several targets for this purpose:
