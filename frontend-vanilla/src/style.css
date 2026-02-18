@@ -444,14 +444,6 @@ select:focus {
   transition: background-color 0.2s ease;
 }
 
-.feed-item.selected {
-  background-color: rgba(0, 123, 255, 0.05);
-  box-shadow: inset 4px 0 0 var(--accent-color);
-}
-
-.theme-dark .feed-item.selected {
-  background-color: rgba(33, 136, 255, 0.1);
-}
 
 .item-header {
   display: flex;

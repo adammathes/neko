@@ -231,11 +231,7 @@ export function attachLayoutListeners() {
       const id = parseInt(itemRow.getAttribute('data-id')!);
       activeItemId = id;
 
-      // Update visual selection
-      document.querySelectorAll('.feed-item').forEach(el => {
-        const itemId = parseInt(el.getAttribute('data-id') || '0');
-        el.classList.toggle('selected', itemId === activeItemId);
-      });
+      activeItemId = id;
 
       const item = store.items.find(i => i._id === id);
       if (item && !item.read) {
@@ -302,7 +298,7 @@ export function renderItems() {
 
   contentArea.innerHTML = `
     <ul class="item-list">
-      ${items.map((item: Item) => createFeedItem(item, item._id === activeItemId)).join('')}
+      ${items.map((item: Item) => createFeedItem(item)).join('')}
     </ul>
     ${store.hasMore ? '<div id="load-more-sentinel" class="loading-more">Loading more...</div>' : ''}
   `;
@@ -853,12 +849,6 @@ function navigateItems(direction: number) {
 
   if (nextIndex >= 0 && nextIndex < store.items.length) {
     activeItemId = store.items[nextIndex]._id;
-
-    // Update visual selection without full re-render for speed
-    document.querySelectorAll('.feed-item').forEach(el => {
-      const id = parseInt(el.getAttribute('data-id') || '0');
-      el.classList.toggle('selected', id === activeItemId);
-    });
 
     const el = document.querySelector(`.feed-item[data-id="${activeItemId}"]`);
     if (el) el.scrollIntoView({ block: 'start', behavior: 'instant' });

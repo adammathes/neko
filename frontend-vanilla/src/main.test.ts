@@ -410,16 +410,18 @@ describe('main application logic', () => {
         renderLayout();
         renderItems();
 
+        const scrollSpy = vi.spyOn(Element.prototype, 'scrollIntoView');
+
         // 1st press 'j' -> index 0
         window.dispatchEvent(new KeyboardEvent('keydown', { key: 'j' }));
-        expect(document.querySelector('.feed-item[data-id="101"]')?.classList.contains('selected')).toBe(true);
+        expect(scrollSpy).toHaveBeenCalled();
 
         // 2nd press 'j' -> index 1
         window.dispatchEvent(new KeyboardEvent('keydown', { key: 'j' }));
-        expect(document.querySelector('.feed-item[data-id="102"]')?.classList.contains('selected')).toBe(true);
+        expect(scrollSpy).toHaveBeenCalledTimes(2);
 
         // Press 'k' -> back to index 0
         window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k' }));
-        expect(document.querySelector('.feed-item[data-id="101"]')?.classList.contains('selected')).toBe(true);
+        expect(scrollSpy).toHaveBeenCalledTimes(3);
     });
 });

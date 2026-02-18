@@ -1,9 +1,9 @@
 import type { Item } from '../types';
 
-export function createFeedItem(item: Item, isSelected: boolean = false): string {
+export function createFeedItem(item: Item): string {
   const date = new Date(item.publish_date).toLocaleDateString();
   return `
-    <li class="feed-item ${item.read ? 'read' : 'unread'} ${isSelected ? 'selected' : ''}" data-id="${item._id}">
+    <li class="feed-item ${item.read ? 'read' : 'unread'}" data-id="${item._id}">
       <div class="item-header">
         <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="item-title" data-action="open">
           ${item.title || '(No Title)'}
