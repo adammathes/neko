@@ -14,7 +14,12 @@
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
+}
+
+/* Dark mode: a warmer, softer link color */
+.theme-dark {
+  --link-color: #a0c4e8;
+  --accent-color: #6fa8d6;
 }
 
 /* Slightly refined base typography */
@@ -114,22 +119,21 @@ body {
 }
 
 /* ---- Settings Page Refinements ---- */
-/* This is where the biggest improvements are needed */
 
 .settings-view {
-  padding-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
 }
 
 .settings-view h2 {
   font-size: 1.8rem;
   font-weight: 700;
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: var(--spacing-xl);
   letter-spacing: -0.025em;
 }
 
 .settings-grid {
-  gap: var(--spacing-2xl);
-  margin-bottom: var(--spacing-2xl);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
 .settings-section {
@@ -140,28 +144,28 @@ body {
 .settings-section h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
   border-bottom: 1px solid var(--border-color);
 }
 
 .settings-group,
 .data-group {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
 }
 
 .settings-group label,
 .data-group label {
   font-size: 0.75rem;
   letter-spacing: 0.1em;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
 }
 
 .theme-options {
   gap: var(--spacing-sm);
 }
 
-/* Consistent button sizing */
+/* Consistent button sizing & vertical centering fix */
 button,
 .button {
   height: 2.2rem;
@@ -169,12 +173,15 @@ button,
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Add feed form alignment */
 .add-feed-form {
   gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
 }
 
 .add-feed-form input {
@@ -183,7 +190,7 @@ button,
 
 /* Manage feeds list consistency */
 .manage-feeds-section {
-  margin-top: var(--spacing-2xl);
+  margin-top: var(--spacing-xl);
 }
 
 .manage-feed-item {

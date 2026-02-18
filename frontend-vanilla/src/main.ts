@@ -76,6 +76,10 @@ export function renderLayout() {
           -->
         </div>
         <div class="sidebar-footer">
+          <div class="sidebar-quick-controls">
+            <button id="sidebar-theme-toggle" class="sidebar-icon-btn" title="${store.theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}">${store.theme === 'light' ? '☽' : '☀'}</button>
+            <button id="sidebar-style-cycle" class="sidebar-icon-btn" title="Style: ${store.styleTheme}">${store.styleTheme === 'default' ? '◯' : '◉'} ${store.styleTheme}</button>
+          </div>
           <a href="/v3/settings" data-nav="settings">Settings</a>
           <a href="#" id="logout-button">Logout</a>
         </div>
@@ -102,6 +106,18 @@ export function attachLayoutListeners() {
   document.getElementById('logout-button')?.addEventListener('click', (e) => {
     e.preventDefault();
     logout();
+  });
+
+  // Sidebar quick controls: light/dark toggle
+  document.getElementById('sidebar-theme-toggle')?.addEventListener('click', () => {
+    store.setTheme(store.theme === 'light' ? 'dark' : 'light');
+  });
+
+  // Sidebar quick controls: cycle style theme
+  document.getElementById('sidebar-style-cycle')?.addEventListener('click', () => {
+    const idx = STYLE_THEMES.indexOf(store.styleTheme as typeof STYLE_THEMES[number]);
+    const next = STYLE_THEMES[(idx + 1) % STYLE_THEMES.length];
+    store.setStyleTheme(next);
   });
 
   document.getElementById('sidebar-toggle-btn')?.addEventListener('click', () => {
@@ -864,6 +880,12 @@ store.on('theme-updated', () => {
     // Re-apply classes with proper specificity logic
     appEl.className = `theme-${store.theme} font-${store.fontTheme} heading-font-${store.headingFontTheme}`;
   }
+  // Update sidebar toggle icon
+  const toggleBtn = document.getElementById('sidebar-theme-toggle');
+  if (toggleBtn) {
+    toggleBtn.textContent = store.theme === 'light' ? '☽' : '☀';
+    toggleBtn.title = store.theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode';
+  }
   // Also re-render settings if we are on settings page to update active state of buttons
   if (router.getCurrentRoute().path === '/settings') {
     renderSettings();
@@ -885,6 +907,12 @@ store.on('sidebar-toggle', () => {
 
 store.on('style-theme-updated', () => {
   loadStyleTheme(store.styleTheme);
+  // Update sidebar style cycle button
+  const cycleBtn = document.getElementById('sidebar-style-cycle');
+  if (cycleBtn) {
+    cycleBtn.textContent = `${store.styleTheme === 'default' ? '◯' : '◉'} ${store.styleTheme}`;
+    cycleBtn.title = `Style: ${store.styleTheme}`;
+  }
   // Re-render settings if on settings page to update active state
   if (router.getCurrentRoute().path === '/settings') {
     renderSettings();
