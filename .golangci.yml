@@ -4,22 +4,21 @@ run:
   timeout: 5m
 
 linters:
-  default: none
+  disable-all: true
+  disable:
+    - errcheck
   enable:
     - staticcheck
     - govet
     - ineffassign
     - unparam
     - misspell
-  # If errcheck is enabled, exclude it for test files.
-  # But since it's disabled globally, this rule is harmless but potentially unused.
-  # The original config had it, so we keep it under the new location.
-  exclusions:
-    rules:
-      - path: .*_test\.go
-        linters:
-          - errcheck
 
 issues:
+  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
+  exclude-rules:
+    - path: .*_test\.go
+      linters:
+        - errcheck

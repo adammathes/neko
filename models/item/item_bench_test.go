@@ -200,10 +200,10 @@ func BenchmarkFilter_LargeDataset(b *testing.B) {
 		if i > 0 {
 			sb.WriteString(",")
 		}
-		fmt.Fprintf(&sb,
+		sb.WriteString(fmt.Sprintf(
 			"('Item %d', 'https://example.com/large/%d', '<p>Description %d</p>', datetime('now'), %d, 0, 0)",
 			i, i, i, feedID,
-		)
+		))
 	}
 	_, err := models.DB.Exec(
 		"INSERT INTO item(title, url, description, publish_date, feed_id, read_state, starred) VALUES " + sb.String(),

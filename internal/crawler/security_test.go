@@ -9,11 +9,12 @@ import (
 	"adammathes.com/neko/internal/safehttp"
 )
 
-func init() {
-	safehttp.AllowLocal = true
-}
-
 func TestGetFeedContentLimit(t *testing.T) {
+	// Enable local connections for this test
+	originalAllowLocal := safehttp.AllowLocal
+	safehttp.AllowLocal = true
+	defer func() { safehttp.AllowLocal = originalAllowLocal }()
+
 	// 10MB limit expected
 	limit := 10 * 1024 * 1024
 	// 11MB payload
