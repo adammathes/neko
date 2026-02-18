@@ -861,7 +861,7 @@ function navigateItems(direction: number) {
     });
 
     const el = document.querySelector(`.feed-item[data-id="${activeItemId}"]`);
-    if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    if (el) el.scrollIntoView({ block: 'start', behavior: 'instant' });
 
     if (!store.items[nextIndex].read) updateItem(activeItemId, { read: true });
   }
