@@ -77,13 +77,18 @@ export function renderLayout() {
         </div>
         <div class="sidebar-footer">
           <div class="sidebar-quick-controls">
-            <button id="sidebar-theme-toggle" class="sidebar-icon-btn" title="${store.theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}">${store.theme === 'light' ? '☽' : '☀'}</button>
-            <span class="sidebar-controls-divider"></span>
-            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'default' ? 'active' : ''}" data-style-theme="default" title="Default">○</button>
-            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'refined' ? 'active' : ''}" data-style-theme="refined" title="Refined">◆</button>
-            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'terminal' ? 'active' : ''}" data-style-theme="terminal" title="Terminal">▮</button>
-            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'codex' ? 'active' : ''}" data-style-theme="codex" title="Codex">❧</button>
-            <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'sakura' ? 'active' : ''}" data-style-theme="sakura" title="Sakura">❀</button>
+            <div class="sidebar-controls-row">
+              <button class="sidebar-icon-btn sidebar-theme-btn ${store.theme === 'light' ? 'active' : ''}" data-theme="light" title="Light mode">☀</button>
+              <button class="sidebar-icon-btn sidebar-theme-btn ${store.theme === 'dark' ? 'active' : ''}" data-theme="dark" title="Dark mode">☽</button>
+            </div>
+            <hr class="sidebar-controls-rule">
+            <div class="sidebar-controls-row">
+              <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'default' ? 'active' : ''}" data-style-theme="default" title="Default">○</button>
+              <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'refined' ? 'active' : ''}" data-style-theme="refined" title="Refined">◆</button>
+              <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'terminal' ? 'active' : ''}" data-style-theme="terminal" title="Terminal">▮</button>
+              <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'codex' ? 'active' : ''}" data-style-theme="codex" title="Codex">❧</button>
+              <button class="sidebar-icon-btn sidebar-style-btn ${store.styleTheme === 'sakura' ? 'active' : ''}" data-style-theme="sakura" title="Sakura">❀</button>
+            </div>
           </div>
           <a href="/v3/settings" data-nav="settings">Settings</a>
           <a href="#" id="logout-button">Logout</a>
@@ -113,9 +118,12 @@ export function attachLayoutListeners() {
     logout();
   });
 
-  // Sidebar quick controls: light/dark toggle
-  document.getElementById('sidebar-theme-toggle')?.addEventListener('click', () => {
-    store.setTheme(store.theme === 'light' ? 'dark' : 'light');
+  // Sidebar quick controls: light/dark buttons
+  document.querySelectorAll('.sidebar-theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.getAttribute('data-theme');
+      if (theme) store.setTheme(theme);
+    });
   });
 
   // Sidebar quick controls: style theme emoji buttons
@@ -876,12 +884,10 @@ store.on('theme-updated', () => {
     // Re-apply classes with proper specificity logic
     appEl.className = `theme-${store.theme} font-${store.fontTheme} heading-font-${store.headingFontTheme}`;
   }
-  // Update sidebar toggle icon
-  const toggleBtn = document.getElementById('sidebar-theme-toggle');
-  if (toggleBtn) {
-    toggleBtn.textContent = store.theme === 'light' ? '☽' : '☀';
-    toggleBtn.title = store.theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode';
-  }
+  // Update sidebar light/dark button active states
+  document.querySelectorAll('.sidebar-theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-theme') === store.theme);
+  });
   // Also re-render settings if we are on settings page to update active state of buttons
   if (router.getCurrentRoute().path === '/settings') {
     renderSettings();
