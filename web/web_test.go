@@ -184,8 +184,10 @@ func TestLogoutHandler(t *testing.T) {
 // --- Image proxy handler tests ---
 
 func TestImageProxyHandlerIfNoneMatch(t *testing.T) {
-	req := httptest.NewRequest("GET", "/aHR0cHM6Ly9leGFtcGxlLmNvbS9pbWFnZS5qcGc=", nil)
-	req.Header.Set("If-None-Match", "https://example.com/image.jpg")
+	encoded := base64.URLEncoding.EncodeToString([]byte("https://example.com/image.jpg"))
+	etag := `"` + encoded + `"`
+	req := httptest.NewRequest("GET", "/"+encoded, nil)
+	req.Header.Set("If-None-Match", etag)
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotModified {
@@ -197,16 +199,6 @@ func TestSecondsInAYear(t *testing.T) {
 	expected := 60 * 60 * 24 * 365
 	if SecondsInAYear != expected {
 		t.Errorf("SecondsInAYear = %d, want %d", SecondsInAYear, expected)
-	}
-}
-
-func TestImageProxyHandlerEtag(t *testing.T) {
-	req := httptest.NewRequest("GET", "/aHR0cHM6Ly9leGFtcGxlLmNvbS9pbWFnZS5qcGc=", nil)
-	req.Header.Set("Etag", "https://example.com/image.jpg")
-	rr := httptest.NewRecorder()
-	imageProxyHandler(rr, req)
-	if rr.Code != http.StatusNotModified {
-		t.Errorf("Expected %d, got %d", http.StatusNotModified, rr.Code)
 	}
 }
 
@@ -238,13 +230,15 @@ func TestImageProxyHandlerBadRemote(t *testing.T) {
 	req.URL = &url.URL{Path: encodedURL}
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
-	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected %d, got %d", http.StatusNotFound, rr.Code)
+	if rr.Code != http.StatusBadGateway {
+		t.Errorf("Expected %d, got %d", http.StatusBadGateway, rr.Code)
 	}
 }
 
-func TestImageProxyHandlerEmptyId(t *testing.T) {
-	req := httptest.NewRequest("GET", "/image/", nil)
+func TestImageProxyHandlerEmptyPath(t *testing.T) {
+	// After StripPrefix("/image/"), an empty path has TrimPrefix("/") = ""
+	req := httptest.NewRequest("GET", "/", nil)
+	req.URL = &url.URL{Path: "/"}
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotFound {
@@ -256,8 +250,8 @@ func TestImageProxyHandlerBadBase64(t *testing.T) {
 	req := httptest.NewRequest("GET", "/image/notbase64!", nil)
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
-	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected %d, got %d", http.StatusNotFound, rr.Code)
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("Expected %d, got %d", http.StatusBadRequest, rr.Code)
 	}
 }
 
@@ -612,7 +606,9 @@ func TestIsCompressible(t *testing.T) {
 }
 
 func TestImageProxyHandlerMissingURL(t *testing.T) {
-	req := httptest.NewRequest("GET", "/image/", nil)
+	// Simulate what happens after StripPrefix("/image/"): path is empty
+	req := httptest.NewRequest("GET", "/", nil)
+	req.URL = &url.URL{Path: "/"}
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotFound {
@@ -624,8 +620,8 @@ func TestImageProxyHandlerInvalidBase64(t *testing.T) {
 	req := httptest.NewRequest("GET", "/image/invalid-base64", nil)
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
-	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected %d, got %d", http.StatusNotFound, rr.Code)
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("Expected %d, got %d", http.StatusBadRequest, rr.Code)
 	}
 }
 
@@ -640,25 +636,27 @@ func TestServeFrontendNotFound(t *testing.T) {
 }
 
 func TestImageProxyHeaders(t *testing.T) {
-	url := "http://example.com/image.png"
-	encoded := base64.URLEncoding.EncodeToString([]byte(url))
+	encoded := base64.URLEncoding.EncodeToString([]byte("http://example.com/image.png"))
+	etag := `"` + encoded + `"`
 
-	// Test If-None-Match
+	// Test If-None-Match with proper ETag
 	req := httptest.NewRequest("GET", "/"+encoded, nil)
-	req.Header.Set("If-None-Match", url)
+	req.Header.Set("If-None-Match", etag)
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
 	if rr.Code != http.StatusNotModified {
 		t.Errorf("Expected %d for If-None-Match, got %d", http.StatusNotModified, rr.Code)
 	}
 
-	// Test Etag
+	// Test mismatched If-None-Match does not return 304
 	req = httptest.NewRequest("GET", "/"+encoded, nil)
-	req.Header.Set("Etag", url)
+	req.Header.Set("If-None-Match", `"wrong-etag"`)
 	rr = httptest.NewRecorder()
 	imageProxyHandler(rr, req)
-	if rr.Code != http.StatusNotModified {
-		t.Errorf("Expected %d for Etag, got %d", http.StatusNotModified, rr.Code)
+	// Should not be 304 — it will try to fetch the remote, and since
+	// example.com is unreachable in tests, we get a fetch error
+	if rr.Code == http.StatusNotModified {
+		t.Error("Mismatched If-None-Match should not return 304")
 	}
 }
 
@@ -680,16 +678,37 @@ func TestServeBoxedFileNotFound(t *testing.T) {
 	}
 }
 
-func TestImageProxyHandlerHeaders(t *testing.T) {
-	url := "http://example.com/image.png"
-	id := base64.URLEncoding.EncodeToString([]byte(url))
+func TestImageProxyHandlerETagInResponse(t *testing.T) {
+	imgServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/png")
+		w.Write([]byte("png-data"))
+	}))
+	defer imgServer.Close()
 
-	req := httptest.NewRequest("GET", "/"+id, nil)
-	req.Header.Set("Etag", url)
+	encoded := base64.URLEncoding.EncodeToString([]byte(imgServer.URL + "/img.png"))
+	req := httptest.NewRequest("GET", "/"+encoded, nil)
+	req.URL = &url.URL{Path: encoded}
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
-	if rr.Code != http.StatusNotModified {
-		t.Errorf("Expected %d for matching Etag, got %d", http.StatusNotModified, rr.Code)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Expected %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Verify ETag is set in response
+	expectedETag := `"` + encoded + `"`
+	if got := rr.Header().Get("ETag"); got != expectedETag {
+		t.Errorf("Expected ETag %q, got %q", expectedETag, got)
+	}
+
+	// Verify Cache-Control is set
+	if cc := rr.Header().Get("Cache-Control"); cc != "public, max-age=172800" {
+		t.Errorf("Expected Cache-Control 'public, max-age=172800', got %q", cc)
+	}
+
+	// Verify Content-Type is forwarded
+	if ct := rr.Header().Get("Content-Type"); ct != "image/png" {
+		t.Errorf("Expected Content-Type 'image/png', got %q", ct)
 	}
 }
 
@@ -697,9 +716,6 @@ func TestImageProxyHandlerRemoteError(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Length", "10")
 		w.WriteHeader(http.StatusOK)
-		// Close connection immediately to cause ReadAll error if possible,
-		// or just return non-200. The current code only checks err from c.Do(request)
-		// and ioutil.ReadAll.
 	}))
 	ts.Close() // Close immediately so c.Do fails
 
@@ -707,8 +723,8 @@ func TestImageProxyHandlerRemoteError(t *testing.T) {
 	req := httptest.NewRequest("GET", "/"+id, nil)
 	rr := httptest.NewRecorder()
 	imageProxyHandler(rr, req)
-	if rr.Code != http.StatusNotFound {
-		t.Errorf("Expected %d for remote error, got %d", http.StatusNotFound, rr.Code)
+	if rr.Code != http.StatusBadGateway {
+		t.Errorf("Expected %d for remote error, got %d", http.StatusBadGateway, rr.Code)
 	}
 }
 
@@ -799,5 +815,238 @@ func TestSecurityHeadersMiddleware(t *testing.T) {
 	}
 	if rr.Header().Get("Content-Security-Policy") == "" {
 		t.Error("Missing Content-Security-Policy")
+	}
+}
+
+// --- Comprehensive image proxy tests ---
+
+func TestImageProxyContentTypeForwarded(t *testing.T) {
+	tests := []struct {
+		name        string
+		contentType string
+		wantStatus  int
+	}{
+		{"jpeg", "image/jpeg", http.StatusOK},
+		{"png", "image/png", http.StatusOK},
+		{"gif", "image/gif", http.StatusOK},
+		{"webp", "image/webp", http.StatusOK},
+		{"svg", "image/svg+xml", http.StatusOK},
+		{"avif", "image/avif", http.StatusOK},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", tc.contentType)
+				w.Write([]byte("imgdata"))
+			}))
+			defer ts.Close()
+
+			encoded := base64.URLEncoding.EncodeToString([]byte(ts.URL + "/img"))
+			req := httptest.NewRequest("GET", "/"+encoded, nil)
+			req.URL = &url.URL{Path: encoded}
+			rr := httptest.NewRecorder()
+			imageProxyHandler(rr, req)
+
+			if rr.Code != tc.wantStatus {
+				t.Errorf("Expected %d, got %d", tc.wantStatus, rr.Code)
+			}
+			if ct := rr.Header().Get("Content-Type"); ct != tc.contentType {
+				t.Errorf("Expected Content-Type %q, got %q", tc.contentType, ct)
+			}
+		})
+	}
+}
+
+func TestImageProxyRejectsNonImageContentType(t *testing.T) {
+	tests := []struct {
+		name        string
+		contentType string
+	}{
+		{"html", "text/html"},
+		{"javascript", "application/javascript"},
+		{"json", "application/json"},
+		{"pdf", "application/pdf"},
+		{"executable", "application/octet-stream"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", tc.contentType)
+				w.Write([]byte("not an image"))
+			}))
+			defer ts.Close()
+
+			encoded := base64.URLEncoding.EncodeToString([]byte(ts.URL + "/bad"))
+			req := httptest.NewRequest("GET", "/"+encoded, nil)
+			req.URL = &url.URL{Path: encoded}
+			rr := httptest.NewRecorder()
+			imageProxyHandler(rr, req)
+
+			if rr.Code != http.StatusForbidden {
+				t.Errorf("Expected %d for Content-Type %q, got %d", http.StatusForbidden, tc.contentType, rr.Code)
+			}
+		})
+	}
+}
+
+func TestImageProxyUpstreamErrorStatus(t *testing.T) {
+	tests := []struct {
+		name   string
+		status int
+	}{
+		{"not found", http.StatusNotFound},
+		{"forbidden", http.StatusForbidden},
+		{"server error", http.StatusInternalServerError},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(tc.status)
+			}))
+			defer ts.Close()
+
+			encoded := base64.URLEncoding.EncodeToString([]byte(ts.URL + "/err"))
+			req := httptest.NewRequest("GET", "/"+encoded, nil)
+			req.URL = &url.URL{Path: encoded}
+			rr := httptest.NewRecorder()
+			imageProxyHandler(rr, req)
+
+			if rr.Code != http.StatusBadGateway {
+				t.Errorf("Expected %d for upstream %d, got %d", http.StatusBadGateway, tc.status, rr.Code)
+			}
+		})
+	}
+}
+
+func TestImageProxyStreamsData(t *testing.T) {
+	// Verify the proxy streams data rather than returning it in one chunk.
+	// We test this by sending a known-size response and verifying we get it all.
+	data := make([]byte, 1024*1024) // 1 MB
+	for i := range data {
+		data[i] = byte(i % 256)
+	}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/jpeg")
+		w.Header().Set("Content-Length", "1048576")
+		w.Write(data)
+	}))
+	defer ts.Close()
+
+	encoded := base64.URLEncoding.EncodeToString([]byte(ts.URL + "/large.jpg"))
+	req := httptest.NewRequest("GET", "/"+encoded, nil)
+	req.URL = &url.URL{Path: encoded}
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Expected %d, got %d", http.StatusOK, rr.Code)
+	}
+	if rr.Body.Len() != len(data) {
+		t.Errorf("Expected %d bytes, got %d", len(data), rr.Body.Len())
+	}
+}
+
+func TestImageProxyForwardsUserAgent(t *testing.T) {
+	var gotUA string
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.Header.Get("User-Agent")
+		w.Header().Set("Content-Type", "image/jpeg")
+		w.Write([]byte("img"))
+	}))
+	defer ts.Close()
+
+	encoded := base64.URLEncoding.EncodeToString([]byte(ts.URL + "/ua.jpg"))
+	req := httptest.NewRequest("GET", "/"+encoded, nil)
+	req.URL = &url.URL{Path: encoded}
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Expected %d, got %d", http.StatusOK, rr.Code)
+	}
+	if gotUA != "neko RSS Reader Image Proxy +https://github.com/adammathes/neko" {
+		t.Errorf("Expected neko user agent, got %q", gotUA)
+	}
+}
+
+func TestImageProxyEmptyContentTypeAllowed(t *testing.T) {
+	// Some servers return an empty Content-Type. The proxy should pass it
+	// through since we can't verify it's not an image.
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "")
+		w.Write([]byte("mystery-data"))
+	}))
+	defer ts.Close()
+
+	encoded := base64.URLEncoding.EncodeToString([]byte(ts.URL + "/noct"))
+	req := httptest.NewRequest("GET", "/"+encoded, nil)
+	req.URL = &url.URL{Path: encoded}
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected %d for empty Content-Type, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestImageProxyContentLengthForwarded(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Content-Length", "42")
+		w.Write(make([]byte, 42))
+	}))
+	defer ts.Close()
+
+	encoded := base64.URLEncoding.EncodeToString([]byte(ts.URL + "/sized.png"))
+	req := httptest.NewRequest("GET", "/"+encoded, nil)
+	req.URL = &url.URL{Path: encoded}
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Expected %d, got %d", http.StatusOK, rr.Code)
+	}
+	if cl := rr.Header().Get("Content-Length"); cl != "42" {
+		t.Errorf("Expected Content-Length '42', got %q", cl)
+	}
+}
+
+func TestIsAllowedImageType(t *testing.T) {
+	tests := []struct {
+		ct       string
+		expected bool
+	}{
+		{"image/jpeg", true},
+		{"image/png", true},
+		{"image/gif", true},
+		{"image/webp", true},
+		{"image/svg+xml", true},
+		{"IMAGE/JPEG", true},
+		{"text/html", false},
+		{"application/json", false},
+		{"application/pdf", false},
+		{"", false},
+	}
+	for _, tc := range tests {
+		if res := isAllowedImageType(tc.ct); res != tc.expected {
+			t.Errorf("isAllowedImageType(%q) = %v, want %v", tc.ct, res, tc.expected)
+		}
+	}
+}
+
+func TestImageProxyInvalidURL(t *testing.T) {
+	// Base64 of a string that's not a valid URL
+	encoded := base64.URLEncoding.EncodeToString([]byte("://not-a-url"))
+	req := httptest.NewRequest("GET", "/"+encoded, nil)
+	req.URL = &url.URL{Path: encoded}
+	rr := httptest.NewRecorder()
+	imageProxyHandler(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("Expected %d for invalid URL, got %d", http.StatusBadRequest, rr.Code)
 	}
 }

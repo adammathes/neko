@@ -1,8 +1,11 @@
 package web
 
 import (
+	"encoding/base64"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -90,3 +93,48 @@ func BenchmarkFullMiddlewareStack(b *testing.B) {
 		handler.ServeHTTP(rr, req)
 	}
 }
+
+// --- Image proxy benchmarks ---
+
+func BenchmarkImageProxyCacheHit(b *testing.B) {
+	encoded := base64.URLEncoding.EncodeToString([]byte("https://example.com/image.jpg"))
+	etag := `"` + encoded + `"`
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		req := httptest.NewRequest("GET", "/"+encoded, nil)
+		req.Header.Set("If-None-Match", etag)
+		rr := httptest.NewRecorder()
+		imageProxyHandler(rr, req)
+	}
+}
+
+func benchmarkImageProxySize(b *testing.B, size int) {
+	data := make([]byte, size)
+	for i := range data {
+		data[i] = byte(i % 256)
+	}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/jpeg")
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", size))
+		w.Write(data)
+	}))
+	defer ts.Close()
+
+	encoded := base64.URLEncoding.EncodeToString([]byte(ts.URL + "/img.jpg"))
+
+	b.ResetTimer()
+	b.SetBytes(int64(size))
+	for i := 0; i < b.N; i++ {
+		req := httptest.NewRequest("GET", "/"+encoded, nil)
+		req.URL = &url.URL{Path: encoded}
+		rr := httptest.NewRecorder()
+		imageProxyHandler(rr, req)
+	}
+}
+
+func BenchmarkImageProxy_1KB(b *testing.B)  { benchmarkImageProxySize(b, 1<<10) }
+func BenchmarkImageProxy_64KB(b *testing.B) { benchmarkImageProxySize(b, 64<<10) }
+func BenchmarkImageProxy_1MB(b *testing.B)  { benchmarkImageProxySize(b, 1<<20) }
+func BenchmarkImageProxy_5MB(b *testing.B)  { benchmarkImageProxySize(b, 5<<20) }
