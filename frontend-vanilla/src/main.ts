@@ -397,7 +397,7 @@ if (typeof window !== 'undefined') {
       }
     }
 
-  }, 3000);
+  }, 1000);
 }
 
 // ... (add this variable at module level or inside renderSettings if possible, but module level is safer for persistence across clicks if renderSettings re-runs? No, event flow is synchronous: click button -> click file input. User selects file. Change event fires.

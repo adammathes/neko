@@ -44,8 +44,8 @@ describe('Infinite Scroll Polling', () => {
             json: async () => []
         } as Response);
 
-        // Wait for interval (3000ms) + buffer
-        await new Promise(resolve => setTimeout(resolve, 3100));
+        // Wait for interval (1000ms) + buffer
+        await new Promise(resolve => setTimeout(resolve, 1100));
 
         // Check if apiFetch was called
         expect(apiFetch).toHaveBeenCalledWith(expect.stringContaining('/api/stream'));
@@ -58,7 +58,7 @@ describe('Infinite Scroll Polling', () => {
         Object.defineProperty(scrollRoot, 'clientHeight', { value: 200, configurable: true });
         Object.defineProperty(scrollRoot, 'scrollTop', { value: 100, configurable: true });
 
-        await new Promise(resolve => setTimeout(resolve, 3100));
+        await new Promise(resolve => setTimeout(resolve, 1100));
 
         expect(apiFetch).not.toHaveBeenCalled();
     });
