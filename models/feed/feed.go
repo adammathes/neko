@@ -45,11 +45,11 @@ func All() ([]*Feed, error) {
 	return filter(" ORDER BY lower(TITLE) asc")
 }
 
-func filter(where string) ([]*Feed, error) {
+func filter(where string, args ...interface{}) ([]*Feed, error) {
 	// todo: add back in title
 	rows, err := models.DB.Query(`SELECT
                                   id, url, web_url, title, category
-                                  FROM feed ` + where)
+                                  FROM feed `+where, args...)
 	if err != nil {
 		return nil, err
 	}
