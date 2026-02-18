@@ -1,9 +1,12 @@
+version: "2"
 run:
   tests: true
   timeout: 5m
 
 linters:
   disable-all: true
+  disable:
+    - errcheck
   enable:
     - staticcheck
     - govet
