@@ -313,13 +313,12 @@ To contribute to Neko or run the full test suite locally, you will need the foll
 - **Node.js (20+) & npm**: For frontend development and building UI assets.
 - **Docker**: For containerized development and verifying the Docker build.
 - **SQLite3**: For direct database manipulation and debugging.
-- **Pandoc**: Required for `make docs` to generate `readme.html`.
 - **golangci-lint**: Required for `make lint` to run static analysis.
 
 ### Quick Start for Developers
 
 ```bash
-make all      # Clean, rebuild UIs, build binary, and generate docs
+make all      # Clean, rebuild UIs, and build binary
 make test     # Run all backend and frontend tests
 make check    # Run linting and tests
 ```

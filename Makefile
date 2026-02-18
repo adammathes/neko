@@ -2,23 +2,20 @@ SH=/bin/sh
 
 GO=go
 NPM=npm
-PANDOC=pandoc
 
 BINARY=neko
 VERSION=0.3
 BUILD=`git rev-parse HEAD`
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
-.PHONY: default all clean build install test test-race test-frontend ui-check lint check ci run dev docs install-hooks cover coverage-html bench bench-short stress test-perf
+.PHONY: default all clean build install test test-race test-frontend ui-check lint check ci run dev install-hooks cover coverage-html bench bench-short stress test-perf
 
 default: build
 
-all: clean ui-vanilla build docs
+all: clean ui-vanilla build
 
 clean:
 	rm -f ${BINARY}
-	rm -f readme.html
-
 
 
 ui-vanilla:
@@ -82,7 +79,4 @@ stress:
 test-perf:
 	cd frontend-vanilla && ${NPM} test -- --run src/perf/
 
-docs: readme.html
 
-readme.html: README.md
-	${PANDOC} README.md -o readme.html
