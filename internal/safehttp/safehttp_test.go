@@ -143,10 +143,12 @@ func TestNewSafeClientProperties(t *testing.T) {
 		t.Errorf("expected timeout 5s, got %v", client.Timeout)
 	}
 
-	transport, ok := client.Transport.(*http.Transport)
+	h2Transport, ok := client.Transport.(*H2FallbackTransport)
 	if !ok {
-		t.Fatal("expected *http.Transport")
+		t.Fatal("expected *H2FallbackTransport")
 	}
+
+	transport := h2Transport.Transport
 
 	// Proxy should be nil to prevent SSRF bypass
 	if transport.Proxy != nil {
@@ -156,6 +158,25 @@ func TestNewSafeClientProperties(t *testing.T) {
 	// DialContext should be set
 	if transport.DialContext == nil {
 		t.Error("transport.DialContext should be set to safe dialer")
+	}
+}
+
+func TestIsHTTP2Error(t *testing.T) {
+	tests := []struct {
+		err      error
+		expected bool
+	}{
+		{fmt.Errorf("http2: stream error"), true},
+		{fmt.Errorf("random error"), false},
+		{fmt.Errorf("PROTOCOL_ERROR"), true},
+		{fmt.Errorf("GOAWAY"), true},
+		{nil, false},
+	}
+
+	for _, tc := range tests {
+		if res := isHTTP2Error(tc.err); res != tc.expected {
+			t.Errorf("isHTTP2Error(%v) = %v, want %v", tc.err, res, tc.expected)
+		}
 	}
 }
 

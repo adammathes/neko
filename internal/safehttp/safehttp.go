@@ -2,9 +2,11 @@ package safehttp
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -84,7 +86,7 @@ func NewSafeClient(timeout time.Duration) *http.Client {
 
 	return &http.Client{
 		Timeout:   timeout,
-		Transport: transport,
+		Transport: &H2FallbackTransport{Transport: transport},
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= 10 {
 				return fmt.Errorf("too many redirects")
@@ -114,4 +116,34 @@ func NewSafeClient(timeout time.Duration) *http.Client {
 			return nil
 		},
 	}
+}
+
+// H2FallbackTransport wraps an *http.Transport and retries failed requests with HTTP/1.1
+// if an HTTP/2 protocol error is detected. This is useful for crawling external feeds
+// where some servers may have buggy HTTP/2 implementations.
+type H2FallbackTransport struct {
+	Transport *http.Transport
+}
+
+func (t *H2FallbackTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	resp, err := t.Transport.RoundTrip(req)
+	if err != nil && isHTTP2Error(err) && (req.Method == "GET" || req.Method == "HEAD" || req.Body == nil) {
+		// Clone the transport and disable HTTP/2 for the retry
+		h1Transport := t.Transport.Clone()
+		h1Transport.TLSNextProto = make(map[string]func(string, *tls.Conn) http.RoundTripper)
+		h1Transport.ForceAttemptHTTP2 = false
+		return h1Transport.RoundTrip(req)
+	}
+	return resp, err
+}
+
+func isHTTP2Error(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "http2") ||
+		strings.Contains(msg, "stream error") ||
+		strings.Contains(msg, "goaway") ||
+		strings.Contains(msg, "protocol")
 }
