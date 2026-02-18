@@ -1,9 +1,9 @@
 # Stage 1: Frontend Build
 FROM node:20-slim AS frontend-builder
 WORKDIR /app/frontend
-COPY frontend/package*.json ./
+COPY frontend-vanilla/package*.json ./
 RUN npm install
-COPY frontend/ ./
+COPY frontend-vanilla/ ./
 RUN npm run build
 
 # Stage 2: Backend Build
@@ -14,12 +14,13 @@ RUN go mod download
 COPY . .
 
 # Copy built frontend assets from Stage 1
-# Ensure the target directory structure matches what embed expects in web/web.go
-RUN mkdir -p web/dist/v2
-COPY --from=frontend-builder /app/frontend/dist ./web/dist/v2
+RUN mkdir -p web/dist/v3
+COPY --from=frontend-builder /app/frontend/dist/ ./web/dist/v3/
 
-# Build the binary
-RUN go build -o neko ./cmd/neko
+# Build the binary with version flags
+ARG VERSION=0.3
+ARG BUILD=docker
+RUN go build -ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}" -o neko ./cmd/neko
 
 # Stage 3: Final Image
 FROM debian:bullseye-slim

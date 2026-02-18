@@ -1,25 +1,31 @@
 version: "2"
 run:
   tests: true
-  timeout: 5m
-
 linters:
-  disable-all: true
-  disable:
-    - errcheck
+  default: none
   enable:
-    - staticcheck
     - govet
     - ineffassign
-    - unparam
     - misspell
-
+    - staticcheck
+    - unparam
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - errcheck
+        path: .*_test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude-rules:
-    - path: .*_test\.go
-      linters:
-        - errcheck
-
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
