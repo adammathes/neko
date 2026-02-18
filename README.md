@@ -307,11 +307,6 @@ The project underwent a significant modernization phase with the help of Google 
 
 # Development and Testing
 
-Utility scripts and test wrappers are located in the `scripts/` directory:
-- `scripts/clean_test_env.sh`: Resets the test database and kills stray processes.
-- `scripts/run_e2e_safe.sh`: A safe wrapper for running Playwright E2E tests.
-- `scripts/run_e2e.sh`: Standard E2E test runner.
-
 ## Development with Containers
 
 If you don't have Go or Node installed locally, or prefer an isolated environment, you can use the provided `docker-compose.dev.yaml`.
@@ -323,7 +318,7 @@ If you don't have Go or Node installed locally, or prefer an isolated environmen
 
 2. **Run tests inside the container**:
    ```bash
-   docker compose -f docker-compose.dev.yaml exec neko-dev bash -c "go test ./... && cd frontend && npm install && npm test"
+   docker compose -f docker-compose.dev.yaml exec neko-dev bash -c "go test ./... && cd frontend-vanilla && npm install && npm test"
    ```
 
 3. **Get an interactive shell**:

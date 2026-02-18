@@ -9,7 +9,7 @@ VERSION=0.3
 BUILD=`git rev-parse HEAD`
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
-.PHONY: default all clean build install test test-race test-frontend test-e2e ui-check lint check ci run dev docs install-hooks cover coverage-html bench bench-short stress test-perf
+.PHONY: default all clean build install test test-race test-frontend ui-check lint check ci run dev docs install-hooks cover coverage-html bench bench-short stress test-perf
 
 default: build
 
@@ -49,9 +49,6 @@ coverage-html: cover
 
 test-frontend:
 	cd frontend-vanilla && ${NPM} test -- --run
-
-# test-e2e: build
-# 	./scripts/run_e2e_safe.sh
 
 ui-check: ui-vanilla
 	git diff --exit-code web/dist/v3/
