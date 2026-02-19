@@ -450,7 +450,17 @@ select:focus {
   margin-top: 2rem;
   border-bottom: none;
   border-radius: 8px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, opacity 0.3s ease;
+}
+
+.feed-item.read {
+  opacity: 0.5;
+}
+
+.feed-item.read .item-title {
+  font-weight: normal;
+  color: var(--text-color);
+  opacity: 0.8;
 }
 
 

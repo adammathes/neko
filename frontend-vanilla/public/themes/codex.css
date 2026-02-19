@@ -170,7 +170,7 @@ body {
   padding: 2.5rem 2rem;
 }
 
-.main-content > * {
+.main-content>* {
   max-width: 33em;
 }
 
@@ -182,10 +182,19 @@ body {
   border-radius: 0;
   padding-bottom: 2.5rem;
   border-bottom: none;
+  transition: opacity 0.4s ease;
+}
+
+.feed-item.read {
+  opacity: 0.5;
+}
+
+.feed-item.read .item-title {
+  color: var(--codex-muted);
 }
 
 /* Decorative separator between items -- a subtle fleuron */
-.feed-item + .feed-item::before {
+.feed-item+.feed-item::before {
   content: '\2766';
   display: block;
   text-align: center;

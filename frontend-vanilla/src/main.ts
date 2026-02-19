@@ -325,8 +325,8 @@ export function renderItems() {
   const scrollRoot = document.getElementById('main-content');
   if (scrollRoot) {
     let readTimeoutId: number | null = null;
-    scrollRoot.onscroll = () => {
-      // Infinite scroll check (container only)
+    const scrollHandler = () => {
+      // Infinite scroll check
       if (!store.loading && store.hasMore && scrollRoot.scrollHeight > scrollRoot.clientHeight) {
         if (scrollRoot.scrollHeight - scrollRoot.scrollTop - scrollRoot.clientHeight < 200) {
           loadMore();
@@ -336,40 +336,40 @@ export function renderItems() {
       // Mark-as-read: debounced
       if (readTimeoutId === null) {
         readTimeoutId = window.setTimeout(() => {
-          debugLog('onscroll trigger checkReadItems');
           checkReadItems(scrollRoot);
           readTimeoutId = null;
         }, 250);
       }
     };
+
+    scrollRoot.onscroll = scrollHandler;
+    // Fallback for cases where main-content doesn't capture the scroll
+    window.onscroll = scrollHandler;
   }
 }
 
-function checkReadItems(scrollRoot: HTMLElement) {
-  const containerRect = scrollRoot.getBoundingClientRect();
+function checkReadItems(scrollRoot?: HTMLElement) {
+  const root = scrollRoot || document.getElementById('main-content') || document.documentElement;
+  const containerRect = root.getBoundingClientRect();
   debugLog('checkReadItems start', { containerTop: containerRect.top });
 
-  // Batch DOM query: select all feed items at once instead of O(n) individual
-  // querySelector calls with attribute selectors per scroll tick.
-  const allItems = scrollRoot.querySelectorAll('.feed-item');
-  for (const el of allItems) {
+  // Use faster DOM query for only unread items
+  const unreadItems = document.querySelectorAll('.feed-item.unread');
+  for (const el of unreadItems) {
     const idAttr = el.getAttribute('data-id');
     if (!idAttr) continue;
     const id = parseInt(idAttr);
+
+    // Safety check: skip if store already says it's read (though unread class implies not)
     const item = store.items.find(i => i._id === id);
-    if (!item || item.read) continue;
+    if (item?.read) continue;
 
     const rect = el.getBoundingClientRect();
-    // Use a small buffer (5px) to be more robust
+    // Mark as read if the bottom of the item is above the top of the container (with 5px buffer)
     const isPast = rect.bottom < (containerRect.top + 5);
 
     if (DEBUG) {
-      debugLog(`Item ${id} check`, {
-        rectTop: rect.top,
-        rectBottom: rect.bottom,
-        containerTop: containerRect.top,
-        isPast
-      });
+      debugLog(`Item ${id} check`, { rectBottom: rect.bottom, containerTop: containerRect.top, isPast });
     }
 
     if (isPast) {
@@ -714,7 +714,10 @@ export async function updateItem(id: number | string, updates: Partial<Item>) {
         // Selective DOM update to avoid full re-render
         const el = document.querySelector(`.feed-item[data-id="${id}"]`);
         if (el) {
-          if (updates.read !== undefined) el.classList.toggle('read', updates.read);
+          if (updates.read !== undefined) {
+            el.classList.toggle('read', updates.read);
+            el.classList.toggle('unread', !updates.read);
+          }
           if (updates.starred !== undefined) {
             const starBtn = el.querySelector('.star-btn');
             if (starBtn) {
