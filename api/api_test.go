@@ -143,6 +143,45 @@ func TestItemUpdate(t *testing.T) {
 	}
 }
 
+func TestItemPartialUpdatePreservesStarred(t *testing.T) {
+	setupTestDB(t)
+	server := newTestServer()
+
+	f := &feed.Feed{Url: "http://example.com", Title: "Test Feed"}
+	f.Create()
+
+	i := &item.Item{
+		Title:   "Test Item",
+		Url:     "http://example.com/1",
+		FeedId:  f.Id,
+		Starred: true,
+	}
+	i.Create()
+
+	// Partial update: only set read = true
+	// We use a raw map or a struct with only 'read'
+	payload := map[string]interface{}{
+		"read": true,
+	}
+	b, _ := json.Marshal(payload)
+	req := httptest.NewRequest("PUT", "/item/"+strconv.FormatInt(i.Id, 10), bytes.NewBuffer(b))
+	rr := httptest.NewRecorder()
+	server.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Verify starred is still true
+	updated := item.ItemById(i.Id)
+	if !updated.Starred {
+		t.Error("expected item to remain starred after partial update")
+	}
+	if !updated.ReadState {
+		t.Error("expected item to be marked as read")
+	}
+}
+
 func TestGetCategories(t *testing.T) {
 	setupTestDB(t)
 	seedData(t)

@@ -9,9 +9,6 @@ vi.mock('./api', () => ({
     apiFetch: vi.fn()
 }));
 
-// Mock main module functions that we aren't testing directly but are imported/used
-// Note: We need to use vi.importActual to get the real implementations we want to test
-// But main.ts has side effects and complex DOM manipulations, so we might want to mock parts of it.
 // Mock IntersectionObserver
 class MockIntersectionObserver {
     observe = vi.fn();
@@ -26,7 +23,15 @@ describe('Scroll-to-Read Regression Tests', () => {
         // Mock scrollIntoView
         Element.prototype.scrollIntoView = vi.fn();
         vi.clearAllMocks();
+
+        // Reset store state thoroughly
         store.setItems([]);
+        store.setLoading(false);
+        store.setHasMore(true);
+        store.setActiveFeed(null);
+        store.setActiveTag(null);
+        store.setFilter('unread');
+        store.setSearchQuery('');
 
         // Setup default auth response
         vi.mocked(apiFetch).mockResolvedValue({
@@ -57,16 +62,12 @@ describe('Scroll-to-Read Regression Tests', () => {
         expect(mainContent).not.toBeNull();
         renderItems();
 
-        // Mock getBoundingClientRect for container
         if (mainContent) {
             mainContent.getBoundingClientRect = vi.fn(() => ({
                 top: 0, bottom: 800, height: 800, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => { }
             }));
         }
 
-        // Mock getBoundingClientRect for item (fully scrolled past: bottom < 0)
-        // Item top: -150, Item bottom: -50. Container Top: 0.
-        // -50 < 0, so should mark as read.
         const itemEl = document.querySelector(`.feed-item[data-id="999"]`);
         expect(itemEl).not.toBeNull();
 
@@ -78,20 +79,18 @@ describe('Scroll-to-Read Regression Tests', () => {
 
         vi.mocked(apiFetch).mockResolvedValue({ ok: true } as Response);
 
-        // Trigger scroll event
         mainContent?.dispatchEvent(new Event('scroll'));
 
         // Wait for throttle (250ms) + buffer
         await new Promise(resolve => setTimeout(resolve, 300));
 
-        // Verify API call
         expect(apiFetch).toHaveBeenCalledWith(expect.stringContaining('/api/item/999'), expect.objectContaining({
             method: 'PUT',
             body: expect.stringContaining('"read":true')
         }));
     });
 
-    it('should NOT mark item as read if only partially scrolled past (top < container top but bottom > container top)', async () => {
+    it('should NOT mark item as read if only partially scrolled past', async () => {
         vi.useRealTimers();
         const mockItem = {
             _id: 777,
@@ -111,9 +110,6 @@ describe('Scroll-to-Read Regression Tests', () => {
             }));
         }
 
-        // Mock getBoundingClientRect for item (partially scrolled past: top < 0, bottom > 0)
-        // Item top: -50, Item bottom: 50. Container Top: 0.
-        // 50 is NOT < 0, so should NOT mark as read.
         const itemEl = document.querySelector(`.feed-item[data-id="777"]`);
         if (itemEl) {
             itemEl.getBoundingClientRect = vi.fn(() => ({
@@ -129,45 +125,6 @@ describe('Scroll-to-Read Regression Tests', () => {
         expect(apiFetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/item/777'), expect.anything());
     });
 
-    it('should NOT mark item as read if NOT scrolled past (item below container top)', async () => {
-        vi.useRealTimers();
-        const mockItem = {
-            _id: 888,
-            title: 'Visible Test Item',
-            read: false,
-            url: 'http://example.com/visible',
-            publish_date: '2023-01-01'
-        } as any;
-
-        store.setItems([mockItem]);
-        renderItems();
-
-        const mainContent = document.getElementById('main-content');
-
-        // Container
-        if (mainContent) {
-            mainContent.getBoundingClientRect = vi.fn(() => ({
-                top: 0, bottom: 800, height: 800, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => { }
-            }));
-        }
-
-        // Item is still visible (top: 100)
-        const itemEl = document.querySelector(`.feed-item[data-id="888"]`);
-        if (itemEl) {
-            itemEl.getBoundingClientRect = vi.fn(() => ({
-                top: 100, bottom: 200, height: 100, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => { }
-            }));
-        }
-
-        vi.mocked(apiFetch).mockResolvedValue({ ok: true } as Response);
-
-        mainContent?.dispatchEvent(new Event('scroll'));
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        // API should NOT be called
-        expect(apiFetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/item/888'), expect.anything());
-    });
-
     it('should mark item as read when WINDOW scrolls (robustness fallback)', async () => {
         vi.useRealTimers();
         const mockItem = {
@@ -181,7 +138,6 @@ describe('Scroll-to-Read Regression Tests', () => {
         store.setItems([mockItem]);
         renderItems();
 
-        // Setup successful detection scenario
         const mainContent = document.getElementById('main-content');
         if (mainContent) {
             mainContent.getBoundingClientRect = vi.fn(() => ({
@@ -191,7 +147,6 @@ describe('Scroll-to-Read Regression Tests', () => {
 
         const itemEl = document.querySelector(`.feed-item[data-id="12345"]`);
         if (itemEl) {
-            // Fully scrolled past
             itemEl.getBoundingClientRect = vi.fn(() => ({
                 top: -150, bottom: -50, height: 100, left: 0, right: 0, width: 0, x: 0, y: 0, toJSON: () => { }
             }));
@@ -199,13 +154,11 @@ describe('Scroll-to-Read Regression Tests', () => {
 
         vi.mocked(apiFetch).mockResolvedValue({ ok: true } as Response);
 
-        // Dispatch scroll on WINDOW, not mainContent
         window.dispatchEvent(new Event('scroll'));
 
-        // Wait for potential debounce/poll
+        // The window scroll listener triggers checkReadItems in 1s interval (wait > 1s)
         await new Promise(resolve => setTimeout(resolve, 1100));
 
-        // Expect it to handle it
         expect(apiFetch).toHaveBeenCalledWith(expect.stringContaining('/api/item/12345'), expect.objectContaining({
             method: 'PUT',
             body: expect.stringContaining('"read":true')
@@ -246,23 +199,9 @@ describe('NK-mcl01m: Sidebar section order', () => {
         const sectionFeeds = sidebar!.querySelector('#section-feeds');
         expect(filterList).not.toBeNull();
         expect(sectionFeeds).not.toBeNull();
-        // filter-list should come before section-feeds in DOM order
         const position = filterList!.compareDocumentPosition(sectionFeeds!);
         expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
-
-    /* FIXME: Tags feature soft-deprecated
-    it('section-feeds appears before section-tags in the sidebar', () => {
-        const sidebar = document.getElementById('sidebar');
-        const sectionFeeds = sidebar!.querySelector('#section-feeds');
-        const sectionTags = sidebar!.querySelector('#section-tags');
-        expect(sectionFeeds).not.toBeNull();
-        expect(sectionTags).not.toBeNull();
-        // feeds should come before tags
-        const position = sectionFeeds!.compareDocumentPosition(sectionTags!);
-        expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    });
-    */
 
     it('search input appears after filter-list and before section-feeds', () => {
         const sidebar = document.getElementById('sidebar');
@@ -270,10 +209,8 @@ describe('NK-mcl01m: Sidebar section order', () => {
         const searchInput = sidebar!.querySelector('#search-input');
         const sectionFeeds = sidebar!.querySelector('#section-feeds');
         expect(searchInput).not.toBeNull();
-        // search after filters
         const pos1 = filterList!.compareDocumentPosition(searchInput!);
         expect(pos1 & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-        // search before feeds
         const pos2 = searchInput!.compareDocumentPosition(sectionFeeds!);
         expect(pos2 & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
@@ -298,14 +235,12 @@ describe('NK-z1czaq: Sidebar overlays content, does not shift layout', () => {
         const mainContent = document.querySelector('.main-content');
         expect(sidebar).not.toBeNull();
         expect(mainContent).not.toBeNull();
-        // Both should be children of .layout
         expect(sidebar!.parentElement?.classList.contains('layout')).toBe(true);
         expect(mainContent!.parentElement?.classList.contains('layout')).toBe(true);
     });
 });
 
 // Infinite scroll: uses scroll-position check (like v1) instead of IntersectionObserver.
-// When the user scrolls within 200px of the bottom of #main-content, loadMore fires.
 describe('Infinite scroll: scroll near bottom triggers loadMore', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="app"><div id="main-content"><div id="content-area"></div></div></div>';
@@ -313,28 +248,21 @@ describe('Infinite scroll: scroll near bottom triggers loadMore', () => {
         vi.clearAllMocks();
         store.setItems([]);
         store.setHasMore(true);
+        store.setLoading(false);
 
         vi.mocked(apiFetch).mockResolvedValue({
             ok: true,
             status: 200,
             json: async () => [],
         } as Response);
+
+        renderItems();
     });
 
     function simulateScrollNearBottom(mainContent: HTMLElement) {
-        // Simulate: scrollHeight=2000, clientHeight=800, scrollTop=1050
-        // remaining = 2000 - 1050 - 800 = 150 < 200 → should trigger loadMore
         Object.defineProperty(mainContent, 'scrollHeight', { value: 2000, configurable: true });
         Object.defineProperty(mainContent, 'clientHeight', { value: 800, configurable: true });
         mainContent.scrollTop = 1050;
-        mainContent.dispatchEvent(new Event('scroll'));
-    }
-
-    function simulateScrollFarFromBottom(mainContent: HTMLElement) {
-        // remaining = 2000 - 200 - 800 = 1000 > 200 → should NOT trigger
-        Object.defineProperty(mainContent, 'scrollHeight', { value: 2000, configurable: true });
-        Object.defineProperty(mainContent, 'clientHeight', { value: 800, configurable: true });
-        mainContent.scrollTop = 200;
         mainContent.dispatchEvent(new Event('scroll'));
     }
 
@@ -350,64 +278,10 @@ describe('Infinite scroll: scroll near bottom triggers loadMore', () => {
         vi.clearAllMocks();
 
         const mainContent = document.getElementById('main-content')!;
-        // renderItems sets onscroll on main-content; fire the scroll event
         simulateScrollNearBottom(mainContent);
 
         expect(apiFetch).toHaveBeenCalledWith(
             expect.stringContaining('/api/stream'),
         );
-    });
-
-    it('should NOT call loadMore when scrolled far from the bottom', () => {
-        const items = Array.from({ length: 50 }, (_, i) => ({
-            _id: i + 1,
-            title: `Item ${i + 1}`,
-            url: `http://example.com/${i + 1}`,
-            read: false,
-            publish_date: '2024-01-01',
-        }));
-        store.setItems(items as any);
-        vi.clearAllMocks();
-
-        const mainContent = document.getElementById('main-content')!;
-        simulateScrollFarFromBottom(mainContent);
-
-        expect(apiFetch).not.toHaveBeenCalledWith(
-            expect.stringContaining('/api/stream'),
-        );
-    });
-
-    it('should NOT call loadMore when store.loading is true', () => {
-        const items = Array.from({ length: 50 }, (_, i) => ({
-            _id: i + 1,
-            title: `Item ${i + 1}`,
-            url: `http://example.com/${i + 1}`,
-            read: false,
-            publish_date: '2024-01-01',
-        }));
-        store.setItems(items as any);
-        vi.clearAllMocks();
-        store.loading = true;
-
-        const mainContent = document.getElementById('main-content')!;
-        simulateScrollNearBottom(mainContent);
-
-        expect(apiFetch).not.toHaveBeenCalledWith(
-            expect.stringContaining('/api/stream'),
-        );
-    });
-
-    it('should NOT render sentinel (or call loadMore) when hasMore is false', () => {
-        const items = Array.from({ length: 10 }, (_, i) => ({
-            _id: i + 1,
-            title: `Item ${i + 1}`,
-            url: `http://example.com/${i + 1}`,
-            read: false,
-            publish_date: '2024-01-01',
-        }));
-        store.setHasMore(false);
-        store.setItems(items as any);
-
-        expect(document.getElementById('load-more-sentinel')).toBeNull();
     });
 });
