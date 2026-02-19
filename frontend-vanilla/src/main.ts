@@ -13,6 +13,25 @@ declare global {
   }
 }
 
+const urlParams = new URLSearchParams(window.location.search);
+const DEBUG = urlParams.has('debug');
+
+function debugLog(...args: any[]) {
+  if (DEBUG) {
+    console.log('[NEKO-DEBUG]', ...args);
+  }
+}
+
+// Add to window for console debugging
+if (typeof window !== 'undefined') {
+  window.app = window.app || {};
+  window.app.debug = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('debug', '1');
+    window.location.href = url.toString();
+  };
+}
+
 // Style theme management: load/unload CSS files
 const STYLE_THEMES = ['default', 'refined', 'terminal', 'codex', 'sakura'] as const;
 
@@ -239,8 +258,6 @@ export function attachLayoutListeners() {
       const id = parseInt(itemRow.getAttribute('data-id')!);
       activeItemId = id;
 
-      activeItemId = id;
-
       const item = store.items.find(i => i._id === id);
       if (item && !item.read) {
         updateItem(id, { read: true });
@@ -265,18 +282,7 @@ export function renderFeeds() {
 }
 
 export function renderTags() {
-  /* Soft deprecated.
-  const tagList = document.getElementById('tag-list');
-  if (!tagList) return;
-
-  const { tags, activeTagName } = store;
-  tagList.innerHTML = tags.map(tag => {
-      const isActive = activeTagName === tag.title;
-      return `<li class="tag-item ${isActive ? 'active' : ''}">
-                <a href="/tag/${encodeURIComponent(tag.title)}" data-nav="tag" data-value="${tag.title}">${tag.title}</a>
-              </li>`;
-  }).join('');
-  */
+  /* Soft deprecated. */
 }
 
 export function renderFilters() {
@@ -330,6 +336,7 @@ export function renderItems() {
       // Mark-as-read: debounced
       if (readTimeoutId === null) {
         readTimeoutId = window.setTimeout(() => {
+          debugLog('onscroll trigger checkReadItems');
           checkReadItems(scrollRoot);
           readTimeoutId = null;
         }, 250);
@@ -340,18 +347,34 @@ export function renderItems() {
 
 function checkReadItems(scrollRoot: HTMLElement) {
   const containerRect = scrollRoot.getBoundingClientRect();
+  debugLog('checkReadItems start', { containerTop: containerRect.top });
+
   // Batch DOM query: select all feed items at once instead of O(n) individual
   // querySelector calls with attribute selectors per scroll tick.
   const allItems = scrollRoot.querySelectorAll('.feed-item');
   for (const el of allItems) {
-    const id = parseInt(el.getAttribute('data-id')!);
+    const idAttr = el.getAttribute('data-id');
+    if (!idAttr) continue;
+    const id = parseInt(idAttr);
     const item = store.items.find(i => i._id === id);
     if (!item || item.read) continue;
 
     const rect = el.getBoundingClientRect();
-    // Mark as read if the bottom of the item is above the top of the container
-    if (rect.bottom < containerRect.top) {
-      updateItem(item._id, { read: true });
+    // Use a small buffer (5px) to be more robust
+    const isPast = rect.bottom < (containerRect.top + 5);
+
+    if (DEBUG) {
+      debugLog(`Item ${id} check`, {
+        rectTop: rect.top,
+        rectBottom: rect.bottom,
+        containerTop: containerRect.top,
+        isPast
+      });
+    }
+
+    if (isPast) {
+      debugLog(`Marking as read (scrolled past): ${id}`);
+      updateItem(id, { read: true });
     }
   }
 }
@@ -369,12 +392,15 @@ if (typeof window !== 'undefined') {
     const scrollRoot = document.getElementById('main-content');
     // console.log('Polling...', { scrollRoot: !!scrollRoot, loading: store.loading, hasMore: store.hasMore });
 
+    if (scrollRoot) {
+      // Check for read items periodically (robustness fallback)
+      // This MUST run even if we are not loading more items
+      checkReadItems(scrollRoot);
+    }
+
     if (store.loading || !store.hasMore) return;
 
     if (scrollRoot) {
-      // Check for read items periodically (robustness fallback)
-      checkReadItems(scrollRoot);
-
       // Check container scroll (if container is scrollable)
       if (scrollRoot.scrollHeight > scrollRoot.clientHeight) {
         if (scrollRoot.scrollHeight - scrollRoot.scrollTop - scrollRoot.clientHeight < 200) {
@@ -399,10 +425,6 @@ if (typeof window !== 'undefined') {
 
   }, 1000);
 }
-
-// ... (add this variable at module level or inside renderSettings if possible, but module level is safer for persistence across clicks if renderSettings re-runs? No, event flow is synchronous: click button -> click file input. User selects file. Change event fires.
-// Actually, file input click is async in terms of user action. renderSettings won't run in between unless something else triggers it.
-// But to be safe, I'll update the function signature of importOPML to importData.
 
 export function renderSettings() {
   const contentArea = document.getElementById('content-area');
@@ -581,20 +603,6 @@ export function renderSettings() {
       }
     });
   });
-
-  /* Soft deprecated.
-  document.querySelectorAll('.update-feed-tag-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const id = parseInt((e.target as HTMLElement).getAttribute('data-id')!);
-      const input = document.querySelector(`.feed-tag-input[data-id="${id}"]`) as HTMLInputElement;
-      await updateFeed(id, { category: input.value.trim() });
-      await fetchFeeds();
-      // await fetchTags();
-      renderSettings();
-      alert('Feed updated');
-    });
-  });
-  */
 }
 
 async function addFeed(url: string): Promise<boolean> {
@@ -689,15 +697,18 @@ export async function scrapeItem(id: number) {
   }
 }
 
-export async function updateItem(id: number, updates: Partial<Item>) {
+export async function updateItem(id: number | string, updates: Partial<Item>) {
+  const idStr = String(id);
+  debugLog('updateItem called', idStr, updates);
+
   try {
-    const res = await apiFetch(`/api/item/${id}`, {
+    const res = await apiFetch(`/api/item/${idStr}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
     });
     if (res.ok) {
-      const item = store.items.find(i => i._id === id);
+      const item = store.items.find(i => String(i._id) === idStr);
       if (item) {
         Object.assign(item, updates);
         // Selective DOM update to avoid full re-render
@@ -761,9 +772,6 @@ export async function fetchItems(feedId?: string, tagName?: string, append: bool
     const res = await apiFetch(`/api/stream?${params.toString()}`);
     if (res.ok) {
       const items = await res.json();
-      // V1 logic: keep loading as long as we get results.
-      // Backend limit is currently 15, so checking >= 50 caused premature stop.
-      // We accept one extra empty fetch at the end to be robust against page size changes.
       store.setHasMore(items.length > 0);
       store.setItems(items, append);
     }

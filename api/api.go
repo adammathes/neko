@@ -108,18 +108,22 @@ func (s *Server) HandleItem(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodPut:
-		var i item.Item
-		if err := json.NewDecoder(r.Body).Decode(&i); err != nil {
+		i := item.ItemById(id)
+		if i == nil {
+			jsonError(w, "item not found", http.StatusNotFound)
+			return
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(i); err != nil {
 			jsonError(w, "invalid json", http.StatusBadRequest)
 			return
 		}
-		if i.Id == 0 {
-			i.Id = id
-		}
+
 		if i.Id != id {
 			jsonError(w, "id mismatch", http.StatusBadRequest)
 			return
 		}
+
 		i.Save()
 		jsonResponse(w, i)
 
