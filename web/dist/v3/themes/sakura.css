@@ -195,17 +195,10 @@ body {
   margin-top: 2.5rem;
   border-radius: 0;
   border-bottom: none;
-  transition: opacity 0.4s ease;
+  
 }
 
-.feed-item.read {
-  opacity: 0.4;
-}
 
-.feed-item.read .item-title {
-  color: var(--sakura-stone);
-  font-weight: 400;
-}
 
 /* Subtle separator -- a single thin rule, Japanese-style restraint */
 .feed-item+.feed-item {

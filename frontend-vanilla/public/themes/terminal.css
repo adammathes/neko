@@ -215,16 +215,10 @@ body {
   padding: 1.25rem 0.5rem;
   margin-top: 1.5rem;
   border-bottom: 1px solid var(--border-color);
-  transition: opacity 0.4s ease;
+  
 }
 
-.feed-item.read {
-  opacity: 0.35;
-}
 
-.feed-item.read .item-title {
-  text-decoration: none;
-}
 
 .feed-item.selected {
   background-color: var(--terminal-dim);

@@ -86,17 +86,10 @@ body {
 .feed-item {
   padding: var(--spacing-md) var(--spacing-sm);
   margin-top: var(--spacing-xl);
-  transition: opacity 0.3s ease;
+  
 }
 
-.feed-item.read {
-  opacity: 0.45;
-}
 
-.feed-item.read .item-title {
-  font-weight: 500;
-  opacity: 0.8;
-}
 
 .item-title {
   font-size: 1.7rem;
