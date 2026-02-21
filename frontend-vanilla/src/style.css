@@ -474,7 +474,7 @@ select:focus {
 }
 
 .item-title:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .star-btn {
