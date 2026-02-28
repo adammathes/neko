@@ -1,5 +1,9 @@
 import type { Item } from '../types';
 
+// NOTE: The "text" scrape button (data-action="scrape") was removed from the
+// template. The backend endpoint and scrapeItem() handler in main.ts are still
+// intact if we want to bring it back with proper styling later.
+
 export function createFeedItem(item: Item): string {
   const date = new Date(item.publish_date).toLocaleDateString();
   return `
@@ -17,13 +21,6 @@ export function createFeedItem(item: Item): string {
           ${date}
           ${item.feed_title ? ` - ${item.feed_title}` : ''}
         </a>
-        <div class="item-actions" style="display: inline-block; float: right;">
-          ${!item.full_content ? `
-            <button class="scrape-btn" title="Load Full Content" data-action="scrape">
-              text
-            </button>
-          ` : ''}
-        </div>
       </div>
       ${(item.full_content || item.description) ? `
         <div class="item-description">
