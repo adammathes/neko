@@ -490,6 +490,15 @@ select:focus {
   vertical-align: middle;
   transition: color 0.2s;
   line-height: 1;
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  text-transform: none;
+  font-weight: normal;
 }
 
 .star-btn.is-starred {
