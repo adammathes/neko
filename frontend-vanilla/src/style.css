@@ -452,6 +452,7 @@ select:focus {
   border-bottom: none;
   border-radius: 8px;
   transition: background-color 0.2s ease, opacity 0.3s ease;
+  overflow: hidden;
 }
 
 
@@ -471,6 +472,8 @@ select:focus {
   color: var(--link-color);
   display: block;
   flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
   cursor: pointer;
 }
 

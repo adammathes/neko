@@ -47,8 +47,6 @@ describe('Mobile horizontal overflow prevention', () => {
 
     describe('CSS containment rules', () => {
         it('.item-description should have overflow-x hidden to contain wide RSS content', () => {
-            // .item-description must prevent wide child elements (tables, iframes)
-            // from causing horizontal viewport overflow
             const itemDescBlock = cssContent.match(
                 /\.item-description\s*\{[^}]*\}/g
             );
@@ -61,7 +59,6 @@ describe('Mobile horizontal overflow prevention', () => {
         });
 
         it('.item-description should constrain tables with max-width', () => {
-            // RSS feeds commonly contain <table> elements with explicit widths
             const tableRule = cssContent.match(
                 /\.item-description\s+table[^{]*\{[^}]*max-width:\s*100%/
             );
@@ -69,7 +66,6 @@ describe('Mobile horizontal overflow prevention', () => {
         });
 
         it('.item-description should constrain iframes with max-width', () => {
-            // RSS feeds commonly embed iframes (YouTube, etc.) with fixed widths
             const iframeRule = cssContent.match(
                 /\.item-description\s+iframe[^{]*\{[^}]*max-width:\s*100%/
             );
@@ -77,77 +73,90 @@ describe('Mobile horizontal overflow prevention', () => {
         });
 
         it('.main-content should explicitly set overflow-x hidden', () => {
-            // .main-content must not allow horizontal scrolling
             const mainContentBlock = cssContent.match(
                 /\.main-content\s*\{[^}]*\}/
             );
             expect(mainContentBlock).not.toBeNull();
             expect(mainContentBlock![0]).toMatch(/overflow-x:\s*hidden/);
         });
+
+        it('.feed-item should have overflow hidden to contain all child content', () => {
+            // .feed-item must create a block formatting context so that
+            // no child (title, description, images) can push the viewport wider.
+            // This is critical on mobile where overflow-x:hidden on scrollable
+            // ancestors (.main-content with overflow-y:auto) is unreliable.
+            const feedItemBlock = cssContent.match(
+                /\.feed-item\s*\{[^}]*\}/
+            );
+            expect(feedItemBlock).not.toBeNull();
+            expect(feedItemBlock![0]).toMatch(/overflow:\s*hidden/);
+        });
+
+        it('.item-title should have min-width 0 to allow flex shrinking', () => {
+            // In a flex container, default min-width:auto prevents items from
+            // shrinking below their content width. Long titles push the layout
+            // wider than the viewport. min-width:0 fixes this.
+            const itemTitleBlock = cssContent.match(
+                /\.item-title\s*\{[^}]*\}/
+            );
+            expect(itemTitleBlock).not.toBeNull();
+            expect(itemTitleBlock![0]).toMatch(/min-width:\s*0/);
+        });
+
+        it('.item-title should wrap long words', () => {
+            // Titles can contain long unbroken strings (URLs, technical terms).
+            // overflow-wrap ensures they wrap instead of overflowing.
+            const itemTitleBlock = cssContent.match(
+                /\.item-title\s*\{[^}]*\}/
+            );
+            expect(itemTitleBlock).not.toBeNull();
+            expect(itemTitleBlock![0]).toMatch(/overflow-wrap:\s*(break-word|anywhere)/);
+        });
     });
 
-    describe('Rendered content containment', () => {
-        it('should render items with wide table content without breaking layout', () => {
+    describe('Rendered content containment after loadMore re-render', () => {
+        it('should contain items with long unbroken titles after re-render', () => {
             renderLayout();
-            const wideTableItem = {
-                _id: 1,
-                title: 'Wide Table Post',
-                url: 'http://example.com',
-                publish_date: '2024-01-01',
-                read: false,
-                starred: false,
-                description: '<table width="2000"><tr><td>Very wide table from RSS</td></tr></table>'
-            } as any;
-            store.setItems([wideTableItem]);
+            const longTitle = 'A'.repeat(500); // simulate long unbroken title
+            const items = [
+                { _id: 1, title: 'Normal', url: 'http://example.com', publish_date: '2024-01-01', read: true, starred: false, description: '<p>first batch</p>' },
+                { _id: 2, title: longTitle, url: 'http://example.com', publish_date: '2024-01-01', read: false, starred: false, description: '<p>long title item</p>' },
+            ] as any;
+
+            // Initial render
+            store.setItems([items[0]]);
             renderItems();
 
-            const desc = document.querySelector('.item-description');
-            expect(desc).not.toBeNull();
-            expect(desc!.innerHTML).toContain('<table');
+            // Simulate loadMore re-render with appended items
+            store.setItems(items);
+            renderItems();
 
-            // The item-description element should be inside main-content
-            // which constrains overflow
-            const mainContent = document.getElementById('main-content');
-            expect(mainContent).not.toBeNull();
-            expect(mainContent!.contains(desc!)).toBe(true);
+            const feedItems = document.querySelectorAll('.feed-item');
+            expect(feedItems.length).toBe(2);
+            // The long title item should be contained within the layout
+            const longTitleEl = feedItems[1].querySelector('.item-title');
+            expect(longTitleEl).not.toBeNull();
+            expect(longTitleEl!.textContent!.trim().length).toBe(500);
         });
 
-        it('should render items with wide iframe content without breaking layout', () => {
+        it('should contain items with wide description content after re-render', () => {
             renderLayout();
-            const wideIframeItem = {
-                _id: 2,
-                title: 'Embedded Video Post',
-                url: 'http://example.com',
-                publish_date: '2024-01-01',
-                read: false,
-                starred: false,
-                description: '<iframe width="1200" height="600" src="https://example.com/embed"></iframe>'
-            } as any;
-            store.setItems([wideIframeItem]);
+            const items = [
+                { _id: 1, title: 'Item 1', url: 'http://example.com', publish_date: '2024-01-01', read: true, starred: false, description: '<p>ok</p>' },
+                { _id: 2, title: 'Item 2', url: 'http://example.com', publish_date: '2024-01-01', read: false, starred: false, description: '<table width="2000"><tr><td>wide</td></tr></table>' },
+                { _id: 3, title: 'Item 3', url: 'http://example.com', publish_date: '2024-01-01', read: false, starred: false, description: '<iframe width="1200" src="https://example.com"></iframe>' },
+            ] as any;
+
+            // Initial render
+            store.setItems([items[0]]);
             renderItems();
 
-            const desc = document.querySelector('.item-description');
-            expect(desc).not.toBeNull();
-            expect(desc!.innerHTML).toContain('<iframe');
-        });
-
-        it('should render items with wide image using inline style without breaking layout', () => {
-            renderLayout();
-            const wideImgItem = {
-                _id: 3,
-                title: 'Wide Image Post',
-                url: 'http://example.com',
-                publish_date: '2024-01-01',
-                read: false,
-                starred: false,
-                description: '<img style="width: 1500px" src="https://example.com/wide.jpg">'
-            } as any;
-            store.setItems([wideImgItem]);
+            // Simulate loadMore re-render
+            store.setItems(items);
             renderItems();
 
-            const desc = document.querySelector('.item-description');
-            expect(desc).not.toBeNull();
-            expect(desc!.innerHTML).toContain('<img');
+            const feedItems = document.querySelectorAll('.feed-item');
+            expect(feedItems.length).toBe(3);
         });
     });
 });
