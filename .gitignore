@@ -17,3 +17,4 @@ frontend/test-results/
 frontend/coverage/
 readme.html
 mock_server.log
+node_modules/

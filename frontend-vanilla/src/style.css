@@ -288,6 +288,7 @@ html {
   width: 100%;
   height: 100%;
   min-width: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   background-color: var(--bg-color);
   padding: 1.5rem 2rem;
@@ -451,6 +452,7 @@ select:focus {
   border-bottom: none;
   border-radius: 8px;
   transition: background-color 0.2s ease, opacity 0.3s ease;
+  overflow: hidden;
 }
 
 
@@ -470,6 +472,8 @@ select:focus {
   color: var(--link-color);
   display: block;
   flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
   cursor: pointer;
 }
 
@@ -517,6 +521,7 @@ select:focus {
   margin-top: 1rem;
   overflow-wrap: break-word;
   word-break: break-word;
+  overflow-x: hidden;
 }
 
 .item-description a {
@@ -526,7 +531,9 @@ select:focus {
 
 .item-description img,
 .item-description video,
-.item-description pre {
+.item-description pre,
+.item-description table,
+.item-description iframe {
   max-width: 100%;
   height: auto;
   display: block;
