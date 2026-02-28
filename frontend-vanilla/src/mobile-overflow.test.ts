@@ -52,7 +52,7 @@ describe('Mobile horizontal overflow prevention', () => {
             );
             expect(itemDescBlock).not.toBeNull();
             const mainBlock = itemDescBlock!.find(
-                block => !block.includes('img') && !block.includes('video') && !block.includes('pre') && !block.includes(' a')
+                (block: string) => !block.includes('img') && !block.includes('video') && !block.includes('pre') && !block.includes(' a')
             );
             expect(mainBlock).toBeDefined();
             expect(mainBlock).toMatch(/overflow-x:\s*hidden/);
