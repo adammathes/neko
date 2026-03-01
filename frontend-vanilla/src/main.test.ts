@@ -188,6 +188,27 @@ describe('main application logic', () => {
         }));
     });
 
+    it('should handle star toggle when _id is a string (API returns string)', async () => {
+        renderLayout();
+        // The Go API returns _id as a string due to json:",string" tag.
+        // fetchItems normalizes this, but verify the flow works end-to-end.
+        const mockItem = { _id: "5" as any, title: 'String ID Item', starred: true, publish_date: '2023-01-01' } as any;
+        store.setItems([mockItem]);
+        renderItems();
+
+        vi.mocked(apiFetch).mockResolvedValue({ ok: true } as Response);
+
+        const starBtn = document.querySelector('[data-action="toggle-star"]') as HTMLElement;
+        starBtn.click();
+
+        // parseInt in the click handler produces number 5, but store has string "5".
+        // This should still work because toggleStar finds the item.
+        expect(apiFetch).toHaveBeenCalledWith(expect.stringContaining('/api/item/5'), expect.objectContaining({
+            method: 'PUT',
+            body: expect.stringContaining('"starred":false')
+        }));
+    });
+
     it('should handle theme change in settings', () => {
         renderLayout();
         renderSettings();

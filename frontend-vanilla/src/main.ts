@@ -258,7 +258,7 @@ export function attachLayoutListeners() {
       const id = parseInt(itemRow.getAttribute('data-id')!);
       activeItemId = id;
 
-      const item = store.items.find(i => i._id === id);
+      const item = store.items.find(i => Number(i._id) === Number(id));
       if (item && !item.read) {
         updateItem(id, { read: true });
       }
@@ -361,7 +361,7 @@ function checkReadItems(scrollRoot?: HTMLElement) {
     const id = parseInt(idAttr);
 
     // Safety check: skip if store already says it's read (though unread class implies not)
-    const item = store.items.find(i => i._id === id);
+    const item = store.items.find(i => Number(i._id) === Number(id));
     if (item?.read) continue;
 
     const rect = el.getBoundingClientRect();
@@ -674,14 +674,14 @@ export async function updateFeed(id: number, updates: Partial<Feed>): Promise<bo
 // --- Data Actions ---
 
 export async function toggleStar(id: number) {
-  const item = store.items.find(i => i._id === id);
+  const item = store.items.find(i => Number(i._id) === Number(id));
   if (item) {
     updateItem(id, { starred: !item.starred });
   }
 }
 
 export async function scrapeItem(id: number) {
-  const item = store.items.find(i => i._id === id);
+  const item = store.items.find(i => Number(i._id) === Number(id));
   if (!item) return;
 
   try {
@@ -775,6 +775,11 @@ export async function fetchItems(feedId?: string, tagName?: string, append: bool
     const res = await apiFetch(`/api/stream?${params.toString()}`);
     if (res.ok) {
       const items = await res.json();
+      // The Go API returns _id as a string (json:",string" tag). Coerce to
+      // number so DOM parseInt comparisons using === work everywhere.
+      for (const item of items) {
+        item._id = Number(item._id);
+      }
       store.setHasMore(items.length > 0);
       store.setItems(items, append);
     }
@@ -840,13 +845,13 @@ window.addEventListener('keydown', (e) => {
       break;
     case 'r':
       if (activeItemId) {
-        const item = store.items.find(i => i._id === activeItemId);
+        const item = store.items.find(i => Number(i._id) === Number(activeItemId));
         if (item) updateItem(item._id, { read: !item.read });
       }
       break;
     case 's':
       if (activeItemId) {
-        const item = store.items.find(i => i._id === activeItemId);
+        const item = store.items.find(i => Number(i._id) === Number(activeItemId));
         if (item) updateItem(item._id, { starred: !item.starred });
       }
       break;
@@ -859,7 +864,7 @@ window.addEventListener('keydown', (e) => {
 
 function navigateItems(direction: number) {
   if (store.items.length === 0) return;
-  const currentIndex = store.items.findIndex(i => i._id === activeItemId);
+  const currentIndex = store.items.findIndex(i => Number(i._id) === Number(activeItemId));
   let nextIndex;
 
   if (currentIndex === -1) {
