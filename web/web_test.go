@@ -830,7 +830,9 @@ func TestImageProxyContentTypeForwarded(t *testing.T) {
 		{"png", "image/png", http.StatusOK},
 		{"gif", "image/gif", http.StatusOK},
 		{"webp", "image/webp", http.StatusOK},
-		{"svg", "image/svg+xml", http.StatusOK},
+		// SVG is intentionally rejected — it can carry inline scripts and
+		// renders as an HTML-ish document if loaded as a top-level URL.
+		{"svg", "image/svg+xml", http.StatusForbidden},
 		{"avif", "image/avif", http.StatusOK},
 	}
 
@@ -851,8 +853,10 @@ func TestImageProxyContentTypeForwarded(t *testing.T) {
 			if rr.Code != tc.wantStatus {
 				t.Errorf("Expected %d, got %d", tc.wantStatus, rr.Code)
 			}
-			if ct := rr.Header().Get("Content-Type"); ct != tc.contentType {
-				t.Errorf("Expected Content-Type %q, got %q", tc.contentType, ct)
+			if tc.wantStatus == http.StatusOK {
+				if ct := rr.Header().Get("Content-Type"); ct != tc.contentType {
+					t.Errorf("Expected Content-Type %q, got %q", tc.contentType, ct)
+				}
 			}
 		})
 	}
@@ -1024,7 +1028,11 @@ func TestIsAllowedImageType(t *testing.T) {
 		{"image/png", true},
 		{"image/gif", true},
 		{"image/webp", true},
-		{"image/svg+xml", true},
+		// SVG is intentionally not an allowed image — scripts can be embedded
+		// and would execute when the SVG is loaded as a top-level document.
+		{"image/svg+xml", false},
+		{"image/svg+xml; charset=utf-8", false},
+		{"IMAGE/SVG+XML", false},
 		{"IMAGE/JPEG", true},
 		{"text/html", false},
 		{"application/json", false},

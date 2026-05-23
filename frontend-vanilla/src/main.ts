@@ -4,7 +4,7 @@ import { store } from './store';
 import type { FilterType } from './store';
 import { router } from './router';
 import type { Feed, Item } from './types';
-import { createFeedItem } from './components/FeedItem';
+import { createFeedItem, escapeHTML } from './components/FeedItem';
 
 // Extend Window interface for app object (keeping for compatibility if needed, but removing inline dependencies)
 declare global {
@@ -272,13 +272,17 @@ export function renderFeeds() {
   const { feeds, activeFeedId } = store;
   const feedListEl = document.getElementById('feed-list');
   if (!feedListEl) return;
-  feedListEl.innerHTML = feeds.map((feed: Feed) => `
+  feedListEl.innerHTML = feeds.map((feed: Feed) => {
+    const id = escapeHTML(feed._id);
+    const label = escapeHTML(feed.title || feed.url);
+    return `
     <li class="${feed._id === activeFeedId ? 'active' : ''}">
-      <a href="/v3/feed/${feed._id}" data-nav="feed" data-value="${feed._id}">
-        ${feed.title || feed.url}
+      <a href="/v3/feed/${id}" data-nav="feed" data-value="${id}">
+        ${label}
       </a>
     </li>
-  `).join('');
+  `;
+  }).join('');
 }
 
 export function renderTags() {
@@ -504,21 +508,22 @@ export function renderSettings() {
         </div>
 
         <ul class="manage-feed-list">
-          ${store.feeds.map(feed => `
+          ${store.feeds.map(feed => {
+            const fid = escapeHTML(feed._id);
+            const ftitle = escapeHTML(feed.title || feed.url);
+            const furl = escapeHTML(feed.url);
+            return `
             <li class="manage-feed-item">
               <div class="feed-info">
-                <div class="feed-title">${feed.title || feed.url}</div>
-                <div class="feed-url">${feed.url}</div>
+                <div class="feed-title">${ftitle}</div>
+                <div class="feed-url">${furl}</div>
               </div>
               <div class="feed-actions">
-                <!-- FIXME: Tags feature is broken/unused in V3. Soft deprecated for now.
-                <input type="text" class="feed-tag-input" data-id="${feed._id}" value="${feed.category || ''}" placeholder="Tag">
-                <button class="update-feed-tag-btn" data-id="${feed._id}">SAVE</button>
-                -->
-                <button class="delete-feed-btn" data-id="${feed._id}">DELETE</button>
+                <button class="delete-feed-btn" data-id="${fid}">DELETE</button>
               </div>
             </li>
-          `).join('')}
+          `;
+          }).join('')}
         </ul>
       </section>
     </div>
