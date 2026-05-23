@@ -151,6 +151,19 @@ func TestRunSecureCookies(t *testing.T) {
 	}
 }
 
+func TestRunLegacyUIFlag(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "test_legacy.db")
+	config.Config.Port = -1
+	config.Config.EnableLegacyUI = false
+	err := Run([]string{"-d", dbPath, "-legacy-ui"})
+	if err != nil {
+		t.Errorf("Run -legacy-ui should succeed, got %v", err)
+	}
+	if !config.Config.EnableLegacyUI {
+		t.Error("Expected EnableLegacyUI to be true")
+	}
+}
+
 func TestRunMinutesFlag(t *testing.T) {
 	dbPath := filepath.Join(t.TempDir(), "test_minutes.db")
 	config.Config.Port = -1

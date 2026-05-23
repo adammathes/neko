@@ -28,7 +28,7 @@ func main() {
 }
 
 func Run(args []string) error {
-	var help, update, verbose, proxyImages, secureCookies bool
+	var help, update, verbose, proxyImages, secureCookies, legacyUI bool
 	var configFile, dbfile, newFeed, export, password string
 	var port, minutes int
 	var purge int
@@ -70,6 +70,8 @@ func Run(args []string) error {
 	f.BoolVar(&proxyImages, "i", false, "rewrite and proxy all image requests (short)")
 
 	f.BoolVar(&secureCookies, "secure-cookies", false, "set Secure flag on cookies (requires HTTPS)")
+
+	f.BoolVar(&legacyUI, "legacy-ui", false, "enable the legacy v1 Backbone web interface at /v1/")
 
 	f.BoolVar(&verbose, "verbose", false, "verbose output")
 	f.BoolVar(&verbose, "v", false, "verbose output (short)")
@@ -127,6 +129,10 @@ func Run(args []string) error {
 
 	if secureCookies {
 		config.Config.SecureCookies = secureCookies
+	}
+
+	if legacyUI {
+		config.Config.EnableLegacyUI = legacyUI
 	}
 
 	models.InitDB()

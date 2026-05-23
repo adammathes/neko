@@ -13,6 +13,7 @@ type Settings struct {
 	CrawlMinutes   int    `yaml:"minutes"`
 	ProxyImages    bool   `yaml:"imageproxy"`
 	SecureCookies  bool   `yaml:"secure_cookies"`
+	EnableLegacyUI bool   `yaml:"legacy_ui"`
 }
 
 var Config Settings
