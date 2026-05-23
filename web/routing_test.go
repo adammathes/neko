@@ -11,6 +11,9 @@ import (
 
 func TestRouting(t *testing.T) {
 	config.Config.DigestPassword = "secret"
+	origLegacy := config.Config.EnableLegacyUI
+	config.Config.EnableLegacyUI = true // exercise the legacy /v1/ routes
+	defer func() { config.Config.EnableLegacyUI = origLegacy }()
 	router := NewRouter(&config.Config)
 
 	tests := []struct {
@@ -72,5 +75,49 @@ func TestRouting(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// The legacy v1 Backbone UI must NOT be served unless explicitly enabled,
+// since it ships old jQuery/Backbone with known XSS advisories. With the
+// route unmounted, /v1/ falls through to the v3 SPA catch-all — what matters
+// is that the vulnerable legacy ui.html is never returned.
+func TestLegacyUIDisabledByDefault(t *testing.T) {
+	config.Config.DigestPassword = "secret"
+	origLegacy := config.Config.EnableLegacyUI
+	config.Config.EnableLegacyUI = false
+	defer func() { config.Config.EnableLegacyUI = origLegacy }()
+
+	router := NewRouter(&config.Config)
+
+	req := httptest.NewRequest("GET", "/v1/", nil)
+	req.AddCookie(authCookie())
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	body := strings.ToLower(rr.Body.String())
+	if strings.Contains(body, "<title>neko rss mode</title>") {
+		t.Error("legacy backbone UI must not be served when EnableLegacyUI is false")
+	}
+}
+
+func TestLegacyUIEnabledWhenConfigured(t *testing.T) {
+	config.Config.DigestPassword = "secret"
+	origLegacy := config.Config.EnableLegacyUI
+	config.Config.EnableLegacyUI = true
+	defer func() { config.Config.EnableLegacyUI = origLegacy }()
+
+	router := NewRouter(&config.Config)
+
+	req := httptest.NewRequest("GET", "/v1/", nil)
+	req.AddCookie(authCookie())
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("legacy /v1/ should serve when enabled, got %d", rr.Code)
+	}
+	if !strings.Contains(strings.ToLower(rr.Body.String()), "<title>neko rss mode</title>") {
+		t.Error("expected legacy ui.html body when enabled")
 	}
 }

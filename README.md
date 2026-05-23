@@ -72,7 +72,7 @@ You can do most of what you need to do with `neko` from the web interface, which
 Neko currently bundles three versions of the web interface for different preferences:
 
 *   **v3 (Vanilla javascripit)**: Default at / and at `/v3/`. A high-performance, zero-dependency version built for speed and simplicity. 
-*   **v1 (Legacy Backbone)**: Available at `/v1/`. The original classic interface I wrote before AI. It uses backbone and is included for historical record, I guess.
+*   **v1 (Legacy Backbone)**: The original classic interface I wrote before AI, kept for historical record. It bundles old jQuery/Backbone with known XSS advisories, so it is **disabled by default**. Enable it at `/v1/` with the `--legacy-ui` flag (or `legacy_ui: true` in the config file) only if you understand the risk.
 
 You can specify a different port using the `--http` option.
 
@@ -81,7 +81,34 @@ You can specify a different port using the `--http` option.
 If you are hosting on a publicly available server instead of a personal computer, you can protect the interface with a password flag --
 
     $ neko --password=rssisveryimportant
-    
+
+### Public Deployment Notes
+
+`neko` does not rate-limit login attempts itself. If you expose it on the
+public internet, run it behind a reverse proxy and add throttling there. With
+nginx, a few lines guard the login endpoints against brute force:
+
+```nginx
+# In the http {} block:
+limit_req_zone $binary_remote_addr zone=neko_login:10m rate=5r/m;
+
+server {
+    # ... your existing TLS / proxy config ...
+
+    location ~ ^/(login/|api/login) {
+        limit_req zone=neko_login burst=5 nodelay;
+        proxy_pass http://127.0.0.1:4994;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:4994;
+    }
+}
+```
+
+When terminating TLS at the proxy, also pass `--secure-cookies` so the auth
+and CSRF cookies are only sent over HTTPS.
+
 ## Add Feed
 
 You can add feeds directly from the command line for convenience --
@@ -152,6 +179,7 @@ A subset of the command line options are supported in the configuration file, wi
    * minutes
    * password
    * secure_cookies
+   * legacy_ui
 
 For example --
 
@@ -162,6 +190,7 @@ imageproxy: true
 minutes: 90
 password: VeryLongRandomStringBecauseSecurityIsFun
 # secure_cookies: true  # Set to true when using HTTPS in production
+# legacy_ui: true       # Enable the old v1 Backbone UI at /v1/ (not recommended)
 
 ```
 ## Storage
@@ -209,6 +238,8 @@ Usage of neko:
     	minutes between crawling feeds (default -1, uses 60 if unset)
   -p, --password string
     	password to access web interface
+  --legacy-ui
+    	enable the legacy v1 Backbone web interface at /v1/ (disabled by default)
   --purge int
         purge read items older than N days
   --purge-unread

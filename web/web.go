@@ -275,8 +275,12 @@ func NewRouter(cfg *config.Settings) http.Handler {
 	// React Frontend (v2) at /v2/
 	mux.Handle("/v2/", GzipMiddleware(http.StripPrefix("/v2/", ServeFrontend("dist/v2"))))
 
-	// Legacy UI at /v1/
-	mux.Handle("/v1/", GzipMiddleware(http.StripPrefix("/v1/", AuthWrap(http.HandlerFunc(indexHandler)))))
+	// Legacy UI at /v1/ — disabled by default. It ships old bundled
+	// jQuery/Backbone with known XSS advisories, so it is only mounted
+	// when explicitly enabled via --legacy-ui / legacy_ui config.
+	if cfg.EnableLegacyUI {
+		mux.Handle("/v1/", GzipMiddleware(http.StripPrefix("/v1/", AuthWrap(http.HandlerFunc(indexHandler)))))
+	}
 
 	// New REST API
 	apiServer := api.NewServer(cfg)
