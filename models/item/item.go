@@ -3,6 +3,7 @@ package item
 import (
 	"encoding/base64"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -93,7 +94,32 @@ func filterPolicy() *bluemonday.Policy {
 	p.AllowElements("ul", "ol", "li", "blockquote", "a", "img", "p", "h1", "h2", "h3", "h4", "b", "i", "em", "strong", "pre", "code")
 	p.AllowAttrs("href").OnElements("a")
 	p.AllowAttrs("src", "alt").OnElements("img")
+	// Reject href/src URLs that aren't http(s) or mailto. Without this,
+	// bluemonday's default behavior is to pass any URL through, including
+	// javascript:, data:, vbscript:, and file: schemes.
+	p.RequireParseableURLs(true)
+	p.AllowURLSchemes("http", "https", "mailto")
+	p.AllowRelativeURLs(false)
 	return p
+}
+
+// SafeURL returns true if u is a syntactically valid URL using an allowed
+// scheme (http, https, mailto). It rejects javascript:, data:, vbscript:,
+// file:, etc. that could lead to XSS or SSRF when rendered as a link.
+func SafeURL(u string) bool {
+	trimmed := strings.TrimSpace(u)
+	if trimmed == "" {
+		return false
+	}
+	parsed, err := url.Parse(trimmed)
+	if err != nil {
+		return false
+	}
+	switch strings.ToLower(parsed.Scheme) {
+	case "http", "https", "mailto":
+		return true
+	}
+	return false
 }
 
 func ItemById(id int64) *Item {
@@ -233,12 +259,21 @@ func Filter(max_id int64, feed_ids []int64, category string, unread_only bool, s
 		if config.Config.ProxyImages {
 			i.Description = rewriteImages(i.Description)
 		}
-		i.Url = p.Sanitize(i.Url)
+		// Strip URL fields to safe http(s)/mailto URLs only. bluemonday's
+		// text-mode Sanitize does not filter URL schemes, so we enforce
+		// this explicitly to prevent javascript:/data: in href/src.
+		if !SafeURL(i.Url) {
+			i.Url = ""
+		}
 		i.FeedTitle = p.Sanitize(i.FeedTitle)
-		i.FeedUrl = p.Sanitize(i.FeedUrl)
+		if !SafeURL(i.FeedUrl) {
+			i.FeedUrl = ""
+		}
 		if withContent {
 			i.FullContent = p.Sanitize(i.FullContent)
-			i.HeaderImage = p.Sanitize(i.HeaderImage)
+			if !SafeURL(i.HeaderImage) {
+				i.HeaderImage = ""
+			}
 			i.CleanHeaderImage()
 		}
 		items = append(items, i)

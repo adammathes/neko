@@ -59,7 +59,12 @@ var allowedImageTypes = []string{
 }
 
 func isAllowedImageType(contentType string) bool {
-	ct := strings.ToLower(contentType)
+	ct := strings.ToLower(strings.TrimSpace(contentType))
+	// SVG can carry executable script and renders as a document if the
+	// user navigates to the proxy URL directly. Reject it outright.
+	if strings.HasPrefix(ct, "image/svg") {
+		return false
+	}
 	for _, prefix := range allowedImageTypes {
 		if strings.HasPrefix(ct, prefix) {
 			return true
@@ -447,7 +452,7 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 		// style-src 'self' 'unsafe-inline' (for React/styled-components if used)
 		// img-src 'self' data: * (RSS images can be from anywhere)
 		// connect-src 'self' (API calls)
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: *; connect-src 'self'; frame-ancestors 'none';")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: *; connect-src 'self'; frame-ancestors 'none';")
 		next.ServeHTTP(w, r)
 	})
 }

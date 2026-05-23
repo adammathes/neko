@@ -46,31 +46,65 @@ func isPrivateIP(ip net.IP) bool {
 	return false
 }
 
-func SafeDialer(dialer *net.Dialer) func(context.Context, string, string) (net.Conn, error) {
+// dialFunc is the minimal interface SafeDialer needs from a *net.Dialer.
+type dialFunc func(ctx context.Context, network, address string) (net.Conn, error)
+
+// SafeDialer returns a DialContext that resolves the destination hostname,
+// rejects any private/loopback/link-local IP, and then dials the validated
+// IP literal directly. Passing an IP literal — instead of the original
+// hostname — prevents a DNS rebinding TOCTOU bypass where a malicious
+// nameserver returns a public IP for the safety check and a private IP
+// for the actual dial.
+func SafeDialer(dialer *net.Dialer) dialFunc {
+	return safeDialerWith(dialer.DialContext)
+}
+
+func safeDialerWith(dial dialFunc) dialFunc {
 	return func(ctx context.Context, network, address string) (net.Conn, error) {
-		host, _, err := net.SplitHostPort(address)
+		host, port, err := net.SplitHostPort(address)
 		if err != nil {
 			host = address
+			port = ""
 		}
 
+		// IP literal: validate and dial as-is.
 		if ip := net.ParseIP(host); ip != nil {
 			if isPrivateIP(ip) {
 				return nil, fmt.Errorf("connection to private IP %s is not allowed", ip)
 			}
-		} else {
-			ips, err := net.DefaultResolver.LookupIP(ctx, "ip", host)
-			if err != nil {
-				return nil, err
-			}
+			return dial(ctx, network, address)
+		}
 
-			for _, ip := range ips {
-				if isPrivateIP(ip) {
-					return nil, fmt.Errorf("connection to private IP %s is not allowed", ip)
-				}
+		// Hostname: resolve, validate every returned IP, then pick
+		// one and dial the IP literal so the inner dialer cannot
+		// be tricked into re-resolving to a different address.
+		ips, err := net.DefaultResolver.LookupIP(ctx, "ip", host)
+		if err != nil {
+			return nil, err
+		}
+		if len(ips) == 0 {
+			return nil, fmt.Errorf("no addresses resolved for %s", host)
+		}
+		for _, ip := range ips {
+			if isPrivateIP(ip) {
+				return nil, fmt.Errorf("connection to private IP %s is not allowed", ip)
 			}
 		}
 
-		return dialer.DialContext(ctx, network, address)
+		// Try each validated IP in order until one connects.
+		var lastErr error
+		for _, ip := range ips {
+			target := ip.String()
+			if port != "" {
+				target = net.JoinHostPort(ip.String(), port)
+			}
+			conn, derr := dial(ctx, network, target)
+			if derr == nil {
+				return conn, nil
+			}
+			lastErr = derr
+		}
+		return nil, lastErr
 	}
 }
 
